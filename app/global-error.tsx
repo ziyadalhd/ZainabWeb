@@ -1,9 +1,11 @@
 "use client";
 
+import { thmanyahSans } from "./fonts";
+
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <html lang="ar" dir="rtl">
-      <body className="bg-[#fefdf1] font-[Tahoma,Arial,sans-serif] text-[#172016]">
+    <html lang="ar" dir="rtl" className={thmanyahSans.variable}>
+      <body className="bg-[#fefdf1] text-[#172016]">
         <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-6 text-center">
           <h1 className="text-3xl font-extrabold text-[#243f1c]">تعذر تشغيل الصفحة</h1>
           <p className="mt-4 text-[#5f685c]">حدث خطأ عام. حاول إعادة تحميل الواجهة.</p>
