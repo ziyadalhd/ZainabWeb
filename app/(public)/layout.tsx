@@ -1,0 +1,13 @@
+import type { ReactNode } from "react";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+
+export default function PublicLayout({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <>
+      <SiteHeader />
+      {children}
+      <SiteFooter />
+    </>
+  );
+}

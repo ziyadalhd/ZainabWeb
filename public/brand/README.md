@@ -2,10 +2,11 @@
 
 Place the approved نادي بَيْن الثقافي logo in this directory.
 
-## Preferred file
+## Approved files
 
-- File name: `club-logo.svg`
-- Preferred format: SVG with a transparent background.
-- Fallback format: `club-logo.png` with a transparent background and sufficient resolution for high-density displays.
+- `club-logo-on-green.jpg`: ivory logo on the approved green background.
+- `club-logo-on-ivory.jpg`: green logo on the approved ivory background.
 
-Do not add placeholder artwork or modify the approved logo colors, proportions, clear space, or typography. If light and dark variants are supplied, use `club-logo-light.svg` and `club-logo-dark.svg`.
+Both supplied files are 1021 × 1021 CMYK JPEG images without transparency. Keep their original pixels and square aspect ratio. Do not crop, stretch, recolor, redraw, or add effects to either file.
+
+The public interface continues to use the approved project name نادي بَيْن الثقافي in surrounding text and accessible labels. The artwork itself must remain unchanged.
