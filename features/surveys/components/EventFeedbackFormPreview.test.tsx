@@ -11,5 +11,6 @@ describe("EventFeedbackFormPreview", () => {
     expect(screen.getAllByRole("radio")).toHaveLength(10);
     expect(screen.getByRole("textbox", { name: "المقترحات" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "الإرسال غير متاح حاليًا" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "الإرسال غير متاح حاليًا" })).toHaveAttribute("type", "button");
   });
 });
