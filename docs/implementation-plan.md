@@ -25,7 +25,8 @@
 - **Completed** — إضافة `/admin/login`, `/admin/events/new`, و`/admin/events/[id]/edit` مع دورة `draft → published → archived` والاستعادة إلى `draft`.
 - **Completed** — تحويل `/events`, `/admin`, `/admin/calendar`, و`/admin/events` إلى بيانات Supabase الحقيقية وإزالة `lib/demo/` من التشغيل.
 - **Completed** — تحويل صفحات registrations, waitlist, interested, messages, وsurveys إلى حالات «غير مفعلة» دون سجلات تجريبية.
-- **In progress** — التحقق النهائي، إعداد المسؤول الأول، وفتح Draft PR.
+- **Completed** — فتح Draft PR رقم `#1` من `agent/phase-2-events` إلى `main` مع إبقاء النشر الإنتاجي يدويًا.
+- **In progress** — مراجعة Draft PR؛ لا يوجد تعديل تطبيقي نشط بعد نجاح الفحوص الحالية.
 
 ## قاعدة البيانات والأمان
 
@@ -75,6 +76,6 @@
 1. **Blocked** — إنشاء حساب المسؤول يدويًا، تعطيل remote signup، وإضافة `user_id` إلى `admin_users`.
 2. **Pending** — إعادة تشغيل `pnpm supabase test db` و`supabase gen types` بعد تشغيل Docker.
 3. **Pending** — فحص الدخول والخروج وإنشاء draft ثم publish ثم archive في المتصفح بالحساب المعتمد.
-4. **Pending** — مراجعة `git diff`, ثم commit, وpush، وفتح Draft PR من `agent/phase-2-events`.
+4. **Completed** — مراجعة الفرق، وإنشاء commit, وpush، وفتح Draft PR رقم `#1` من `agent/phase-2-events`.
 5. **Deferred** — نشر الإنتاج يدويًا بعد مراجعة Draft PR؛ لا GitHub auto-deploy في هذه الدفعة.
 6. **Deferred** — التسجيلات، وقائمة الانتظار، والاستبيانات المحفوظة، والرسائل، والتذكيرات، والبيانات الشخصية.
