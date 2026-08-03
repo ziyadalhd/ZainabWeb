@@ -1,0 +1,1 @@
+-- Intentionally empty: production and local environments start without demo events.

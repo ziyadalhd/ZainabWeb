@@ -2,9 +2,7 @@
 
 ## Decision status
 
-No provider decisions have been approved yet.
-
-In particular, there is no approved database provider, ORM, admin authentication provider, messaging provider, WhatsApp/SMS/email channel, hosting provider, or other external-service provider. Do not select or integrate any of them without explicit user approval.
+Supabase and Vercel are approved for the phase-two events-management scope recorded below. No ORM is used. Messaging, WhatsApp/SMS/email, public accounts, registrations, surveys persistence, and other external providers remain unapproved and excluded.
 
 ## Approved technology constraints
 
@@ -17,6 +15,8 @@ The following project-level constraints are approved:
 - Arabic RTL layouts for the entire public website and admin dashboard.
 - Server Components by default, with Client Components only when needed.
 - `pnpm` for a new project.
+- Supabase Postgres and Supabase Auth for phase-two event administration.
+- Vercel hosting and Vercel Marketplace resource linkage for the current phase.
 
 These constraints do not approve a particular provider, application architecture beyond what is necessary, or any external integration.
 
@@ -60,3 +60,20 @@ Record approved architectural decisions here only after explicit user approval. 
 - Testing documentation: Context7 library IDs `/vercel/next.js` and `/vitest-dev/vitest/v4.1.6` were consulted for App Router verification and Vitest configuration. Vitest does not directly test asynchronous Server Components, so those routes are covered by type checking, production builds, and browser review.
 - Compatibility adjustment: the local Node.js runtime is `22.11.0`. The test toolchain uses Vitest `3.2.4`, Vite `6.4.3`, and jsdom `26.1.0`, whose published engine ranges support this runtime. No framework or runtime upgrade was performed.
 - Provider status: no database, ORM, authentication, messaging, WhatsApp/SMS/email channel, hosting, analytics, or other external provider was selected.
+
+## Phase-two event administration: 2026-08-03
+
+- Status: approved and implemented on `agent/phase-2-events`; production deployment remains manual.
+- Persistence: Supabase Postgres is the approved database for event records. The application uses `@supabase/supabase-js@2.112.0` and `@supabase/ssr@0.12.4` directly; no ORM was introduced.
+- Provisioning: the free Supabase Marketplace resource `bayn-cultural-club` is linked to the existing Vercel project in the Mumbai region (`bom1`, corresponding to the requested `ap-south-1`).
+- Public credentials: application code reads only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Secret, service-role, JWT, and Postgres credentials are never imported by application modules.
+- Reproducibility: database DDL and RLS live in `supabase/migrations/`. `.env.example` contains placeholders only, while `.env.local` and `.vercel/` remain ignored.
+- Authorization: one or more manually provisioned Supabase Auth users may be allowlisted in `public.admin_users`. There is no public signup, password reset, or public-user account interface.
+- Defense in depth: `proxy.ts` refreshes auth cookies and performs an optimistic redirect using `getClaims()`. `requireAdmin()` verifies claims and the allowlist inside every protected page and every event mutation. RLS remains the authoritative database boundary.
+- Event lifecycle: event creation always produces `draft`; approved transitions are `draft → published`, `draft → archived`, `published → archived`, and `archived → draft`. No hard-delete grant or policy exists.
+- Public visibility: `/events` explicitly requests only `published` records whose `starts_at` is in the future, even when the requester also has an admin session.
+- Availability: `available | full` is an explicit administrator value and is never inferred from `capacity`.
+- Time: `datetime-local` input is interpreted in `Asia/Riyadh` and stored as `timestamptz`.
+- Deferred data: registrations, waitlists, interested contacts, messages, reminders, and survey responses are not stored in this phase. Their admin routes show non-enabled states instead of fixtures.
+- Production data: no demonstration events were seeded or copied. The linked database starts with an empty `events` table.
+- Documentation sources: current official Supabase SSR, RLS, and Vercel Marketplace guidance plus installed Next.js `16.2.12` documentation were used. The previously verified Context7 Next.js library ID is `/vercel/next.js`; no business rule was sourced from documentation.

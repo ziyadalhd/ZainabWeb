@@ -1,5 +1,5 @@
 import type { Event } from "@/lib/domain/types";
-import { formatArabicNumber } from "@/lib/format/date";
+import { formatArabicNumber, getRiyadhDateParts } from "@/lib/format/date";
 
 const weekDays = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
@@ -15,11 +15,12 @@ const timeFormatter = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
   timeZone: "Asia/Riyadh",
 });
 
-export function CalendarMonthGrid({ events, month = new Date("2026-08-01T12:00:00+03:00") }: { events: readonly Event[]; month?: Date }) {
-  const year = month.getFullYear();
-  const monthIndex = month.getMonth();
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const firstDayOffset = new Date(year, monthIndex, 1).getDay();
+export function CalendarMonthGrid({ events, month = new Date() }: { events: readonly Event[]; month?: Date }) {
+  const monthParts = getRiyadhDateParts(month);
+  const year = monthParts.year;
+  const monthIndex = monthParts.month - 1;
+  const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  const firstDayOffset = new Date(Date.UTC(year, monthIndex, 1)).getUTCDay();
   const cells = Array.from({ length: firstDayOffset + daysInMonth }, (_, index) => index < firstDayOffset ? null : index - firstDayOffset + 1);
 
   return (
@@ -28,10 +29,13 @@ export function CalendarMonthGrid({ events, month = new Date("2026-08-01T12:00:0
       <div className="mt-6 grid grid-cols-7 gap-1 text-center text-[0.68rem] font-bold muted-copy sm:text-xs">
         {weekDays.map((day) => <div key={day} className="py-2">{day}</div>)}
       </div>
-      <div className="grid grid-cols-7 gap-1" role="grid" aria-label="التقويم الميلادي للفعاليات التجريبية">
+      <div className="grid grid-cols-7 gap-1" role="grid" aria-label="التقويم الميلادي للفعاليات">
         {cells.map((day, index) => {
           if (day === null) return <div key={`empty-${index}`} aria-hidden="true" className="min-h-24 rounded-xl bg-transparent" />;
-          const dayEvents = events.filter((event) => new Date(event.startsAt).getDate() === day);
+          const dayEvents = events.filter((event) => {
+            const parts = getRiyadhDateParts(event.startsAt);
+            return parts.year === year && parts.month === monthIndex + 1 && parts.day === day;
+          });
           return (
             <div key={day} role="gridcell" className="min-h-24 rounded-xl border border-[var(--border)] p-2">
               <span className="text-xs font-extrabold text-[var(--brand-green-deep)]">{formatArabicNumber(day)}</span>

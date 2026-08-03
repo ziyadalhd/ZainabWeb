@@ -1,26 +1,23 @@
-import type { AdminDashboardSnapshot } from "@/lib/domain/types";
+import type { Event } from "@/lib/domain/types";
 import { StatCard } from "@/components/ui/StatCard";
-import { AttendanceSummary } from "@/features/admin/components/AttendanceSummary";
 import { EventCapacityTable } from "@/features/admin/components/EventCapacityTable";
 import { formatArabicNumber } from "@/lib/format/date";
 
-export function AdminOverview({ snapshot }: { snapshot: AdminDashboardSnapshot }) {
-  const registrations = snapshot.events.reduce((total, event) => total + event.registrationCount, 0);
-  const capacity = snapshot.events.reduce((total, event) => total + event.capacity, 0);
-  const fullEvents = snapshot.events.filter((event) => event.availability === "full").length;
+export function AdminOverview({ events }: { events: readonly Event[] }) {
+  const published = events.filter((event) => event.publicationStatus === "published").length;
+  const drafts = events.filter((event) => event.publicationStatus === "draft").length;
+  const archived = events.filter((event) => event.publicationStatus === "archived").length;
+  const capacity = events.reduce((total, event) => total + event.capacity, 0);
 
   return (
     <div className="mt-8 grid gap-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="الفعاليات القادمة" value={formatArabicNumber(snapshot.events.length)} note="بيانات تجريبية" />
-        <StatCard label="إجمالي التسجيل" value={formatArabicNumber(registrations)} note={`من سعة ${formatArabicNumber(capacity)}`} />
-        <StatCard label="الفعاليات المكتملة" value={formatArabicNumber(fullEvents)} />
-        <StatCard label="قائمة الانتظار" value={formatArabicNumber(snapshot.waitlistEntries.length)} note="دون ترتيب أولوية" />
+        <StatCard label="كل الفعاليات" value={formatArabicNumber(events.length)} note={`إجمالي السعة ${formatArabicNumber(capacity)}`} />
+        <StatCard label="الفعاليات المنشورة" value={formatArabicNumber(published)} note="تظهر للعامة إذا كان موعدها قادمًا" />
+        <StatCard label="المسودات" value={formatArabicNumber(drafts)} note="لا تظهر في الموقع العام" />
+        <StatCard label="المؤرشفة" value={formatArabicNumber(archived)} note="يمكن إعادتها إلى مسودة" />
       </div>
-      <div className="grid gap-6 xl:grid-cols-[0.65fr_1.35fr]">
-        <AttendanceSummary events={snapshot.events} />
-        <EventCapacityTable events={snapshot.events} />
-      </div>
+      <EventCapacityTable events={events} compact />
     </div>
   );
 }

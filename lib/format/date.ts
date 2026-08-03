@@ -6,10 +6,52 @@ const dateTimeFormatter = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
 
 const numberFormatter = new Intl.NumberFormat("ar-SA");
 
+const riyadhPartsFormatter = new Intl.DateTimeFormat("en-CA-u-ca-gregory", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+  timeZone: "Asia/Riyadh",
+});
+
+export interface RiyadhDateParts {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+}
+
 export function formatArabicDateTime(value: string | Date): string {
   return dateTimeFormatter.format(typeof value === "string" ? new Date(value) : value);
 }
 
 export function formatArabicNumber(value: number): string {
   return numberFormatter.format(value);
+}
+
+export function getRiyadhDateParts(value: string | Date): RiyadhDateParts {
+  const date = typeof value === "string" ? new Date(value) : value;
+  const parts = Object.fromEntries(
+    riyadhPartsFormatter
+      .formatToParts(date)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hour: Number(parts.hour),
+    minute: Number(parts.minute),
+  };
+}
+
+export function formatRiyadhDateTimeLocal(value: string | Date): string {
+  const { year, month, day, hour, minute } = getRiyadhDateParts(value);
+  const pad = (number: number) => String(number).padStart(2, "0");
+  return `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}`;
 }

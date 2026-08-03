@@ -1,19 +1,26 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { EventList } from "@/features/events/components/EventList";
-import { demoEvents } from "@/lib/demo/events";
+import type { Event } from "@/lib/domain/types";
+
+const events: readonly Event[] = [
+  { id: "1", title: "لقاء للكبار", audience: "adults", eventTypeLabel: "لقاء", startsAt: "2026-08-10T15:00:00.000Z", capacity: 30, availability: "available", publicationStatus: "published", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" },
+  { id: "2", title: "ورشة لليافعين", audience: "youth", eventTypeLabel: "ورشة", startsAt: "2026-08-11T15:00:00.000Z", capacity: 20, availability: "full", publicationStatus: "published", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" },
+  { id: "3", title: "قراءة للصغار", audience: "children", eventTypeLabel: "قراءة", startsAt: "2026-08-12T15:00:00.000Z", capacity: 10, availability: "available", publicationStatus: "published", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" },
+];
 
 describe("EventList", () => {
   it("renders the Arabic empty state", () => {
     render(<EventList events={[]} />);
-    expect(screen.getByRole("heading", { name: "لا توجد فعاليات حاليًا" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "لا توجد فعاليات قادمة حاليًا" })).toBeInTheDocument();
   });
 
-  it("renders all demonstration events and audience labels", () => {
-    render(<EventList events={demoEvents} />);
+  it("renders event cards and all approved audience labels", () => {
+    render(<EventList events={events} />);
     expect(screen.getAllByRole("article")).toHaveLength(3);
     expect(screen.getByText("الكبار")).toBeInTheDocument();
     expect(screen.getByText("اليافعون")).toBeInTheDocument();
     expect(screen.getByText("الصغار")).toBeInTheDocument();
+    expect(screen.queryByText("التسجيل")).not.toBeInTheDocument();
   });
 });

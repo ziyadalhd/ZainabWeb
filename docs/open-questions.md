@@ -4,13 +4,14 @@ This document tracks product and architecture decisions that require explicit us
 
 ## Data and persistence
 
-- Which database provider, if any, should the application use?
-- Which ORM or database access approach should the application use?
+- **Resolved for phase two:** Supabase Postgres is approved for event persistence, using the Supabase client directly without an ORM.
+- What personal-data retention and deletion policy should apply when registrations or survey storage is approved later?
 
 ## Authentication and authorization
 
-- Which admin authentication provider or approach should be used?
-- Public user accounts are not approved. Should they remain excluded?
+- **Resolved for phase two:** Supabase Auth email/password with an `admin_users` allowlist and one initial full-access administrator.
+- **Resolved for phase two:** public signup, password reset, and public user accounts remain excluded.
+- Which email should be used for the initial administrator account created manually in Supabase Dashboard?
 
 ## Messaging and reminders
 
@@ -20,7 +21,8 @@ This document tracks product and architecture decisions that require explicit us
 
 ## Hosting and operations
 
-- Which hosting provider should be used?
+- **Resolved for the current phase:** Vercel is the approved host and Supabase is connected through Vercel Marketplace.
+- Should GitHub automatic production deployment be enabled later? It remains deferred; production deployment is manual.
 
 ## Events and calendar behavior
 
@@ -55,5 +57,5 @@ This document tracks product and architecture decisions that require explicit us
 
 ## External integrations and excluded capabilities
 
-- Are any external integrations approved? None are approved currently.
+- Supabase and Vercel are approved only for the phase-two scope documented in `docs/architecture-decisions.md`. Are any additional external integrations approved? None are approved currently.
 - Online payments, ticket generation, newsletter functionality, Google Maps, Guest CRM or Mini-CRM, public user accounts, and automatic waitlist replacement remain excluded unless the user explicitly approves them.
