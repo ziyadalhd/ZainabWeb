@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EventList } from "@/features/events/components/EventList";
-import { demoEventCatalog } from "@/lib/demo/repositories";
+import { createEventCatalog } from "@/lib/supabase/events";
 
 export const metadata: Metadata = { title: "الفعاليات" };
+export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
-  const events = await demoEventCatalog.listEvents();
+  const catalog = await createEventCatalog();
+  const events = await catalog.listUpcomingEvents();
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="بيانات تجريبية للعرض فقط" title="الفعاليات" description="فعاليات موزعة على فئات الكبار واليافعين والصغار دون تصنيف عمري تلقائي." />
+      <PageHeader eyebrow="نادي بَيْن الثقافي" title="الفعاليات" description="الفعاليات القادمة المنشورة لفئات الكبار واليافعين والصغار." />
       <EventList events={events} />
     </main>
   );

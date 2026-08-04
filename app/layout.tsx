@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ar" dir="rtl" className={thmanyahSans.variable}>
+    <html lang="ar" dir="rtl" className={thmanyahSans.variable} data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   );

@@ -4,7 +4,7 @@ import { EventCard } from "@/features/events/components/EventCard";
 
 export function EventList({ events }: { events: readonly Event[] }) {
   if (events.length === 0) {
-    return <EmptyState title="لا توجد فعاليات حاليًا" description="ستظهر الفعاليات هنا بعد إضافتها واعتمادها." />;
+    return <EmptyState title="لا توجد فعاليات قادمة حاليًا" description="ستظهر هنا الفعاليات القادمة بعد نشرها من إدارة النادي." />;
   }
 
   return (

@@ -1,0 +1,7 @@
+import type { Metadata } from "next";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { requireAdmin } from "@/lib/auth/require-admin";
+
+export const metadata: Metadata = { title: "الرسائل" };
+export default async function MessagesPage() { await requireAdmin(); return <main className="px-4 py-8 sm:px-8"><PageHeader eyebrow="لوحة الإدارة" title="الرسائل" /><EmptyState title="الرسائل غير مفعلة" description="لم يُعتمد مزود أو قناة لإرسال الرسائل والتذكيرات." /></main>; }

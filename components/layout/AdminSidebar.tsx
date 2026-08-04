@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ClubLogo } from "@/components/brand/ClubLogo";
 import { adminNavigation } from "@/lib/navigation";
+import { logoutAction } from "@/app/(dashboard)/admin/actions";
 
 export function AdminSidebar() {
   return (
@@ -20,6 +21,9 @@ export function AdminSidebar() {
           ))}
         </ul>
       </nav>
+      <form action={logoutAction} className="mt-8 border-t border-white/15 pt-5">
+        <button type="submit" className="w-full rounded-2xl border border-white/30 px-4 py-2.5 text-sm font-bold hover:bg-white/10">تسجيل الخروج</button>
+      </form>
     </aside>
   );
 }
