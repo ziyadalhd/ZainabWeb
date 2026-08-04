@@ -68,14 +68,14 @@
 | `pnpm build` | **Completed** | نجح Next.js production build؛ مسارات Supabase والإدارة dynamic. |
 | `pnpm supabase db lint` | **Completed** | لا توجد أخطاء schema في `public`. |
 | `pnpm supabase test db` | **Deferred** | أمر الاختبار المحلي يعتمد container runtime، وقد اختار المستخدم عدم تثبيته. تم تشغيل ملف pgTAP نفسه على قاعدة Supabase البعيدة عبر `psql` ونجحت الاختبارات `13/13`. |
-| Database types generation | **Pending** | لا يحتاج Docker عند استخدام Supabase Platform بعد `supabase login` مع `--project-id`؛ الملف الحالي محدود ومطابق للمخطط إلى حين توليد النسخة الرسمية البعيدة. |
+| Database types generation | **Completed** | نجح `supabase gen types --project-id ... --schema public` بعد CLI login، وحُدّث `lib/supabase/database.types.ts` من المشروع البعيد دون Docker. |
 | Browser public/admin login | **Completed** | `/events` وempty state وRTL سليمة؛ `/admin` يحول إلى `/admin/login`; لا overflow أو console/page errors. |
 | Admin login success + CRUD browser flow | **Completed** | نجح login/logout وإنشاء `draft` ثم publish ثم archive، وظهر المنشور في `/events` واختفى بعد الأرشفة؛ حُذفت فعالية التحقق المؤقتة وأصبحت القاعدة فارغة. |
 
 ## الخطوات التالية
 
 1. **Completed** — تعطيل remote signup من Supabase Dashboard والتحقق من `disable_signup: true`؛ حساب المسؤول و`admin_users` مكتملان.
-2. **Pending** — تشغيل `supabase login` ثم توليد types من المشروع البعيد باستخدام `--project-id`؛ لا Docker مطلوب.
+2. **Completed** — تسجيل Supabase CLI وتوليد types من المشروع البعيد باستخدام `--project-id`؛ لم يُستخدم Docker.
 3. **Deferred** — تشغيل `pnpm supabase test db` محليًا؛ اختار المستخدم عدم تثبيت container runtime، ونجح بديله البعيد عبر `psql` بنتيجة `13/13`.
 4. **Completed** — فحص الدخول والخروج وإنشاء draft ثم publish ثم archive في المتصفح بالحساب المعتمد، ثم تنظيف سجل التحقق.
 5. **Completed** — مراجعة الفرق، وإنشاء commit, وpush، وفتح Draft PR رقم `#1` من `agent/phase-2-events`.
