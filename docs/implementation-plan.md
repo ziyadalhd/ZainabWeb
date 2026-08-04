@@ -67,16 +67,17 @@
 | `pnpm test` | **Completed** | نجحت `10` ملفات و`18` اختبارًا. |
 | `pnpm build` | **Completed** | نجح Next.js production build؛ مسارات Supabase والإدارة dynamic. |
 | `pnpm supabase db lint` | **Completed** | لا توجد أخطاء schema في `public`. |
-| `pnpm supabase test db` | **Blocked** | يحتاج Docker daemon؛ لم يُفتح Docker. تم تشغيل ملف pgTAP نفسه عبر `psql` ونجحت الاختبارات `13/13`. |
-| Database types generation | **Blocked** | `supabase gen types` يحتاج Docker في هذه البيئة؛ الملف الحالي محدود ومطابق للمخطط ويجب إعادة توليده عند تشغيل Docker. |
+| `pnpm supabase test db` | **Deferred** | أمر الاختبار المحلي يعتمد container runtime، وقد اختار المستخدم عدم تثبيته. تم تشغيل ملف pgTAP نفسه على قاعدة Supabase البعيدة عبر `psql` ونجحت الاختبارات `13/13`. |
+| Database types generation | **Pending** | لا يحتاج Docker عند استخدام Supabase Platform بعد `supabase login` مع `--project-id`؛ الملف الحالي محدود ومطابق للمخطط إلى حين توليد النسخة الرسمية البعيدة. |
 | Browser public/admin login | **Completed** | `/events` وempty state وRTL سليمة؛ `/admin` يحول إلى `/admin/login`; لا overflow أو console/page errors. |
 | Admin login success + CRUD browser flow | **Completed** | نجح login/logout وإنشاء `draft` ثم publish ثم archive، وظهر المنشور في `/events` واختفى بعد الأرشفة؛ حُذفت فعالية التحقق المؤقتة وأصبحت القاعدة فارغة. |
 
 ## الخطوات التالية
 
 1. **Completed** — تعطيل remote signup من Supabase Dashboard والتحقق من `disable_signup: true`؛ حساب المسؤول و`admin_users` مكتملان.
-2. **Pending** — إعادة تشغيل `pnpm supabase test db` و`supabase gen types` بعد تشغيل Docker.
-3. **Completed** — فحص الدخول والخروج وإنشاء draft ثم publish ثم archive في المتصفح بالحساب المعتمد، ثم تنظيف سجل التحقق.
-4. **Completed** — مراجعة الفرق، وإنشاء commit, وpush، وفتح Draft PR رقم `#1` من `agent/phase-2-events`.
-5. **Deferred** — نشر الإنتاج يدويًا بعد مراجعة Draft PR؛ لا GitHub auto-deploy في هذه الدفعة.
-6. **Deferred** — التسجيلات، وقائمة الانتظار، والاستبيانات المحفوظة، والرسائل، والتذكيرات، والبيانات الشخصية.
+2. **Pending** — تشغيل `supabase login` ثم توليد types من المشروع البعيد باستخدام `--project-id`؛ لا Docker مطلوب.
+3. **Deferred** — تشغيل `pnpm supabase test db` محليًا؛ اختار المستخدم عدم تثبيت container runtime، ونجح بديله البعيد عبر `psql` بنتيجة `13/13`.
+4. **Completed** — فحص الدخول والخروج وإنشاء draft ثم publish ثم archive في المتصفح بالحساب المعتمد، ثم تنظيف سجل التحقق.
+5. **Completed** — مراجعة الفرق، وإنشاء commit, وpush، وفتح Draft PR رقم `#1` من `agent/phase-2-events`.
+6. **Deferred** — نشر الإنتاج يدويًا بعد مراجعة Draft PR؛ لا GitHub auto-deploy في هذه الدفعة.
+7. **Deferred** — التسجيلات، وقائمة الانتظار، والاستبيانات المحفوظة، والرسائل، والتذكيرات، والبيانات الشخصية.

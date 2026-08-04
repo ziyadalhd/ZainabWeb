@@ -75,5 +75,6 @@ Record approved architectural decisions here only after explicit user approval. 
 - Availability: `available | full` is an explicit administrator value and is never inferred from `capacity`.
 - Time: `datetime-local` input is interpreted in `Asia/Riyadh` and stored as `timestamptz`.
 - Deferred data: registrations, waitlists, interested contacts, messages, reminders, and survey responses are not stored in this phase. Their admin routes show non-enabled states instead of fixtures.
+- Local database runtime: a Docker-compatible local Supabase stack is intentionally not required for this phase. Migration pgTAP coverage runs against the linked hosted database inside a transaction that is rolled back, and database types are generated from the hosted project after CLI authentication. No container runtime is installed solely for this repository.
 - Production data: no demonstration events were seeded or copied. The linked database starts with an empty `events` table.
 - Documentation sources: current official Supabase SSR, RLS, and Vercel Marketplace guidance plus installed Next.js `16.2.12` documentation were used. The previously verified Context7 Next.js library ID is `/vercel/next.js`; no business rule was sourced from documentation.
