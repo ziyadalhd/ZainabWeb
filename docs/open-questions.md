@@ -11,7 +11,7 @@ This document tracks product and architecture decisions that require explicit us
 
 - **Resolved for phase two:** Supabase Auth email/password with an `admin_users` allowlist and one initial full-access administrator.
 - **Resolved for phase two:** public signup, password reset, and public user accounts remain excluded.
-- Which email should be used for the initial administrator account created manually in Supabase Dashboard?
+- **Resolved operationally:** the initial administrator was provisioned outside Git and added to `admin_users`; the account email and credentials are intentionally not recorded in repository documentation.
 
 ## Messaging and reminders
 

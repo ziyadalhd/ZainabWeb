@@ -1,6 +1,6 @@
 # خطة التنفيذ الحالية
 
-آخر تحديث: `2026-08-03`
+آخر تحديث: `2026-08-04`
 
 هذا الملف يعكس الحالة الفعلية للفرع `agent/phase-2-events`. العلامات مبنية على الملفات الموجودة ونتائج الفحوص المنفذة، ولا تعتبر العمل مكتملًا إذا بقي تحقق أو إجراء يدوي مطلوب.
 
@@ -26,6 +26,7 @@
 - **Completed** — تحويل `/events`, `/admin`, `/admin/calendar`, و`/admin/events` إلى بيانات Supabase الحقيقية وإزالة `lib/demo/` من التشغيل.
 - **Completed** — تحويل صفحات registrations, waitlist, interested, messages, وsurveys إلى حالات «غير مفعلة» دون سجلات تجريبية.
 - **Completed** — فتح Draft PR رقم `#1` من `agent/phase-2-events` إلى `main` مع إبقاء النشر الإنتاجي يدويًا.
+- **Completed** — إنشاء Auth user للمسؤول خارج Git، وإضافته إلى `admin_users`، والتحقق من تسجيل الدخول والخروج ودورة إنشاء فعالية ونشرها وأرشفتها.
 - **In progress** — مراجعة Draft PR؛ لا يوجد تعديل تطبيقي نشط بعد نجاح الفحوص الحالية.
 
 ## قاعدة البيانات والأمان
@@ -38,9 +39,9 @@
 | صلاحيات المسؤول | **Completed** | create/update/status change؛ اختبارات pgTAP رقم `7`, `9–11`. |
 | منع hard delete | **Completed** | لا grant ولا policy لـ`DELETE`؛ اختبارات pgTAP رقم `12–13`. |
 | بيانات البداية | **Completed** | لا يوجد seed للفعاليات، واختبارات SQL تتراجع بالكامل. |
-| إنشاء حساب المسؤول | **Blocked** | يجب إنشاء Auth user يدويًا في Supabase Dashboard ثم إضافته إلى `admin_users`. |
+| إنشاء حساب المسؤول | **Completed** | أُنشئ Auth user خارج Git وأُضيف `user_id` إلى `admin_users`، دون حفظ البريد أو كلمة المرور في المستودع. |
 | تعطيل signup في الإعداد المحلي | **Completed** | `supabase/config.toml` يحدد `enable_signup = false`. |
-| تعطيل signup في المورد البعيد | **Blocked** | يحتاج تأكيد الإعداد من Supabase Dashboard قبل الاستخدام الفعلي. |
+| تعطيل signup في المورد البعيد | **Blocked** | حاول التنفيذ عبر Management API ولوحة Supabase، لكن Management API يحتاج access token ولوحة المشروع تحتاج جلسة مالك؛ لم يُغيّر الإعداد البعيد. |
 
 ## التطبيق والمسارات
 
@@ -69,13 +70,13 @@
 | `pnpm supabase test db` | **Blocked** | يحتاج Docker daemon؛ لم يُفتح Docker. تم تشغيل ملف pgTAP نفسه عبر `psql` ونجحت الاختبارات `13/13`. |
 | Database types generation | **Blocked** | `supabase gen types` يحتاج Docker في هذه البيئة؛ الملف الحالي محدود ومطابق للمخطط ويجب إعادة توليده عند تشغيل Docker. |
 | Browser public/admin login | **Completed** | `/events` وempty state وRTL سليمة؛ `/admin` يحول إلى `/admin/login`; لا overflow أو console/page errors. |
-| Admin login success + CRUD browser flow | **Blocked** | ينتظر إنشاء حساب المسؤول وإضافته إلى `admin_users`. |
+| Admin login success + CRUD browser flow | **Completed** | نجح login/logout وإنشاء `draft` ثم publish ثم archive، وظهر المنشور في `/events` واختفى بعد الأرشفة؛ حُذفت فعالية التحقق المؤقتة وأصبحت القاعدة فارغة. |
 
 ## الخطوات التالية
 
-1. **Blocked** — إنشاء حساب المسؤول يدويًا، تعطيل remote signup، وإضافة `user_id` إلى `admin_users`.
+1. **Blocked** — تعطيل remote signup من Supabase Dashboard بعد دخول مالك المشروع؛ حساب المسؤول و`admin_users` مكتملان.
 2. **Pending** — إعادة تشغيل `pnpm supabase test db` و`supabase gen types` بعد تشغيل Docker.
-3. **Pending** — فحص الدخول والخروج وإنشاء draft ثم publish ثم archive في المتصفح بالحساب المعتمد.
+3. **Completed** — فحص الدخول والخروج وإنشاء draft ثم publish ثم archive في المتصفح بالحساب المعتمد، ثم تنظيف سجل التحقق.
 4. **Completed** — مراجعة الفرق، وإنشاء commit, وpush، وفتح Draft PR رقم `#1` من `agent/phase-2-events`.
 5. **Deferred** — نشر الإنتاج يدويًا بعد مراجعة Draft PR؛ لا GitHub auto-deploy في هذه الدفعة.
 6. **Deferred** — التسجيلات، وقائمة الانتظار، والاستبيانات المحفوظة، والرسائل، والتذكيرات، والبيانات الشخصية.
