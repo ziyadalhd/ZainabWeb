@@ -41,7 +41,7 @@
 | بيانات البداية | **Completed** | لا يوجد seed للفعاليات، واختبارات SQL تتراجع بالكامل. |
 | إنشاء حساب المسؤول | **Completed** | أُنشئ Auth user خارج Git وأُضيف `user_id` إلى `admin_users`، دون حفظ البريد أو كلمة المرور في المستودع. |
 | تعطيل signup في الإعداد المحلي | **Completed** | `supabase/config.toml` يحدد `enable_signup = false`. |
-| تعطيل signup في المورد البعيد | **Blocked** | حاول التنفيذ عبر Management API ولوحة Supabase، لكن Management API يحتاج access token ولوحة المشروع تحتاج جلسة مالك؛ لم يُغيّر الإعداد البعيد. |
+| تعطيل signup في المورد البعيد | **Completed** | تم تعطيله من Supabase Dashboard، ثم تحقق فحص القراءة البعيد من إرجاع `disable_signup: true`. |
 
 ## التطبيق والمسارات
 
@@ -74,7 +74,7 @@
 
 ## الخطوات التالية
 
-1. **Blocked** — تعطيل remote signup من Supabase Dashboard بعد دخول مالك المشروع؛ حساب المسؤول و`admin_users` مكتملان.
+1. **Completed** — تعطيل remote signup من Supabase Dashboard والتحقق من `disable_signup: true`؛ حساب المسؤول و`admin_users` مكتملان.
 2. **Pending** — إعادة تشغيل `pnpm supabase test db` و`supabase gen types` بعد تشغيل Docker.
 3. **Completed** — فحص الدخول والخروج وإنشاء draft ثم publish ثم archive في المتصفح بالحساب المعتمد، ثم تنظيف سجل التحقق.
 4. **Completed** — مراجعة الفرق، وإنشاء commit, وpush، وفتح Draft PR رقم `#1` من `agent/phase-2-events`.
