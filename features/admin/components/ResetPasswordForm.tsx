@@ -7,6 +7,7 @@ const minimumPasswordLength = 12;
 
 export function ResetPasswordForm() {
   const [isRecoverySession, setIsRecoverySession] = useState(false);
+  const [isCheckingRecovery, setIsCheckingRecovery] = useState(true);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [message, setMessage] = useState<string>();
@@ -14,11 +15,23 @@ export function ResetPasswordForm() {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
-    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setIsRecoverySession(true);
+    let mounted = true;
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      if (event === "PASSWORD_RECOVERY" && session) setIsRecoverySession(true);
+      setIsCheckingRecovery(false);
     });
 
-    return () => listener.subscription.unsubscribe();
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setIsRecoverySession(Boolean(data.session));
+      setIsCheckingRecovery(false);
+    });
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -45,6 +58,10 @@ export function ResetPasswordForm() {
     await supabase.auth.signOut({ scope: "others" });
     await supabase.auth.signOut();
     window.location.assign("/admin/login?success=password-reset");
+  }
+
+  if (isCheckingRecovery) {
+    return <p role="status" className="mt-8 rounded-2xl bg-[var(--surface)] px-4 py-3 font-bold text-[var(--brand-green-deep)]">جارٍ التحقق من رابط الاستعادة…</p>;
   }
 
   if (!isRecoverySession) {
