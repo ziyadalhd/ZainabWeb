@@ -164,3 +164,11 @@ Record approved architectural decisions here only after explicit user approval. 
 - Application boundary: every UI action reaches `requireAdmin()` before invoking the RPC. The protected registrations table shows guest confirmation and operational check-in as distinct Arabic statuses.
 - Verification: a rolled-back transaction verified that a non-admin receives `admin_required`, an approved admin can save `checked_in`, the timestamp is populated, and the independent guest-confirmation field is unchanged. The Supabase security advisor still reports only the existing leaked-password-protection warning, which remains an explicit paid-service decision.
 - Documentation sources: Context7 library ID `/supabase/supabase` was queried for RLS, security-definer search paths, and explicit function execution grants. Current Supabase changelog was reviewed; no relevant breaking change affected hosted Postgres functions.
+
+## Administrator password recovery route: 2026-08-09
+
+- Status: implemented for the development Preview; a browser acceptance test awaits the administrator's recovery link.
+- Flow: `/admin/reset-password` is deliberately reachable without an existing application cookie so the fragment-based Supabase recovery session is not lost to `proxy.ts`. The client accepts only Supabase's temporary recovery session, calls `updateUser({ password })`, signs out all sessions, and redirects to the normal administrator login screen.
+- Privacy: the password remains in the browser-to-Supabase Auth request and is neither handled by a Server Action nor logged by the application.
+- Configuration: recovery e-mails initiated from Supabase Dashboard use the Auth `Site URL`; it must be set to the Preview `/admin/reset-password` path, with that path allowed in Redirect URLs.
+- Documentation sources: Context7 library ID `/supabase/supabase` and current Supabase Auth documentation were consulted for `resetPasswordForEmail`, redirect URLs, recovery sessions, and `updateUser`.

@@ -23,8 +23,9 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const hasIdentity = typeof data?.claims?.sub === "string";
   const isLogin = request.nextUrl.pathname === "/admin/login";
+  const isPasswordReset = request.nextUrl.pathname === "/admin/reset-password";
 
-  if (!hasIdentity && !isLogin) {
+  if (!hasIdentity && !isLogin && !isPasswordReset) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/admin/login";
     loginUrl.search = "";

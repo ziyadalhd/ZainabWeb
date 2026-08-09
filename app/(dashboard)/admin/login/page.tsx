@@ -10,8 +10,12 @@ const errorMessages: Record<string, string> = {
   unauthorized: "هذا الحساب غير معتمد لإدارة النادي.",
 };
 
-export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+const successMessages: Record<string, string> = {
+  "password-reset": "تم تعيين كلمة المرور. سجلي الدخول بكلمة المرور الجديدة.",
+};
+
+export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
+  const { error, success } = await searchParams;
 
   return (
     <main className="grid min-h-screen place-items-center bg-[var(--surface-soft)] px-4 py-10">
@@ -24,6 +28,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
           <h1 className="text-3xl font-extrabold text-[var(--brand-green-deep)]">دخول لوحة الإدارة</h1>
           <p className="mt-2 muted-copy">هذه الصفحة مخصصة لحساب المسؤول المعتمد فقط.</p>
         </header>
+        {success && successMessages[success] ? <p role="status" className="mt-6 rounded-2xl bg-[var(--color-success-bg)] px-4 py-3 font-bold text-[var(--color-success-text)]">{successMessages[success]}</p> : null}
         <LoginForm errorMessage={error ? errorMessages[error] : undefined} />
       </div>
     </main>
