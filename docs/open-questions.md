@@ -7,7 +7,7 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 ## Development environment
 
 - The separate hosted Supabase development project now exists on the Free plan in `ap-south-1`; provisioning was confirmed at `$0/month` on `2026-08-09`. Vercel Preview now uses its public URL and publishable key through Preview-only overrides; Production and Development remain unchanged. When should `.env.local` be persistently switched to the development project? The local browser verification used process-only environment values and did not modify `.env.local`.
-- Which administrator email should be manually provisioned in the development project for protected-dashboard acceptance testing? Do not copy production credentials or personal data into development.
+- A user-provided development administrator account has been provisioned and allowlisted without recording its email or other personal data in this repository. Protected-dashboard acceptance testing is still pending.
 
 ## Launch identity and contact
 
