@@ -155,3 +155,12 @@ Record approved architectural decisions here only after explicit user approval. 
 - CSS cascade: global anchor and form-control resets live in Tailwind's `base` layer so utility colors such as `text-white` override defaults. Browser verification confirmed the event-detail CTA now renders white text on the approved dark-green background.
 - Database boundary: the linked primary resource was not used as the fixture target. Registration corrections and pgTAP ran only on the separate development project, where event tests passed `16/16`, registration tests passed `47/47`, and security advisors returned no findings.
 - Documentation sources: Context7 ID `/vercel/next.js/v16.2.9` was used for Server/Client prop boundaries and serializable request data, and `/tailwindlabs/tailwindcss.com` for Tailwind v4 custom base layers. Current official Supabase changelog and testing/linting documentation were reviewed for breaking changes, explicit Data API exposure, pgTAP isolation, and `db lint` behavior.
+
+## Administrator check-in recording: 2026-08-09
+
+- Status: implemented and verified on the separate hosted development project; no production migration was applied.
+- State model: `check_in_status` (`pending`, `checked_in`, or `absent`) and `checked_in_at` are retained independently from guest `attendance_status`. Only an attended check-in has a timestamp.
+- Authorization: `public.record_registration_check_in` is a `security invoker` wrapper. Its non-exposed `private` helper has a fixed empty `search_path`, requires `private.is_admin()`, and is executable by `authenticated` only so the invoker wrapper can reach it. Direct access remains blocked for anonymous callers and the helper enforces authorization itself.
+- Application boundary: every UI action reaches `requireAdmin()` before invoking the RPC. The protected registrations table shows guest confirmation and operational check-in as distinct Arabic statuses.
+- Verification: a rolled-back transaction verified that a non-admin receives `admin_required`, an approved admin can save `checked_in`, the timestamp is populated, and the independent guest-confirmation field is unchanged. The Supabase security advisor still reports only the existing leaked-password-protection warning, which remains an explicit paid-service decision.
+- Documentation sources: Context7 library ID `/supabase/supabase` was queried for RLS, security-definer search paths, and explicit function execution grants. Current Supabase changelog was reviewed; no relevant breaking change affected hosted Postgres functions.

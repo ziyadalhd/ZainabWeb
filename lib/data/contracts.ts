@@ -38,4 +38,5 @@ export interface AdminRegistrationRepository {
   invite(id: string): Promise<WaitlistInvitationReceipt>;
   revokeInvitation(id: string): Promise<void>;
   confirmAttendance(id: string): Promise<void>;
+  recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void>;
 }

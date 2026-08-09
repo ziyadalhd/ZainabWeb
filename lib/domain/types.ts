@@ -7,6 +7,7 @@ export type EventAvailability = "available" | "full" | "closed";
 export type EventPublicationStatus = "draft" | "published" | "archived";
 export type RegistrationStatus = "registered" | "waitlisted" | "invited" | "cancelled";
 export type RegistrationAttendanceStatus = "pending" | "confirmed";
+export type RegistrationCheckInStatus = "pending" | "checked_in" | "absent";
 
 export interface Event {
   id: EntityId;
@@ -66,6 +67,8 @@ export interface Registration {
   priceHalalasAtBooking: number;
   status: RegistrationStatus;
   attendanceStatus: RegistrationAttendanceStatus;
+  checkInStatus: RegistrationCheckInStatus;
+  checkedInAt: IsoDateTime | null;
   invitationExpiresAt: IsoDateTime | null;
   createdAt: IsoDateTime;
 }

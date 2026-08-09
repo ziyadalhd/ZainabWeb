@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(47);
+select plan(53);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -229,6 +229,13 @@ select throws_ok(
   'non-admin cannot create a waitlist invitation'
 );
 
+select throws_ok(
+  $$select public.record_registration_check_in('00000000-0000-4000-8000-000000000000', 'checked_in')$$,
+  '42501',
+  'admin_required',
+  'non-admin cannot record a check-in outcome'
+);
+
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);
@@ -238,6 +245,34 @@ select is(
   (select count(*)::integer from public.registrations),
   7,
   'approved admin sees all registration rows'
+);
+
+select lives_ok(
+  $$select public.record_registration_check_in((select id from public.registrations where phone_e164 = '+966500000004'), 'checked_in')$$,
+  'approved admin can record an attended check-in'
+);
+
+select is(
+  (select check_in_status from public.registrations where phone_e164 = '+966500000004'),
+  'checked_in',
+  'check-in outcome remains separate from registration status'
+);
+
+select ok(
+  (select checked_in_at is not null from public.registrations where phone_e164 = '+966500000004'),
+  'attended check-in records its timestamp'
+);
+
+select lives_ok(
+  $$select public.record_registration_check_in((select id from public.registrations where phone_e164 = '+966500000003' limit 1), 'absent')$$,
+  'approved admin can record an absence'
+);
+
+select throws_ok(
+  $$select public.record_registration_check_in((select id from public.registrations where phone_e164 = '+966500000003' limit 1), 'pending')$$,
+  'P0001',
+  'invalid_check_in_status',
+  'check-in API rejects an administrator resetting the outcome through an unapproved value'
 );
 
 select lives_ok(

@@ -5,6 +5,7 @@ import type {
 } from "@/lib/data/contracts";
 import {
   isRegistrationAttendanceStatus,
+  isRegistrationCheckInStatus,
   isRegistrationStatus,
 } from "@/lib/domain/registration-input";
 import type {
@@ -61,7 +62,11 @@ function mapRegistration(
   row: RegistrationRow,
   event: { title: string; startsAt: string } | undefined,
 ): Registration {
-  if (!isRegistrationStatus(row.status) || !isRegistrationAttendanceStatus(row.attendance_status)) {
+  if (
+    !isRegistrationStatus(row.status)
+    || !isRegistrationAttendanceStatus(row.attendance_status)
+    || !isRegistrationCheckInStatus(row.check_in_status)
+  ) {
     throw new Error("Invalid registration row returned by the data source.");
   }
 
@@ -80,6 +85,8 @@ function mapRegistration(
     priceHalalasAtBooking: row.price_halalas_at_booking,
     status: row.status,
     attendanceStatus: row.attendance_status,
+    checkInStatus: row.check_in_status,
+    checkedInAt: row.checked_in_at,
     invitationExpiresAt: row.invitation_expires_at,
     createdAt: row.created_at,
   };
@@ -220,6 +227,14 @@ implements RegistrationService, AdminRegistrationRepository {
 
   async confirmAttendance(id: string): Promise<void> {
     const { error } = await this.client.rpc("confirm_registration_attendance", { p_registration_id: id });
+    if (error) throw mapFailure(error.message);
+  }
+
+  async recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void> {
+    const { error } = await this.client.rpc("record_registration_check_in", {
+      p_registration_id: id,
+      p_check_in_status: outcome,
+    });
     if (error) throw mapFailure(error.message);
   }
 }

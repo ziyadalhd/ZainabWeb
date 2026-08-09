@@ -9,6 +9,10 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 - The separate hosted Supabase development project now exists on the Free plan in `ap-south-1`; provisioning was confirmed at `$0/month` on `2026-08-09`. Vercel Preview now uses its public URL and publishable key through Preview-only overrides; Production and Development remain unchanged. When should `.env.local` be persistently switched to the development project? The local browser verification used process-only environment values and did not modify `.env.local`.
 - A user-provided development administrator account has been provisioned and allowlisted without recording its email or other personal data in this repository. Protected-dashboard acceptance testing is still pending.
 
+## Event payment recording
+
+- Which manually recorded payment states are valid for standard event registrations? The approved request workflow defines `unpaid`, `deposit paid`, and `paid in full`, but that list has not been approved for event registrations. Check-in and absence can proceed independently without this decision; no online payment will be added.
+
 ## Launch identity and contact
 
 - Which available `bayn` domain will be purchased?

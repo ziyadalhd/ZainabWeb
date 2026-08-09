@@ -80,6 +80,8 @@ export type Database = {
           attendee_name: string
           booking_token_hash: string | null
           cancelled_at: string | null
+          check_in_status: string
+          checked_in_at: string | null
           created_at: string
           email: string | null
           event_id: string
@@ -106,6 +108,8 @@ export type Database = {
           attendee_name: string
           booking_token_hash?: string | null
           cancelled_at?: string | null
+          check_in_status?: string
+          checked_in_at?: string | null
           created_at?: string
           email?: string | null
           event_id: string
@@ -132,6 +136,8 @@ export type Database = {
           attendee_name?: string
           booking_token_hash?: string | null
           cancelled_at?: string | null
+          check_in_status?: string
+          checked_in_at?: string | null
           created_at?: string
           email?: string | null
           event_id?: string
@@ -220,6 +226,10 @@ export type Database = {
       invite_waitlisted_registration: {
         Args: { p_invitation_token_hash: string; p_registration_id: string }
         Returns: string
+      }
+      record_registration_check_in: {
+        Args: { p_check_in_status: string; p_registration_id: string }
+        Returns: undefined
       }
       register_for_event: {
         Args: {

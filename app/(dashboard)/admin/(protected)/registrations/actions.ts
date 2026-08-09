@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { isRegistrationCheckInStatus } from "@/lib/domain/registration-input";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -78,4 +79,21 @@ export async function revokeInvitationAction(id: string) {
 
 export async function confirmAttendanceAction(id: string) {
   await runRegistrationAction(id, "confirm", "/admin/registrations/current");
+}
+
+export async function recordCheckInAction(id: string, outcome: string) {
+  await requireAdmin();
+  if (!uuidPattern.test(id) || !isRegistrationCheckInStatus(outcome) || outcome === "pending") {
+    redirect("/admin/registrations/current?error=check-in");
+  }
+
+  try {
+    const repository = await createAdminRegistrationRepository();
+    await repository.recordCheckIn(id, outcome);
+  } catch {
+    redirect("/admin/registrations/current?error=check-in");
+  }
+
+  revalidateRegistrationViews();
+  redirect("/admin/registrations/current?success=check-in");
 }

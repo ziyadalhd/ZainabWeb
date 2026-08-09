@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 const successMessages: Record<string, string> = {
   cancel: "تم إلغاء التسجيل، ويمكن الآن اختيار بديل من قائمة الانتظار.",
   confirm: "تم تأكيد حضور المسجل.",
+  "check-in": "تم حفظ حالة حضور المسجل.",
 };
 
 export default async function CurrentRegistrationsPage({ searchParams }: { searchParams: Promise<{ success?: string; error?: string }> }) {

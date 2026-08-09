@@ -7,6 +7,7 @@ import {
   cancelWaitlistedRegistrationAction,
   confirmAttendanceAction,
   inviteRegistrationAction,
+  recordCheckInAction,
   revokeInvitationAction,
 } from "@/app/(dashboard)/admin/(protected)/registrations/actions";
 import { WaitlistInviteButton } from "@/features/admin/components/WaitlistInviteButton";
@@ -31,7 +32,7 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
 
   return (
     <div className="overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)]">
-      <table className="w-full min-w-[72rem] border-collapse text-right text-sm">
+      <table className="w-full min-w-[78rem] border-collapse text-right text-sm">
         <caption className="sr-only">سجلات التسجيل ووسائل التواصل والإجراءات</caption>
         <thead className="bg-[var(--surface-soft)] text-[var(--brand-green-deep)]">
           <tr>
@@ -54,13 +55,15 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
               <td className="px-5 py-4"><span className="block font-bold">{registration.eventTitle}</span><span className="text-xs muted-copy">{formatArabicDateTime(registration.eventStartsAt)}</span></td>
               <td className="px-5 py-4" dir="ltr">{registration.phoneE164}</td>
               <td className="px-5 py-4" dir="ltr">{registration.email ?? "—"}</td>
-              <td className="px-5 py-4"><div className="grid justify-items-start gap-2"><StatusBadge status={registration.status} />{registration.status === "registered" ? <StatusBadge status={registration.attendanceStatus} /> : null}</div></td>
+              <td className="px-5 py-4"><div className="grid justify-items-start gap-2"><StatusBadge status={registration.status} />{registration.status === "registered" ? <StatusBadge status={registration.attendanceStatus} /> : null}{registration.status === "registered" ? <StatusBadge status={registration.checkInStatus === "pending" ? "check_in_pending" : registration.checkInStatus} /> : null}</div></td>
               <td className="px-5 py-4 text-xs" dir="ltr">{registration.reference}</td>
               {mode !== "previous" ? (
                 <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
                     <a href={whatsappHref(registration)} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1f7a3f] px-3 py-2 font-bold text-white">فتح WhatsApp</a>
                     {mode === "current" && registration.attendanceStatus === "pending" ? <form action={confirmAttendanceAction.bind(null, registration.id)}><button type="submit" className="rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)]">تأكيد الحضور</button></form> : null}
+                    {mode === "current" && registration.checkInStatus !== "checked_in" ? <form action={recordCheckInAction.bind(null, registration.id, "checked_in")}><button type="submit" className="rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)]">تسجيل الحضور</button></form> : null}
+                    {mode === "current" && registration.checkInStatus !== "absent" ? <form action={recordCheckInAction.bind(null, registration.id, "absent")}><button type="submit" className="rounded-xl border border-[var(--color-error-text)] px-3 py-2 font-bold text-[var(--color-error-text)]">تسجيل الغياب</button></form> : null}
                     {mode === "waitlist" && registration.status === "waitlisted" ? (
                       <WaitlistInviteButton
                         attendeeName={registration.attendeeName}

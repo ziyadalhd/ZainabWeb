@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isRegistrationCheckInStatus,
   normalizeSaudiMobile,
   validateRegistrationInput,
 } from "@/lib/domain/registration-input";
@@ -18,6 +19,13 @@ describe("registration input", () => {
     expect(normalizeSaudiMobile("+966 50 123 4567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("00966501234567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("05123")).toBeNull();
+  });
+
+  it("recognizes only the approved check-in outcomes", () => {
+    expect(isRegistrationCheckInStatus("pending")).toBe(true);
+    expect(isRegistrationCheckInStatus("checked_in")).toBe(true);
+    expect(isRegistrationCheckInStatus("absent")).toBe(true);
+    expect(isRegistrationCheckInStatus("paid")).toBe(false);
   });
 
   it("trims fields and keeps email optional", () => {

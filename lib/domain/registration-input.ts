@@ -42,6 +42,10 @@ export function isRegistrationAttendanceStatus(value: string): value is "pending
   return value === "pending" || value === "confirmed";
 }
 
+export function isRegistrationCheckInStatus(value: string): value is "pending" | "checked_in" | "absent" {
+  return value === "pending" || value === "checked_in" || value === "absent";
+}
+
 export function validateRegistrationInput(
   formData: FormData,
   audience: EventAudience,

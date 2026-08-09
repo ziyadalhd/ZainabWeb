@@ -21,6 +21,8 @@ const currentRegistration: Registration = {
   priceHalalasAtBooking: 5000,
   status: "registered",
   attendanceStatus: "pending",
+  checkInStatus: "pending",
+  checkedInAt: null,
   invitationExpiresAt: null,
   createdAt: "2026-08-09T15:00:00.000Z",
 };
