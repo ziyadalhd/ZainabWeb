@@ -1,0 +1,157 @@
+# خارطة التنفيذ الرئيسية
+
+آخر تحديث: `2026-08-09`
+
+## دلالات الحالة
+
+- **Completed** — منفذ وتم التحقق منه.
+- **In Progress** — بدأ التنفيذ ولم يكتمل قبوله.
+- **Pending** — لم يبدأ ولا يواجه مانعًا.
+- **Blocked** — يعتمد على إجراء أو معلومة خارجية.
+- **Deferred** — مؤجل عمدًا خارج نطاق الإطلاق الحالي.
+
+## الحالة العامة
+
+| المرحلة | الحالة | التعقيد | الجهد التقديري |
+| --- | --- | --- | --- |
+| Phase 1 — Arabic frontend foundation | **Completed** | متوسط | مكتملة |
+| Phase 2 — Supabase event administration | **Completed** | مرتفع | مكتملة |
+| M0 — Repository and environment stabilization | **In Progress** | متوسط | 1–2 يوم |
+| M1 — Production data model | **In Progress** | مرتفع | 3–5 أيام |
+| M2 — Public event registration | **In Progress** | مرتفع | 3–5 أيام |
+| M3 — Admin operations center | **In Progress** | مرتفع | 4–6 أيام |
+| M4 — Venue, celebration, and workshop requests | **Pending** | مرتفع | 4–6 أيام |
+| M5 — Email, messaging, contacts, and surveys | **Pending** | مرتفع | 4–6 أيام |
+| M6 — Content, design, accessibility, and SEO | **Pending** | متوسط | 3–5 أيام |
+| M7 — Security, observability, and launch | **Pending** | متوسط–مرتفع | 3–5 أيام |
+
+التقدير الإجمالي المتبقي: `22–35` يومًا هندسيًا. لا يشمل انتظار شراء الدومين أو مراجعة المحتوى أو إعداد الحسابات الخارجية.
+
+## M0 — Repository and environment stabilization
+
+**Objective:** حماية تغييرات المرحلة الثالثة وإنشاء خط تحقق سريع وقابل للتكرار دون Docker.
+
+### المهام
+
+- **Completed** — تحديد أن Node `22.11.0` لا يطابق متطلبات `pnpm@11.9.0`، واعتماد Node 24.
+- **Completed** — تحديد أن iCloud يحول ملفات المشروع والاعتماديات إلى `dataless` ويتسبب في تعليق الأدوات.
+- **Completed** — نقل مخزن pnpm وvirtual store الكبير إلى cache محلي خارج iCloud وحذف نسخ الاعتماديات القديمة القابلة لإعادة التوليد.
+- **Completed** — تثبيت إعدادات Node/pnpm داخل المستودع وإعادة تثبيت lockfile بتخطيط pnpm القياسي داخل `node_modules/.pnpm`.
+- **Completed** — نجاح `lint`, `typecheck`, `test` (`33/33`)، و`build` على تغييرات المرحلة الثالثة باستخدام Node 24 arm64 و`pnpm@11.9.0`.
+- **Completed** — مزامنة `README.md`, `PLAN.md`, `ROADMAP.md`, `AGENTS.md`, و`docs/` مع أدلة التحقق بعد النقل.
+- **Completed** — نقل المستودع خارج `Documents` وإعادة فتحه في Codex دون فقد التغييرات غير المحفوظة.
+- **Pending** — حفظ العمل الحالي في commits صغيرة ومراجعة الفرق قبل push.
+
+**Success criteria:** فحوص كاملة ناجحة، مستودع نظيف، وفرع محفوظ عن بعد دون فقد التغييرات الحالية.
+
+## M1 — Production data model
+
+**Dependencies:** M0 وبيئة Supabase تطوير سحابية منفصلة.
+
+### Deliverables
+
+- **Completed** — إنشاء مشروع Supabase تطوير منفصل مجاني في `ap-south-1`، وتطبيق migrations الحالية والجديدة عليه فقط، وتشغيل اختبارات SQL/RLS دون لمس الإنتاج.
+- **Completed** — اشتقاق الامتلاء من الحجوزات النشطة، وفصل فتح/إغلاق التسجيل، وحفظ السعر وقت الحجز، ودعم القاصرات، وروابط إدارة الحجز، ودعوات الانتظار الآمنة ذات الست ساعات.
+- **Completed** — تخزين tokens كـSHA-256 hashes، ونقل منطق RPC ذي الصلاحيات إلى `private` خلف wrappers عامة `security invoker` ذات grants صريحة.
+- **In Progress** — بقية نماذج الإنتاج: الرسائل، المهتمات، الطلبات، العروض، الاستبيانات، وإعدادات الموقع.
+- migrations إضافية غير مدمرة للأحداث، التسجيلات، دعوات الانتظار، الرسائل، المهتمات، الطلبات، العروض، الاستبيانات، وإعدادات الموقع.
+- Supabase Storage للبوسترات بسياسات RLS مناسبة.
+- فصل حالات الحجز والحضور والدخول والدفع.
+- tokens مخزنة كـhash مع صلاحية وإبطال.
+- حذف PII بعد 90 يومًا مع إبقاء الإحصائيات المجهولة.
+- اختبارات SQL وRLS على بيئة التطوير فقط.
+
+**Success criteria:** إعادة بناء schema من migrations، نجاح اختبارات RLS، وعدم استخدام secret/service-role key داخل التطبيق.
+
+## M2 — Public event registration
+
+**Dependencies:** M1 وTurnstile development keys.
+
+### Deliverables
+
+- **Completed** — `/events` و`/events/[id]` ببيانات حقيقية ومكان وسعر.
+- **Completed** — نموذج الضيف والجوال والبريد الاختياري وبيانات ولي الأمر للصغار واليافعات.
+- **Completed** — السعة والانتظار الذريان، مع اشتقاق الامتلاء من الحجوزات النشطة.
+- **Completed** — رابط آمن لإدارة الحجز والتأكيد والاعتذار، ودعوات انتظار يدوية ذات صلاحية 6 ساعات.
+- **In Progress** — Turnstile قبل الإطلاق، وربط البوستر بالتخزين، والتحقق الإداري المحمي بحساب تطوير معتمد.
+
+**Success criteria:** لا تجاوز للسعة، لا كشف لبيانات شخصية، ولا ظهور لمسودة أو فعالية مؤرشفة للعامة.
+
+## M3 — Admin operations center
+
+**Dependencies:** M1 وM2.
+
+### Deliverables
+
+- تقويم موحد وتعارضات واضحة.
+- إنشاء ونشر وتعديل وإلغاء وأرشفة الفعاليات.
+- إدارة التسجيلات والانتظار والتأكيد والحضور والغياب.
+- تسجيل الدفع في المكان والإحصائيات و`CSV` المحمي.
+- تأكيد قبل الإجراءات المدمرة ورسائل عربية قابلة للاسترجاع حيث يمكن.
+
+**Success criteria:** كل عملية محمية بـ`requireAdmin()` وRLS، وتعمل على الهاتف وسطح المكتب دون بيانات تجريبية.
+
+## M4 — Requests and offers
+
+**Dependencies:** M1 وM3.
+
+### Deliverables
+
+- تشغيل `/space-booking`, `/celebration-booking`, `/bayn-trips`, وطلب الورشة.
+- مراجعة الطلب وإرسال عرض وقبول أو رفض من رابط آمن.
+- صلاحية العرض والحالات المالية وتعارض التقويم.
+- ظهور كل الطلبات في لوحة التحكم.
+
+**Success criteria:** لا توجد صفحة «قيد الإعداد»، وكل طلب يملك lifecycle واضحًا وسجل تدقيق مناسبًا.
+
+## M5 — Communications, contacts, and surveys
+
+**Dependencies:** دومين موثق لـResend، M1، وM2.
+
+### Deliverables
+
+- تأكيدات وتذكيرات 24 ساعة و3 ساعات وإشعارات التغيير والإلغاء.
+- idempotency وتتبع التسليم والفشل وإعادة المحاولة.
+- قائمة WhatsApp يدوية منظمة قابلة لتغيير الرقم.
+- تسجيل المهتمات والموافقة وإلغاء الاشتراك.
+- تقييم فعالية مجهول أو باسم المشاركة حسب اختيارها.
+
+**Success criteria:** لا تكرار للرسائل، لا إلغاء للحجز بسبب فشل البريد، ولا إرسال تسويقي دون موافقة.
+
+## M6 — Content and interface quality
+
+**Dependencies:** اعتماد المسودات قبل الإنتاج.
+
+### Deliverables
+
+- إدارة النصوص والمقر والتواصل والشريك الأدبي من لوحة التحكم.
+- تطبيق الهوية الهادئة وخط ثمانية وشعار SVG.
+- مراجعة كاملة وفق `web-design-guidelines` للعربية وRTL والوصولية.
+- Metadata وsitemap وrobots وصفحات الخصوصية والشروط.
+
+**Success criteria:** لا محتوى إنجليزي ظاهر، لا روابط مختلقة، وكل مسار صالح للوحة المفاتيح والجوال.
+
+## M7 — Security and launch
+
+**Dependencies:** دومين، بريد أدمن نهائي، بيانات قانونية، ومحتوى معتمد.
+
+### Deliverables
+
+- MFA وTurnstile وrate limiting.
+- Sentry وتحليلات خصوصية ومراقبة تشغيلية.
+- CI وPreview وstaging واختبارات end-to-end.
+- شراء وربط دومين يبدأ بـ`bayn` بعد موافقة التكلفة.
+- إزالة Vercel Authentication عند الإطلاق العام فقط.
+
+**Success criteria:** اختبار قبول بفعالية حقيقية، نجاح جميع الفحوص، واستعداد rollback والنسخ الاحتياطي قبل فتح الموقع للعامة.
+
+## Launch blockers
+
+- شراء الدومين وتحديد عناوين البريد.
+- اسم وعنوان المقر.
+- بيانات الجهة المسؤولة في سياسة الخصوصية.
+- روابط Instagram وTikTok إن أريد إظهارها.
+- مراجعة نصوص النادي النهائية.
+- بريد الأدمن النهائي وتفعيل MFA.
+
+لا يمنع أي بند منها تنفيذ M0–M4.

@@ -44,6 +44,9 @@ The approved public scope includes:
 - رحلات بَيْن.
 - الشريك الأدبي.
 - Events divided into الكبار, اليافعون, and الصغار.
+- Public event details with an optional poster, venue, start and end time, capacity, and free or pay-at-venue pricing.
+- Guest event registration without a public account.
+- Secure booking-management links for confirmation and cancellation.
 - Contact phone number: `0537918640`.
 - TikTok and Instagram links only after the real URLs are supplied.
 - Workshop application survey.
@@ -55,6 +58,8 @@ The event-feedback survey currently has exactly these approved fields:
 - تقييم الضيافة, scored from 5 to 1.
 - تقييم المادة, scored from 5 to 1.
 - المقترحات.
+
+Each event-feedback link accepts one response. The respondent may choose whether the administrator can see her identity; otherwise the response is presented anonymously.
 
 Do not invent fields for any form or survey. Request the missing fields before implementing forms whose fields have not been approved.
 
@@ -78,6 +83,9 @@ The admin dashboard is centered around a calendar. Its eventual approved managem
 - Event waitlists.
 - Manual selection of a replacement after a cancellation.
 - Survey responses.
+- Venue-booking, celebration-booking, and workshop-application requests.
+- Request-specific offers, approval, rejection, cancellation, and manually recorded payment status.
+- Site content, contact details, default venue, social links, and literary-partner content.
 
 "Eventually manage" defines product scope, not permission to invent unresolved workflows or integrate unapproved services.
 
@@ -87,7 +95,7 @@ Do not add any of the following without explicit user approval:
 
 - Online payments.
 - Ticket generation.
-- Newsletter functionality.
+- A generic newsletter outside the approved, consent-based upcoming-event contact workflow.
 - Google Maps.
 - Guest CRM or Mini-CRM.
 - Public user accounts.
@@ -98,6 +106,8 @@ Do not add any of the following without explicit user approval:
 - Invented business rules.
 
 Do not add adjacent features merely because they are common in event or cultural-club products.
+
+The following providers are explicitly approved for their recorded scope: Supabase for database/auth/storage, Vercel for hosting, Resend for transactional email after domain verification, Cloudflare Turnstile for public-form abuse protection, and Sentry for privacy-filtered error monitoring. Approval of a provider does not authorize a paid plan or unbounded data collection; present cost and privacy implications before enabling a paid tier.
 
 ## 6. Technology and coding conventions
 
@@ -233,3 +243,88 @@ Provide progress updates and the final completion report in Arabic. The final re
 - Any demonstration-only or provider-neutral elements, with a clear statement that they are not production-ready where applicable.
 
 Never state that work is production-ready when it depends on unresolved decisions or demonstration behavior.
+
+## 14. Approved event and registration rules
+
+- Audience boundaries are fixed: `children` is ages 6–12, `youth` is 13–17, and `adults` is 18+.
+- Club activities are for women. State this inside event details and registration context, not as a tagline attached to the club name.
+- One guest registration reserves one seat. Name and Saudi mobile are required; email is optional.
+- A guardian may register multiple minors with the same mobile number when participant names differ.
+- Minor registration collects the participant name and age, guardian name and Saudi mobile, and explicit guardian consent. Do not collect a full birth date.
+- Event pricing is either free or paid at the venue. Store money as integer halalas. The registration retains the displayed price at booking time.
+- Capacity is computed from active reservations. `available | full` is no longer an administrator-authored source of truth; use a separate registration-open/closed control.
+- Registration closes automatically at event start and may be closed earlier by the administrator.
+- Do not lower capacity below existing active reservations.
+- Waitlist order follows registration time. Replacement selection is manual, never automatic.
+- A selected waitlist entry becomes `invited` for six hours and becomes registered only after accepting the secure invitation. The administrator may revoke the invitation early.
+- Store booking state, attendance response, check-in outcome, and payment state as separate concerns even when the Arabic UI presents a combined status label.
+- A secure booking-management link is included in confirmation and reminder messages. Use a long random token, store only a hash, expose no personal data in the URL, and invalidate it after the event or terminal cancellation.
+- Cancellation requires confirmation, stops reminders, and releases the seat. Rescheduling or venue changes notify registrants and request attendance reconfirmation.
+- Event cancellation is a retained status, not a hard delete, and notifies affected registrants.
+
+## 15. Approved messaging, contact, and retention rules
+
+- Email is optional for guests and is an automatic backup channel when supplied. Delivery failure must not cancel a reservation.
+- Resend is the approved transactional email provider after a `bayn` domain and sender identities are verified.
+- Send immediate confirmation plus reminders 24 hours and 3 hours before the event.
+- WhatsApp is the primary long-term channel. Until an official API provider and business number are approved, provide an administrator-only manual queue with prefilled messages and explicit sent marking. Never claim manual messages were delivered.
+- Track provider-supported message states and retries with idempotency. Do not include personal data in logs or error-monitoring payloads.
+- Upcoming-event contact consent is optional, separate, unchecked by default, and revocable through a secure unsubscribe link. Do not collect interest categories in the initial release.
+- Future-event broadcasts require an explicit administrator action and a preview of message content and recipient count.
+- Delete registration personal data 90 days after the event and retain only anonymous aggregate statistics. Retain opted-in contact data until unsubscribe.
+
+## 16. Approved request workflows
+
+- `space-booking` and `celebration-booking` are requests, not immediate confirmed reservations.
+- Request fields are name, Saudi mobile, optional email, use or occasion type, requested date, start time, end time, attendee count, and notes. Do not collect a budget field.
+- Request states are new, under review, accepted, rejected, and cancelled.
+- The administrator defines request-specific price and terms. An offer expires after 48 hours by default, with an administrator-adjustable expiry.
+- A secure request link allows the requester to view, accept, reject, or cancel without an account.
+- Manually recorded request payment states are unpaid, deposit paid, and paid in full. The application does not process payment.
+- Calendar conflicts produce a strong warning but do not automatically reject or accept a request. Do not expose the internal venue calendar publicly.
+- `bayn-trips` uses the standard event, registration, capacity, waitlist, and reminder workflow.
+- Workshop applications collect presenter name, Saudi mobile, optional email, workshop title and description, target audience, duration, expected attendance, requirements, optional experience or portfolio link, and notes.
+
+## 17. Database conventions
+
+- Use PostgreSQL `snake_case` names, UUID primary keys, `timestamptz` for instants, and integer halalas for money.
+- Persist instants in UTC and format them for `Asia/Riyadh` at application boundaries.
+- Once a migration has been applied to a hosted environment, never edit it. Add a forward-only corrective migration.
+- Create migration files through the installed Supabase CLI command, then review the generated SQL before applying it.
+- Enable RLS on every table in an exposed schema and use explicit grants. RLS is required even when the application also checks authorization.
+- Keep privileged helpers in a non-exposed schema. Revoke default `PUBLIC` execution and grant only the roles that require each function.
+- Prefer `security invoker`. A `security definer` function requires a documented reason, fixed `search_path`, explicit grants, internal authorization where applicable, and SQL security tests.
+- Do not use production data in tests. Hosted database tests run against a separate development or staging Supabase project and must be transactionally isolated when possible.
+- Generated `Database` types belong only in the Supabase adapter boundary; domain types remain provider-neutral.
+
+## 18. Documentation ownership
+
+- This `AGENTS.md` is the primary source of truth for stable product rules, architecture constraints, contribution conventions, and quality requirements.
+- `PLAN.md` summarizes the approved product and launch scope in Arabic.
+- `ROADMAP.md` is the canonical milestone and status tracker. Update it when task status changes.
+- `docs/architecture-decisions.md` records approved decisions and rationale; it is not a status board.
+- `docs/open-questions.md` contains only genuinely unresolved decisions and launch inputs.
+- `docs/implementation-plan.md` records implementation evidence and validation history. Do not duplicate changing status across all documents when a link to `ROADMAP.md` is sufficient.
+- `README.md` owns onboarding, local setup, validation commands, and document navigation.
+
+## 19. Git and commit conventions
+
+- Branch names use the `codex/` prefix unless the user explicitly requests another prefix.
+- Use concise Conventional Commit-style subjects: `feat(scope): ...`, `fix(scope): ...`, `docs(scope): ...`, `test(scope): ...`, `refactor(scope): ...`, or `chore(scope): ...`.
+- Keep each commit coherent and reversible. Do not mix generated dependency churn, schema changes, feature behavior, and unrelated formatting in one commit.
+- Never stage or commit `.env.local`, `.vercel/`, database credentials, personal data, local caches, or generated runtime output.
+- Before push, inspect the staged diff and run the checks appropriate to the changed scope. A commit is not evidence that checks passed.
+- Use pull requests for feature work. Preview deployments are for verification; production promotion remains explicit until the user approves automation.
+
+## 20. Deployment and release process
+
+1. Develop against a separate hosted Supabase development environment; do not require Docker.
+2. Apply and test forward migrations in development before production.
+3. Run lint, typecheck, unit/component tests, SQL/RLS tests, and production build.
+4. Review affected Arabic RTL flows on mobile and desktop using a preview deployment.
+5. Verify secrets, environment targets, monitoring privacy filters, rollback steps, and database backup status.
+6. Apply production migrations as a controlled step, then promote the verified Vercel deployment.
+7. Perform smoke tests for public events, admin authentication, registration, cancellation, and messaging.
+8. Keep Vercel Authentication enabled until the explicit public-launch decision. Do not expose unfinished or placeholder routes.
+
+The pre-launch environment also requires administrator MFA, Cloudflare Turnstile on anonymous mutation forms, privacy-filtered Sentry monitoring, a verified email domain, privacy and terms pages, and a real acceptance test. Online payment and automated WhatsApp remain deferred and are not launch blockers because pay-at-venue and structured manual WhatsApp workflows are the approved release behavior.
