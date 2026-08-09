@@ -12,7 +12,7 @@ export default async function ProtectedAdminLayout({ children }: Readonly<{ chil
       <div className="min-w-0">
         <AdminHeader />
         <div role="status" className="border-b border-[#d9c989] bg-[#fff7d6] px-4 py-2 text-center text-xs font-bold text-[#5e4b12]">
-          إدارة الفعاليات متصلة بقاعدة البيانات. التسجيلات والاستبيانات والرسائل ما زالت غير مفعلة.
+          إدارة الفعاليات والتسجيلات مفعلة. إرسال WhatsApp يتم يدويًا، ولا يوجد تحصيل إلكتروني.
         </div>
         {children}
       </div>

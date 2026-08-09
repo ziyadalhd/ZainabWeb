@@ -11,6 +11,21 @@ import {
 import type { EventPublicationStatus } from "@/lib/domain/types";
 import { createAdminEventRepository } from "@/lib/supabase/events";
 
+export type EventFormActionError =
+  | "title"
+  | "audience"
+  | "eventTypeLabel"
+  | "startsAt"
+  | "endsAt"
+  | "capacity"
+  | "priceHalalas"
+  | "registrationStatus"
+  | "save";
+
+export interface EventFormActionState {
+  error?: EventFormActionError;
+}
+
 function revalidateEventViews() {
   revalidatePath("/events");
   revalidatePath("/admin");
@@ -18,10 +33,13 @@ function revalidateEventViews() {
   revalidatePath("/admin/events");
 }
 
-export async function createEventAction(formData: FormData) {
+export async function createEventAction(
+  _previousState: EventFormActionState,
+  formData: FormData,
+): Promise<EventFormActionState> {
   await requireAdmin();
   const input = validateEventInput(formData);
-  if (!input.ok) redirect(`/admin/events/new?error=${input.error}`);
+  if (!input.ok) return { error: input.error };
 
   let failed = false;
   try {
@@ -31,15 +49,19 @@ export async function createEventAction(formData: FormData) {
     failed = true;
   }
 
-  if (failed) redirect("/admin/events/new?error=save");
+  if (failed) return { error: "save" };
   revalidateEventViews();
   redirect("/admin/events?success=created");
 }
 
-export async function updateEventAction(id: string, formData: FormData) {
+export async function updateEventAction(
+  id: string,
+  _previousState: EventFormActionState,
+  formData: FormData,
+): Promise<EventFormActionState> {
   await requireAdmin();
   const input = validateEventInput(formData);
-  if (!input.ok) redirect(`/admin/events/${id}/edit?error=${input.error}`);
+  if (!input.ok) return { error: input.error };
 
   let failed = false;
   try {
@@ -49,7 +71,7 @@ export async function updateEventAction(id: string, formData: FormData) {
     failed = true;
   }
 
-  if (failed) redirect(`/admin/events/${id}/edit?error=save`);
+  if (failed) return { error: "save" };
   revalidateEventViews();
   redirect("/admin/events?success=updated");
 }
@@ -58,20 +80,25 @@ export async function changeEventStatusAction(id: string, requestedStatus: Event
   await requireAdmin();
   if (!isEventPublicationStatus(requestedStatus)) redirect("/admin/events?error=status");
 
-  let failed = false;
+  let failure: "status" | "incomplete" | null = null;
   try {
     const repository = await createAdminEventRepository();
     const event = await repository.get(id);
     if (!event || !canChangeEventStatus(event.publicationStatus, requestedStatus)) {
-      failed = true;
+      failure = "status";
+    } else if (
+      requestedStatus === "published"
+      && (event.endsAt === null || event.priceHalalas === null)
+    ) {
+      failure = "incomplete";
     } else {
       await repository.changeStatus(id, requestedStatus);
     }
   } catch {
-    failed = true;
+    failure = "status";
   }
 
-  if (failed) redirect("/admin/events?error=status");
+  if (failure) redirect(`/admin/events?error=${failure}`);
   revalidateEventViews();
   redirect("/admin/events?success=status");
 }

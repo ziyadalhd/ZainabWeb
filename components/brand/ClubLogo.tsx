@@ -13,17 +13,15 @@ export function ClubLogo({
   priority = false,
   className = "h-auto w-20 sm:w-24",
 }: ClubLogoProps) {
-  const src = variant === "on-green" ? "/brand/club-logo-on-green.jpg" : "/brand/club-logo-on-ivory.jpg";
-
   return (
     <Image
-      src={src}
+      src="/brand/club-logo-on-green.svg"
       alt={alt}
-      width={1021}
-      height={1021}
+      width={2993}
+      height={1844}
       priority={priority}
       sizes="(max-width: 640px) 80px, 112px"
-      className={`shrink-0 object-contain ${className}`}
+      className={`shrink-0 object-contain ${variant === "on-green" ? "rounded-xl bg-[var(--brand-ivory)] p-2" : ""} ${className}`}
     />
   );
 }

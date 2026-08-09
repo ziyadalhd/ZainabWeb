@@ -24,7 +24,7 @@ export function CalendarMonthGrid({ events, month = new Date() }: { events: read
   const cells = Array.from({ length: firstDayOffset + daysInMonth }, (_, index) => index < firstDayOffset ? null : index - firstDayOffset + 1);
 
   return (
-    <section aria-labelledby="calendar-title" className="rounded-3xl border border-[var(--border)] bg-white p-4 sm:p-6">
+    <section aria-labelledby="calendar-title" className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6">
       <h2 id="calendar-title" className="text-xl font-extrabold text-[var(--brand-green-deep)]">{monthFormatter.format(month)}</h2>
       <div className="mt-6 grid grid-cols-7 gap-1 text-center text-[0.68rem] font-bold muted-copy sm:text-xs">
         {weekDays.map((day) => <div key={day} className="py-2">{day}</div>)}
