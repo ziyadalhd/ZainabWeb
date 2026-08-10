@@ -20,7 +20,7 @@
 | M1 — Production data model | **In Progress** | مرتفع | 3–5 أيام |
 | M2 — Public event registration | **In Progress** | مرتفع | 3–5 أيام |
 | M3 — Admin operations center | **In Progress** | مرتفع | 4–6 أيام |
-| M4 — Venue, celebration, and workshop requests | **Pending** | مرتفع | 4–6 أيام |
+| M4 — Venue, celebration, and workshop requests | **In Progress** | مرتفع | 4–6 أيام |
 | M5 — Email, messaging, contacts, and surveys | **Pending** | مرتفع | 4–6 أيام |
 | M6 — Content, design, accessibility, and SEO | **Pending** | متوسط | 3–5 أيام |
 | M7 — Security, observability, and launch | **Pending** | متوسط–مرتفع | 3–5 أيام |
@@ -98,7 +98,10 @@
 
 ### Deliverables
 
-- تشغيل `/space-booking`, `/celebration-booking`, `/bayn-trips`, وطلب الورشة.
+- **Completed** — تشغيل نماذج `/space-booking`, `/celebration-booking`، وطلب الورشة بالحقول المعتمدة، مع تحقق خادمي وروابط إدارة آمنة لا تكشف بيانات شخصية.
+- **Completed** — حفظ طلبات حجز المساحة والحفلات والورش في مشروع Supabase التطوير فقط؛ لا يقرأ البيانات الشخصية إلا المسؤول المعتمد، وتحذف تلقائيًا بعد 90 يومًا من قبول أو رفض أو إلغاء الطلب.
+- **Completed** — قائمة طلبات محمية في لوحة الإدارة مع بدء المراجعة.
+- تشغيل `/bayn-trips` ضمن مسار الفعاليات القياسي.
 - مراجعة الطلب وإرسال عرض وقبول أو رفض من رابط آمن.
 - صلاحية العرض والحالات المالية وتعارض التقويم.
 - ظهور كل الطلبات في لوحة التحكم.

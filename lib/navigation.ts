@@ -16,6 +16,7 @@ export const adminNavigation: readonly NavigationItem[] = [
   { href: "/admin", label: "نظرة عامة" },
   { href: "/admin/calendar", label: "التقويم" },
   { href: "/admin/events", label: "الفعاليات" },
+  { href: "/admin/requests", label: "طلبات الحجز والورش" },
   { href: "/admin/registrations/current", label: "المسجلون الحاليون" },
   { href: "/admin/registrations/previous", label: "المسجلون السابقون" },
   { href: "/admin/interested", label: "المهتمون" },

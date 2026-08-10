@@ -172,3 +172,12 @@ Record approved architectural decisions here only after explicit user approval. 
 - Privacy: the password remains in the browser-to-Supabase Auth request and is neither handled by a Server Action nor logged by the application.
 - Configuration: the administrator login screen sends recovery requests from the browser with an explicit same-origin `/admin/reset-password` redirect. Recovery e-mails initiated from Supabase Dashboard still use the Auth `Site URL`; it must remain set to the Preview `/admin/reset-password` path, with that path allowed in Redirect URLs.
 - Documentation sources: Context7 library ID `/supabase/supabase` and current Supabase Auth documentation were consulted for `resetPasswordForEmail`, redirect URLs, recovery sessions, and `updateUser`.
+
+## Service requests foundation: 2026-08-10
+
+- Status: implemented in the separate hosted development project; no production migration was applied.
+- Scope: `service_requests` stores only the approved fields for space-booking, celebration-booking, and workshop-application requests. The public form calls a narrowly scoped database function; it does not receive direct table privileges.
+- Authorization: personal request data has RLS enabled and is visible only to allowlisted administrators. Secure management tokens are 32 random bytes; only their SHA-256 hashes are stored. The token lookup exposes only the corresponding request and no administrative contact data.
+- Lifecycle: requests begin as `new`; an administrator can start review. The schema supports the approved `under_review`, `accepted`, `rejected`, and `cancelled` states plus a request-specific price, terms, and adjustable offer expiry (48 hours by default). User-facing offer authoring and acceptance remain unfinished.
+- Retention: the owner approved deletion of request personal data 90 days after `accepted`, `rejected`, or `cancelled`. A daily Supabase Cron job removes expired request rows; application roles cannot execute the cleanup helper.
+- Security review: the migration uses fixed empty search paths, non-exposed privileged helpers, explicit grants, and `security invoker` public wrappers. The current Supabase changelog was reviewed; the Data API's explicit-grant change is addressed by the explicit grants and RLS policy.

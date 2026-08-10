@@ -169,6 +169,99 @@ export type Database = {
           },
         ]
       }
+      service_requests: {
+        Row: {
+          attendee_count: number | null
+          created_at: string
+          email: string | null
+          id: string
+          management_token_hash: string
+          notes: string | null
+          offer_expires_at: string | null
+          offer_price_halalas: number | null
+          offer_responded_at: string | null
+          offer_terms: string | null
+          phone_e164: string
+          public_reference: string
+          request_kind: string
+          requested_date: string | null
+          requested_end_time: string | null
+          requested_start_time: string | null
+          requester_name: string
+          retention_until: string | null
+          status: string
+          updated_at: string
+          use_or_occasion_type: string | null
+          workshop_description: string | null
+          workshop_duration: string | null
+          workshop_expected_attendance: number | null
+          workshop_portfolio_url: string | null
+          workshop_requirements: string | null
+          workshop_target_audience: string | null
+          workshop_title: string | null
+        }
+        Insert: {
+          attendee_count?: number | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          management_token_hash: string
+          notes?: string | null
+          offer_expires_at?: string | null
+          offer_price_halalas?: number | null
+          offer_responded_at?: string | null
+          offer_terms?: string | null
+          phone_e164: string
+          public_reference?: string
+          request_kind: string
+          requested_date?: string | null
+          requested_end_time?: string | null
+          requested_start_time?: string | null
+          requester_name: string
+          retention_until?: string | null
+          status?: string
+          updated_at?: string
+          use_or_occasion_type?: string | null
+          workshop_description?: string | null
+          workshop_duration?: string | null
+          workshop_expected_attendance?: number | null
+          workshop_portfolio_url?: string | null
+          workshop_requirements?: string | null
+          workshop_target_audience?: string | null
+          workshop_title?: string | null
+        }
+        Update: {
+          attendee_count?: number | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          management_token_hash?: string
+          notes?: string | null
+          offer_expires_at?: string | null
+          offer_price_halalas?: number | null
+          offer_responded_at?: string | null
+          offer_terms?: string | null
+          phone_e164?: string
+          public_reference?: string
+          request_kind?: string
+          requested_date?: string | null
+          requested_end_time?: string | null
+          requested_start_time?: string | null
+          requester_name?: string
+          retention_until?: string | null
+          status?: string
+          updated_at?: string
+          use_or_occasion_type?: string | null
+          workshop_description?: string | null
+          workshop_duration?: string | null
+          workshop_expected_attendance?: number | null
+          workshop_portfolio_url?: string | null
+          workshop_requirements?: string | null
+          workshop_target_audience?: string | null
+          workshop_title?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -186,6 +279,10 @@ export type Database = {
         Args: { p_registration_id: string }
         Returns: undefined
       }
+      cancel_service_request_by_token: {
+        Args: { p_management_token_hash: string }
+        Returns: undefined
+      }
       confirm_booking_attendance_by_token: {
         Args: { p_booking_token_hash: string }
         Returns: undefined
@@ -193,6 +290,15 @@ export type Database = {
       confirm_registration_attendance: {
         Args: { p_registration_id: string }
         Returns: undefined
+      }
+      create_service_request_offer: {
+        Args: {
+          p_expires_at?: string
+          p_price_halalas: number
+          p_request_id: string
+          p_terms: string
+        }
+        Returns: string
       }
       get_booking_by_token: {
         Args: { p_booking_token_hash: string }
@@ -212,6 +318,30 @@ export type Database = {
           active_reservation_count: number
           event_id: string
           registration_availability: string
+        }[]
+      }
+      get_service_request_by_token: {
+        Args: { p_management_token_hash: string }
+        Returns: {
+          attendee_count: number
+          notes: string
+          offer_expires_at: string
+          offer_price_halalas: number
+          offer_terms: string
+          request_kind: string
+          request_status: string
+          requested_date: string
+          requested_end_time: string
+          requested_start_time: string
+          requester_name: string
+          use_or_occasion_type: string
+          workshop_description: string
+          workshop_duration: string
+          workshop_expected_attendance: number
+          workshop_portfolio_url: string
+          workshop_requirements: string
+          workshop_target_audience: string
+          workshop_title: string
         }[]
       }
       get_waitlist_invitation: {
@@ -247,9 +377,40 @@ export type Database = {
           registration_status: string
         }[]
       }
+      respond_to_service_request_offer: {
+        Args: { p_management_token_hash: string; p_response: string }
+        Returns: undefined
+      }
       revoke_waitlist_invitation: {
         Args: { p_registration_id: string }
         Returns: undefined
+      }
+      start_service_request_review: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      submit_service_request: {
+        Args: {
+          p_attendee_count: number
+          p_email: string
+          p_management_token_hash: string
+          p_notes: string
+          p_phone_e164: string
+          p_request_kind: string
+          p_requested_date: string
+          p_requested_end_time: string
+          p_requested_start_time: string
+          p_requester_name: string
+          p_use_or_occasion_type: string
+          p_workshop_description: string
+          p_workshop_duration: string
+          p_workshop_expected_attendance: number
+          p_workshop_portfolio_url: string
+          p_workshop_requirements: string
+          p_workshop_target_audience: string
+          p_workshop_title: string
+        }
+        Returns: string
       }
     }
     Enums: {

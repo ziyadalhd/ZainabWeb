@@ -8,6 +8,8 @@ export type EventPublicationStatus = "draft" | "published" | "archived";
 export type RegistrationStatus = "registered" | "waitlisted" | "invited" | "cancelled";
 export type RegistrationAttendanceStatus = "pending" | "confirmed";
 export type RegistrationCheckInStatus = "pending" | "checked_in" | "absent";
+export type ServiceRequestKind = "space_booking" | "celebration_booking" | "workshop_application";
+export type ServiceRequestStatus = "new" | "under_review" | "accepted" | "rejected" | "cancelled";
 
 export interface Event {
   id: EntityId;
@@ -100,4 +102,71 @@ export interface SurveyResponse {
   hospitalityRating: Rating;
   materialRating: Rating;
   suggestions: string;
+}
+
+export interface ServiceRequestInput {
+  requesterName: string;
+  phoneE164: string;
+  email: string | null;
+  notes: string | null;
+  booking: {
+    useOrOccasionType: string;
+    requestedDate: string;
+    requestedStartTime: string;
+    requestedEndTime: string;
+    attendeeCount: number;
+  } | null;
+  workshop: {
+    title: string;
+    description: string;
+    targetAudience: string;
+    duration: string;
+    expectedAttendance: number;
+    requirements: string;
+    portfolioUrl: string | null;
+  } | null;
+}
+
+export interface ServiceRequestReceipt {
+  reference: EntityId;
+  managementToken: string;
+}
+
+export interface ServiceRequestDetails {
+  kind: ServiceRequestKind;
+  requesterName: string;
+  status: ServiceRequestStatus;
+  useOrOccasionType: string | null;
+  requestedDate: string | null;
+  requestedStartTime: string | null;
+  requestedEndTime: string | null;
+  attendeeCount: number | null;
+  workshopTitle: string | null;
+  workshopDescription: string | null;
+  workshopTargetAudience: string | null;
+  workshopDuration: string | null;
+  workshopExpectedAttendance: number | null;
+  workshopRequirements: string | null;
+  workshopPortfolioUrl: string | null;
+  notes: string | null;
+  offerPriceHalalas: number | null;
+  offerTerms: string | null;
+  offerExpiresAt: string | null;
+}
+
+export interface AdminServiceRequest {
+  id: EntityId;
+  reference: EntityId;
+  kind: ServiceRequestKind;
+  requesterName: string;
+  phoneE164: string;
+  email: string | null;
+  status: ServiceRequestStatus;
+  requestedDate: string | null;
+  requestedStartTime: string | null;
+  requestedEndTime: string | null;
+  attendeeCount: number | null;
+  useOrOccasionType: string | null;
+  workshopTitle: string | null;
+  createdAt: IsoDateTime;
 }

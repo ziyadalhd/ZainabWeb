@@ -8,6 +8,11 @@ import type {
   RegistrationReceipt,
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
+  AdminServiceRequest,
+  ServiceRequestInput,
+  ServiceRequestKind,
+  ServiceRequestReceipt,
+  ServiceRequestDetails,
 } from "@/lib/domain/types";
 
 export interface EventCatalog {
@@ -39,4 +44,15 @@ export interface AdminRegistrationRepository {
   revokeInvitation(id: string): Promise<void>;
   confirmAttendance(id: string): Promise<void>;
   recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void>;
+}
+
+export interface ServiceRequestService {
+  submit(kind: ServiceRequestKind, input: ServiceRequestInput): Promise<ServiceRequestReceipt>;
+  getByToken(token: string): Promise<ServiceRequestDetails | null>;
+  cancelByToken(token: string): Promise<void>;
+}
+
+export interface AdminServiceRequestRepository {
+  list(): Promise<readonly AdminServiceRequest[]>;
+  startReview(id: string): Promise<void>;
 }
