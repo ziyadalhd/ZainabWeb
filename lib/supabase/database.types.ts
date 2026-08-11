@@ -74,6 +74,38 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_reminders: {
+        Row: {
+          id: string
+          management_token_hash: string
+          prepared_at: string
+          registration_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          id?: string
+          management_token_hash: string
+          prepared_at?: string
+          registration_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          id?: string
+          management_token_hash?: string
+          prepared_at?: string
+          registration_id?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_reminders_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registrations: {
         Row: {
           attendance_status: string
@@ -356,6 +388,14 @@ export type Database = {
       invite_waitlisted_registration: {
         Args: { p_invitation_token_hash: string; p_registration_id: string }
         Returns: string
+      }
+      issue_registration_reminder: {
+        Args: { p_management_token_hash: string; p_registration_id: string }
+        Returns: string
+      }
+      mark_registration_reminder_sent: {
+        Args: { p_reminder_id: string }
+        Returns: undefined
       }
       record_registration_check_in: {
         Args: { p_check_in_status: string; p_registration_id: string }

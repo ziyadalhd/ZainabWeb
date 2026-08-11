@@ -72,7 +72,14 @@ export interface Registration {
   checkInStatus: RegistrationCheckInStatus;
   checkedInAt: IsoDateTime | null;
   invitationExpiresAt: IsoDateTime | null;
+  latestReminderPreparedAt: IsoDateTime | null;
+  latestReminderSentAt: IsoDateTime | null;
   createdAt: IsoDateTime;
+}
+
+export interface RegistrationReminderReceipt {
+  id: EntityId;
+  managementToken: string;
 }
 
 export interface WaitlistInvitationReceipt {

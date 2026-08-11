@@ -13,6 +13,7 @@ import type {
   Registration,
   RegistrationInput,
   RegistrationReceipt,
+  RegistrationReminderReceipt,
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
 } from "@/lib/domain/types";
@@ -25,6 +26,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type RegistrationRow = Database["public"]["Tables"]["registrations"]["Row"];
+type ReminderRow = Database["public"]["Tables"]["registration_reminders"]["Row"];
 type RegisterRpcArgs = Database["public"]["Functions"]["register_for_event"]["Args"];
 
 export type RegistrationFailureCode =
@@ -61,6 +63,7 @@ function mapFailure(message: string): RegistrationFailure {
 function mapRegistration(
   row: RegistrationRow,
   event: { title: string; startsAt: string } | undefined,
+  latestReminder: ReminderRow | undefined,
 ): Registration {
   if (
     !isRegistrationStatus(row.status)
@@ -88,6 +91,8 @@ function mapRegistration(
     checkInStatus: row.check_in_status,
     checkedInAt: row.checked_in_at,
     invitationExpiresAt: row.invitation_expires_at,
+    latestReminderPreparedAt: latestReminder?.prepared_at ?? null,
+    latestReminderSentAt: latestReminder?.sent_at ?? null,
     createdAt: row.created_at,
   };
 }
@@ -189,18 +194,33 @@ implements RegistrationService, AdminRegistrationRepository {
   }
 
   async list(): Promise<readonly Registration[]> {
-    const [{ data: registrations, error }, { data: events, error: eventsError }] = await Promise.all([
+    const [
+      { data: registrations, error },
+      { data: events, error: eventsError },
+      { data: reminders, error: remindersError },
+    ] = await Promise.all([
       this.client.from("registrations").select("*").order("created_at", { ascending: false }),
       this.client.from("events").select("id,title,starts_at"),
+      this.client.from("registration_reminders").select("*").order("prepared_at", { ascending: false }),
     ]);
-    if (error || eventsError || !registrations || !events) {
+    if (error || eventsError || remindersError || !registrations || !events || !reminders) {
       throw new RegistrationFailure("save");
     }
     const eventDetails = new Map(events.map((event) => [
       event.id,
       { title: event.title, startsAt: event.starts_at },
     ]));
-    return registrations.map((row) => mapRegistration(row, eventDetails.get(row.event_id)));
+    const latestReminders = new Map<string, ReminderRow>();
+    for (const reminder of reminders) {
+      if (!latestReminders.has(reminder.registration_id)) {
+        latestReminders.set(reminder.registration_id, reminder);
+      }
+    }
+    return registrations.map((row) => mapRegistration(
+      row,
+      eventDetails.get(row.event_id),
+      latestReminders.get(row.id),
+    ));
   }
 
   async cancel(id: string): Promise<void> {
@@ -234,6 +254,23 @@ implements RegistrationService, AdminRegistrationRepository {
     const { error } = await this.client.rpc("record_registration_check_in", {
       p_registration_id: id,
       p_check_in_status: outcome,
+    });
+    if (error) throw mapFailure(error.message);
+  }
+
+  async issueReminder(id: string): Promise<RegistrationReminderReceipt> {
+    const managementToken = generateSecureToken();
+    const { data, error } = await this.client.rpc("issue_registration_reminder", {
+      p_registration_id: id,
+      p_management_token_hash: hashSecureToken(managementToken),
+    });
+    if (error || !data) throw mapFailure(error?.message ?? "save");
+    return { id: data, managementToken };
+  }
+
+  async markReminderSent(id: string): Promise<void> {
+    const { error } = await this.client.rpc("mark_registration_reminder_sent", {
+      p_reminder_id: id,
     });
     if (error) throw mapFailure(error.message);
   }

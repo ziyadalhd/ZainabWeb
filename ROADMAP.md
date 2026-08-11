@@ -1,6 +1,6 @@
 # خارطة التنفيذ الرئيسية
 
-آخر تحديث: `2026-08-09`
+آخر تحديث: `2026-08-11`
 
 ## دلالات الحالة
 
@@ -21,7 +21,7 @@
 | M2 — Public event registration | **In Progress** | مرتفع | 3–5 أيام |
 | M3 — Admin operations center | **In Progress** | مرتفع | 4–6 أيام |
 | M4 — Venue, celebration, and workshop requests | **In Progress** | مرتفع | 4–6 أيام |
-| M5 — Email, messaging, contacts, and surveys | **Pending** | مرتفع | 4–6 أيام |
+| M5 — Email, messaging, contacts, and surveys | **In Progress** | مرتفع | 4–6 أيام |
 | M6 — Content, design, accessibility, and SEO | **Pending** | متوسط | 3–5 أيام |
 | M7 — Security, observability, and launch | **Pending** | متوسط–مرتفع | 3–5 أيام |
 
@@ -117,6 +117,7 @@
 - تأكيدات وتذكيرات 24 ساعة و3 ساعات وإشعارات التغيير والإلغاء.
 - idempotency وتتبع التسليم والفشل وإعادة المحاولة.
 - قائمة WhatsApp يدوية منظمة قابلة لتغيير الرقم.
+- **Completed** — تجهيز تذكير WhatsApp فردي من قائمة المسجلات: يأخذ اسم المسجّلة والفعالية الفعليين، ويصدر رابط إدارة آمنًا خاصًا بها، ولا يعدّه مرسلًا إلا بعد تعليم المسؤول له يدويًا. لا يوجد إرسال آلي أو مزود WhatsApp.
 - تسجيل المهتمات والموافقة وإلغاء الاشتراك.
 - تقييم فعالية مجهول أو باسم المشاركة حسب اختيارها.
 

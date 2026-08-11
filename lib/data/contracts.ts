@@ -8,6 +8,7 @@ import type {
   RegistrationReceipt,
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
+  RegistrationReminderReceipt,
   AdminServiceRequest,
   ServiceRequestInput,
   ServiceRequestKind,
@@ -44,6 +45,8 @@ export interface AdminRegistrationRepository {
   revokeInvitation(id: string): Promise<void>;
   confirmAttendance(id: string): Promise<void>;
   recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void>;
+  issueReminder(id: string): Promise<RegistrationReminderReceipt>;
+  markReminderSent(id: string): Promise<void>;
 }
 
 export interface ServiceRequestService {

@@ -24,6 +24,8 @@ const currentRegistration: Registration = {
   checkInStatus: "pending",
   checkedInAt: null,
   invitationExpiresAt: null,
+  latestReminderPreparedAt: null,
+  latestReminderSentAt: null,
   createdAt: "2026-08-09T15:00:00.000Z",
 };
 

@@ -8,6 +8,8 @@ vi.mock("@/app/(dashboard)/admin/(protected)/registrations/actions", () => ({
   cancelWaitlistedRegistrationAction: vi.fn(),
   confirmAttendanceAction: vi.fn(),
   inviteRegistrationAction: vi.fn(),
+  markRegistrationReminderSentAction: vi.fn(),
+  prepareRegistrationReminderAction: vi.fn(),
   recordCheckInAction: vi.fn(),
   revokeInvitationAction: vi.fn(),
 }));
@@ -30,6 +32,8 @@ const registration: Registration = {
   checkInStatus: "pending",
   checkedInAt: null,
   invitationExpiresAt: null,
+  latestReminderPreparedAt: null,
+  latestReminderSentAt: null,
   createdAt: "2026-08-09T15:00:00.000Z",
 };
 
@@ -42,5 +46,6 @@ describe("RegistrationTable", () => {
     expect(screen.getByRole("button", { name: "تأكيد الحضور" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "تسجيل الحضور" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "تسجيل الغياب" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "تجهيز تذكير WhatsApp" })).toBeInTheDocument();
   });
 });

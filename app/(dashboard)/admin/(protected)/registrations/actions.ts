@@ -52,6 +52,54 @@ export interface WaitlistInviteActionState {
   error?: "invalid" | "capacity" | "save";
 }
 
+export interface RegistrationReminderActionState {
+  reminderId?: string;
+  managementPath?: string;
+  error?: "invalid" | "save";
+}
+
+export async function prepareRegistrationReminderAction(
+  id: string,
+  _previousState: RegistrationReminderActionState,
+): Promise<RegistrationReminderActionState> {
+  void _previousState;
+  await requireAdmin();
+  if (!uuidPattern.test(id)) return { error: "invalid" };
+
+  try {
+    const repository = await createAdminRegistrationRepository();
+    const reminder = await repository.issueReminder(id);
+    return {
+      reminderId: reminder.id,
+      managementPath: `/bookings/${reminder.managementToken}`,
+    };
+  } catch {
+    return { error: "save" };
+  }
+}
+
+export interface MarkRegistrationReminderSentActionState {
+  sent?: true;
+  error?: "invalid" | "save";
+}
+
+export async function markRegistrationReminderSentAction(
+  id: string,
+  _previousState: MarkRegistrationReminderSentActionState,
+): Promise<MarkRegistrationReminderSentActionState> {
+  void _previousState;
+  await requireAdmin();
+  if (!uuidPattern.test(id)) return { error: "invalid" };
+
+  try {
+    const repository = await createAdminRegistrationRepository();
+    await repository.markReminderSent(id);
+    return { sent: true };
+  } catch {
+    return { error: "save" };
+  }
+}
+
 export async function inviteRegistrationAction(
   id: string,
   _previousState: WaitlistInviteActionState,

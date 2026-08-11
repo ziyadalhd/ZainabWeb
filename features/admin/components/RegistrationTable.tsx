@@ -7,21 +7,24 @@ import {
   cancelWaitlistedRegistrationAction,
   confirmAttendanceAction,
   inviteRegistrationAction,
+  markRegistrationReminderSentAction,
+  prepareRegistrationReminderAction,
   recordCheckInAction,
   revokeInvitationAction,
 } from "@/app/(dashboard)/admin/(protected)/registrations/actions";
 import { WaitlistInviteButton } from "@/features/admin/components/WaitlistInviteButton";
+import { RegistrationReminderButton } from "@/features/admin/components/RegistrationReminderButton";
 
 interface RegistrationTableProps {
   registrations: readonly Registration[];
   mode: "current" | "waitlist" | "previous";
 }
 
-function whatsappHref(registration: Registration): string {
+function waitlistWhatsappHref(registration: Registration): string {
   const phone = registration.phoneE164.replace("+", "");
   const message = registration.status === "waitlisted"
     ? `السلام عليكم ${registration.attendeeName}، أنت حاليًا على قائمة الانتظار لفعالية ${registration.eventTitle}. سنتواصل معك عند توفر مقعد.`
-    : `السلام عليكم ${registration.attendeeName}، نذكّرك بتسجيلك في فعالية ${registration.eventTitle}. فضلاً أكد حضورك أو اعتذر بالرد على هذه الرسالة.`;
+    : `السلام عليكم ${registration.attendeeName}، حياكِ في فعالية ${registration.eventTitle}.`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
@@ -60,7 +63,19 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
               {mode !== "previous" ? (
                 <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
-                    <a href={whatsappHref(registration)} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1f7a3f] px-3 py-2 font-bold text-white">فتح WhatsApp</a>
+                    {mode === "current" ? (
+                      <RegistrationReminderButton
+                        attendeeName={registration.attendeeName}
+                        eventTitle={registration.eventTitle}
+                        phoneE164={registration.phoneE164}
+                        latestPreparedAt={registration.latestReminderPreparedAt}
+                        latestSentAt={registration.latestReminderSentAt}
+                        prepareAction={prepareRegistrationReminderAction.bind(null, registration.id)}
+                        markSentAction={markRegistrationReminderSentAction}
+                      />
+                    ) : (
+                      <a href={waitlistWhatsappHref(registration)} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1f7a3f] px-3 py-2 font-bold text-white">فتح WhatsApp</a>
+                    )}
                     {mode === "current" && registration.attendanceStatus === "pending" ? <form action={confirmAttendanceAction.bind(null, registration.id)}><button type="submit" className="rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)]">تأكيد الحضور</button></form> : null}
                     {mode === "current" && registration.checkInStatus !== "checked_in" ? <form action={recordCheckInAction.bind(null, registration.id, "checked_in")}><button type="submit" className="rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)]">تسجيل الحضور</button></form> : null}
                     {mode === "current" && registration.checkInStatus !== "absent" ? <form action={recordCheckInAction.bind(null, registration.id, "absent")}><button type="submit" className="rounded-xl border border-[var(--color-error-text)] px-3 py-2 font-bold text-[var(--color-error-text)]">تسجيل الغياب</button></form> : null}
