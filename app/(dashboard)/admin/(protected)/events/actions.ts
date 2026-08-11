@@ -10,6 +10,11 @@ import {
 } from "@/lib/domain/event-input";
 import type { EventPublicationStatus } from "@/lib/domain/types";
 import { createAdminEventRepository } from "@/lib/supabase/events";
+import { validateEventPoster } from "@/lib/domain/event-poster-input";
+import { SupabaseEventPosterStorage } from "@/lib/supabase/event-posters";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type EventFormActionError =
   | "title"
@@ -102,4 +107,47 @@ export async function changeEventStatusAction(id: string, requestedStatus: Event
   if (failure) redirect(`/admin/events?error=${failure}`);
   revalidateEventViews();
   redirect("/admin/events?success=status");
+}
+
+export interface EventPosterActionState {
+  saved?: true;
+  error?: "file" | "type" | "save";
+}
+
+export async function uploadEventPosterAction(
+  id: string,
+  _previousState: EventPosterActionState,
+  formData: FormData,
+): Promise<EventPosterActionState> {
+  void _previousState;
+  await requireAdmin();
+  if (!uuidPattern.test(id)) return { error: "save" };
+
+  const poster = validateEventPoster(formData.get("poster"));
+  if (!poster.ok) return { error: poster.error };
+
+  try {
+    const client = await createSupabaseServerClient();
+    const [{ data: event, error: eventError }, repository] = await Promise.all([
+      client.from("events").select("poster_path").eq("id", id).maybeSingle(),
+      createAdminEventRepository(),
+    ]);
+    if (eventError || !event) return { error: "save" };
+
+    const storage = new SupabaseEventPosterStorage(client);
+    const posterPath = await storage.upload(id, formData.get("poster") as File, poster.extension);
+    try {
+      await repository.setPosterPath(id, posterPath);
+    } catch {
+      await storage.remove(posterPath).catch(() => undefined);
+      return { error: "save" };
+    }
+    if (event.poster_path) await storage.remove(event.poster_path).catch(() => undefined);
+  } catch {
+    return { error: "save" };
+  }
+
+  revalidateEventViews();
+  revalidatePath(`/admin/events/${id}/edit`);
+  return { saved: true };
 }

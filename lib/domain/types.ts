@@ -24,6 +24,7 @@ export interface Event {
   capacity: number;
   activeReservationCount: number;
   priceHalalas: number | null;
+  posterUrl: string | null;
   registrationStatus: EventRegistrationStatus;
   availability: EventAvailability;
   publicationStatus: EventPublicationStatus;
@@ -114,6 +115,48 @@ export interface SurveyResponse {
   materialRating: Rating;
   suggestions: string;
 }
+
+export interface EventFeedbackInput {
+  hospitalityRating: Rating;
+  materialRating: Rating;
+  suggestions: string | null;
+  identityVisible: boolean;
+}
+
+export interface EventFeedbackSurvey {
+  eventTitle: string;
+}
+
+export interface EventFeedbackLinkReceipt {
+  id: EntityId;
+  token: string;
+}
+
+export interface AdminEventFeedbackResponse {
+  id: EntityId;
+  eventTitle: string;
+  attendeeName: string | null;
+  hospitalityRating: Rating;
+  materialRating: Rating;
+  suggestions: string | null;
+  submittedAt: IsoDateTime;
+}
+
+export interface SiteSettings {
+  clubIntroduction: string | null;
+  nameStory: string | null;
+  objectives: string | null;
+  contactPhone: string | null;
+  defaultVenueName: string | null;
+  defaultVenueAddress: string | null;
+  instagramUrl: string | null;
+  tiktokUrl: string | null;
+  literaryPartnerTitle: string | null;
+  literaryPartnerBody: string | null;
+  updatedAt: IsoDateTime;
+}
+
+export type SiteSettingsInput = Omit<SiteSettings, "updatedAt">;
 
 export interface ServiceRequestInput {
   requesterName: string;

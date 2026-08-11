@@ -41,10 +41,11 @@ export function CalendarMonthGrid({ events, month = new Date() }: { events: read
               <span className="text-xs font-extrabold text-[var(--brand-green-deep)]">{formatArabicNumber(day)}</span>
               <div className="mt-2 grid gap-1">
                 {dayEvents.map((event) => (
-                  <div key={event.id} className="rounded-lg bg-[#e8f0e3] px-2 py-1 text-[0.65rem] font-bold text-[var(--brand-green-deep)]">
+                  <Link key={event.id} href={`/admin/events/${event.id}/edit`} className="rounded-lg bg-[#e8f0e3] px-2 py-1 text-[0.65rem] font-bold text-[var(--brand-green-deep)] outline-offset-2 hover:bg-[#d9e8d1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--brand-green)]" aria-label={`تعديل ${event.title}`}>
                     <span className="block truncate">{event.title}</span>
                     <span className="text-[0.6rem] font-normal">{timeFormatter.format(new Date(event.startsAt))}</span>
-                  </div>
+                    <span className="mt-1 block text-[0.6rem] font-normal">{formatArabicNumber(event.activeReservationCount)} / {formatArabicNumber(event.capacity)} مسجلة</span>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -54,3 +55,4 @@ export function CalendarMonthGrid({ events, month = new Date() }: { events: read
     </section>
   );
 }
+import Link from "next/link";

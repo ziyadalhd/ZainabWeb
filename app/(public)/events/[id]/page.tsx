@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EventRegistrationForm } from "@/features/events/components/EventRegistrationForm";
@@ -47,6 +48,17 @@ export default async function EventDetailsPage({
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <article className="card-surface p-6 sm:p-9">
+          {event.posterUrl ? (
+            <Image
+              src={event.posterUrl}
+              alt={`بوستر ${event.title}`}
+              width={1280}
+              height={720}
+              sizes="(min-width: 1024px) 66vw, 100vw"
+              className="mb-8 aspect-video w-full rounded-3xl object-cover"
+              priority
+            />
+          ) : null}
           <div className="flex flex-wrap items-center gap-3">
             <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-sm font-extrabold text-[var(--brand-green)]">
               {audienceLabels[event.audience]}

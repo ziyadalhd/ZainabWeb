@@ -115,7 +115,9 @@ Record approved architectural decisions here only after explicit user approval. 
 - Request payment: request payment state is an administrator-recorded field separate from offer acceptance (`unpaid`, `deposit_paid`, `paid_in_full`). It is available only after a booking request is accepted and never triggers payment processing.
 - Request conflicts: the administrator sees a strong warning for overlap with non-archived club events or other booking requests that are under review or accepted. This is intentionally advisory; no schedule check changes the request state automatically.
 - Bayn trips: `events.event_kind` explicitly separates `club_event` from `bayn_trip`. Existing events default to `club_event`; a `bayn_trip` remains an ordinary event and therefore uses the same publication, registration, capacity, waitlist, and reminder workflow. The public `/bayn-trips` route filters only upcoming published `bayn_trip` events.
-- Content: editable site settings in the protected dashboard will own club copy, contact details, default venue, social links, and literary-partner information.
+- Content: editable site settings in the protected dashboard own club copy, contact details, default venue, social links, and literary-partner information. Values are public by design; social controls remain hidden until a real URL is saved.
+- Event posters: optional posters use the public `event-posters` Supabase Storage bucket. Only allowlisted administrators can upload or delete PNG, JPEG, or WebP objects; public visitors can only retrieve the selected public object URL.
+- Event feedback: the administrator issues a separate 32-byte-token link to an active registration. The database stores only its SHA-256 hash and accepts one approved response. When the participant selects anonymous submission, the registration reference is set to `NULL` in the response record before it is visible to administrators.
 
 ## Communications and protection: 2026-08-09
 

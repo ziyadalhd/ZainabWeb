@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { ClubLogo } from "@/components/brand/ClubLogo";
-
-const sections = [
-  { title: "عن النادي", body: "محتوى هذه الصفحة قيد الإعداد." },
-  { title: "فكرة اسم بَيْن", body: "محتوى هذه الصفحة قيد الإعداد." },
-  { title: "أهداف النادي", body: "محتوى هذه الصفحة قيد الإعداد." },
-];
+import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
 const destinations = [
   { href: "/space-booking", label: "حجز المساحة" },
@@ -16,7 +11,13 @@ const destinations = [
   { href: "/surveys", label: "استبيانات" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const settings = await getPublicSiteSettings();
+  const sections = [
+    { title: "عن النادي", body: settings.clubIntroduction ?? "محتوى هذه الصفحة قيد الإعداد." },
+    { title: "فكرة اسم بَيْن", body: settings.nameStory ?? "محتوى هذه الصفحة قيد الإعداد." },
+    { title: "أهداف النادي", body: settings.objectives ?? "محتوى هذه الصفحة قيد الإعداد." },
+  ];
   return (
     <main>
       <section className="page-shell grid min-h-[72vh] items-center gap-10 py-12 lg:grid-cols-[1fr_0.8fr]">

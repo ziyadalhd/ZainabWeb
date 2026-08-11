@@ -5,7 +5,7 @@ import type { Event } from "@/lib/domain/types";
 
 vi.mock("@/app/(dashboard)/admin/(protected)/events/actions", () => ({ changeEventStatusAction: vi.fn() }));
 
-const event: Event = { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", title: "لقاء", kind: "club_event", audience: "adults", eventTypeLabel: "قراءة", startsAt: "2026-08-10T15:00:00.000Z", endsAt: "2026-08-10T17:00:00.000Z", capacity: 20, activeReservationCount: 4, priceHalalas: 7500, registrationStatus: "open", availability: "available", publicationStatus: "draft", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" };
+const event: Event = { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", title: "لقاء", kind: "club_event", audience: "adults", eventTypeLabel: "قراءة", startsAt: "2026-08-10T15:00:00.000Z", endsAt: "2026-08-10T17:00:00.000Z", capacity: 20, activeReservationCount: 4, priceHalalas: 7500, posterUrl: null, registrationStatus: "open", availability: "available", publicationStatus: "draft", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" };
 
 describe("EventCapacityTable", () => {
   it("renders an empty state without demo rows", () => {

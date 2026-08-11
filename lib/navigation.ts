@@ -23,4 +23,5 @@ export const adminNavigation: readonly NavigationItem[] = [
   { href: "/admin/waitlist", label: "قائمة الانتظار" },
   { href: "/admin/messages", label: "الرسائل" },
   { href: "/admin/surveys", label: "الاستبيانات" },
+  { href: "/admin/content", label: "محتوى الموقع" },
 ];

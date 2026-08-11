@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Event, EventAudience } from "@/lib/domain/types";
 import {
   formatArabicEventDate,
@@ -17,6 +18,16 @@ const audienceLabels: Record<EventAudience, string> = {
 export function EventCard({ event }: { event: Event }) {
   return (
     <article className="card-surface flex h-full flex-col p-6">
+      {event.posterUrl ? (
+        <Image
+          src={event.posterUrl}
+          alt={`بوستر ${event.title}`}
+          width={960}
+          height={540}
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          className="mb-6 aspect-[16/9] w-full rounded-2xl object-cover"
+        />
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-xs font-extrabold text-[var(--brand-green)]">
           {audienceLabels[event.audience]}

@@ -29,6 +29,60 @@ export type Database = {
         }
         Relationships: []
       }
+      event_feedback_links: {
+        Row: {
+          created_at: string
+          event_id: string
+          feedback_token_hash: string
+          hospitality_rating: number | null
+          id: string
+          identity_visible: boolean | null
+          material_rating: number | null
+          registration_id: string | null
+          submitted_at: string | null
+          suggestions: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          feedback_token_hash: string
+          hospitality_rating?: number | null
+          id?: string
+          identity_visible?: boolean | null
+          material_rating?: number | null
+          registration_id?: string | null
+          submitted_at?: string | null
+          suggestions?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          feedback_token_hash?: string
+          hospitality_rating?: number | null
+          id?: string
+          identity_visible?: boolean | null
+          material_rating?: number | null
+          registration_id?: string | null
+          submitted_at?: string | null
+          suggestions?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_feedback_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_feedback_links_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           audience: string
@@ -38,6 +92,7 @@ export type Database = {
           event_kind: string
           event_type_label: string
           id: string
+          poster_path: string | null
           price_halalas: number | null
           publication_status: string
           registration_status: string
@@ -53,6 +108,7 @@ export type Database = {
           event_kind?: string
           event_type_label: string
           id?: string
+          poster_path?: string | null
           price_halalas?: number | null
           publication_status?: string
           registration_status?: string
@@ -68,6 +124,7 @@ export type Database = {
           event_kind?: string
           event_type_label?: string
           id?: string
+          poster_path?: string | null
           price_halalas?: number | null
           publication_status?: string
           registration_status?: string
@@ -300,6 +357,51 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          club_introduction: string | null
+          contact_phone: string | null
+          default_venue_address: string | null
+          default_venue_name: string | null
+          id: boolean
+          instagram_url: string | null
+          literary_partner_body: string | null
+          literary_partner_title: string | null
+          name_story: string | null
+          objectives: string | null
+          tiktok_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          club_introduction?: string | null
+          contact_phone?: string | null
+          default_venue_address?: string | null
+          default_venue_name?: string | null
+          id?: boolean
+          instagram_url?: string | null
+          literary_partner_body?: string | null
+          literary_partner_title?: string | null
+          name_story?: string | null
+          objectives?: string | null
+          tiktok_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          club_introduction?: string | null
+          contact_phone?: string | null
+          default_venue_address?: string | null
+          default_venue_name?: string | null
+          id?: boolean
+          instagram_url?: string | null
+          literary_partner_body?: string | null
+          literary_partner_title?: string | null
+          name_story?: string | null
+          objectives?: string | null
+          tiktok_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -348,6 +450,12 @@ export type Database = {
           event_title: string
           price_halalas_at_booking: number
           registration_status: string
+        }[]
+      }
+      get_event_feedback_by_token: {
+        Args: { p_feedback_token_hash: string }
+        Returns: {
+          event_title: string
         }[]
       }
       get_event_registration_states: {
@@ -405,6 +513,10 @@ export type Database = {
         Args: { p_invitation_token_hash: string; p_registration_id: string }
         Returns: string
       }
+      issue_event_feedback_link: {
+        Args: { p_feedback_token_hash: string; p_registration_id: string }
+        Returns: string
+      }
       issue_registration_reminder: {
         Args: { p_management_token_hash: string; p_registration_id: string }
         Returns: string
@@ -447,6 +559,16 @@ export type Database = {
       }
       start_service_request_review: {
         Args: { p_request_id: string }
+        Returns: undefined
+      }
+      submit_event_feedback_by_token: {
+        Args: {
+          p_feedback_token_hash: string
+          p_hospitality_rating: number
+          p_identity_visible: boolean
+          p_material_rating: number
+          p_suggestions: string
+        }
         Returns: undefined
       }
       submit_service_request: {

@@ -13,6 +13,10 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 
 - Which manually recorded payment states are valid for standard event registrations? The approved request workflow defines `unpaid`, `deposit paid`, and `paid in full`, but that list has not been approved for event registrations. Check-in and absence can proceed independently without this decision; no online payment will be added.
 
+## Interested contacts
+
+- Which exact public fields should the consent-based «تسجيل المهتمين» form collect? The approved scope requires explicit optional consent and a secure unsubscribe link, but it does not yet approve whether the contact is identified by name, Saudi mobile, email, or a combination. No interested-contact personal data is stored until this is approved.
+
 ## Launch identity and contact
 
 - Which available `bayn` domain will be purchased?

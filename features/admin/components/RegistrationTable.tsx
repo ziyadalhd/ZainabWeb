@@ -9,11 +9,13 @@ import {
   inviteRegistrationAction,
   markRegistrationReminderSentAction,
   prepareRegistrationReminderAction,
+  prepareEventFeedbackLinkAction,
   recordCheckInAction,
   revokeInvitationAction,
 } from "@/app/(dashboard)/admin/(protected)/registrations/actions";
 import { WaitlistInviteButton } from "@/features/admin/components/WaitlistInviteButton";
 import { RegistrationReminderButton } from "@/features/admin/components/RegistrationReminderButton";
+import { RegistrationFeedbackButton } from "@/features/admin/components/RegistrationFeedbackButton";
 
 interface RegistrationTableProps {
   registrations: readonly Registration[];
@@ -45,7 +47,7 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
             <th className="px-5 py-4">البريد</th>
             <th className="px-5 py-4">الحالة</th>
             <th className="px-5 py-4">رقم المرجع</th>
-            {mode !== "previous" ? <th className="px-5 py-4">الإجراءات</th> : null}
+            <th className="px-5 py-4">الإجراءات</th>
           </tr>
         </thead>
         <tbody>
@@ -60,9 +62,11 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
               <td className="px-5 py-4" dir="ltr">{registration.email ?? "—"}</td>
               <td className="px-5 py-4"><div className="grid justify-items-start gap-2"><StatusBadge status={registration.status} />{registration.status === "registered" ? <StatusBadge status={registration.attendanceStatus} /> : null}{registration.status === "registered" ? <StatusBadge status={registration.checkInStatus === "pending" ? "check_in_pending" : registration.checkInStatus} /> : null}</div></td>
               <td className="px-5 py-4 text-xs" dir="ltr">{registration.reference}</td>
-              {mode !== "previous" ? (
-                <td className="px-5 py-4">
+              <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
+                    {mode === "previous" && registration.status === "registered" ? (
+                      <RegistrationFeedbackButton action={prepareEventFeedbackLinkAction.bind(null, registration.id)} />
+                    ) : null}
                     {mode === "current" ? (
                       <RegistrationReminderButton
                         attendeeName={registration.attendeeName}
@@ -92,7 +96,6 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
                     <form action={(mode === "waitlist" ? cancelWaitlistedRegistrationAction : cancelRegistrationAction).bind(null, registration.id)}><button type="submit" className="rounded-xl border border-[var(--color-error-text)] px-3 py-2 font-bold text-[var(--color-error-text)]">إلغاء</button></form>
                   </div>
                 </td>
-              ) : null}
             </tr>
           ))}
         </tbody>

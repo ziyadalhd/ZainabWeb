@@ -22,7 +22,7 @@ function isEventAvailability(value: string): value is EventAvailability {
   return value === "available" || value === "full" || value === "closed";
 }
 
-export function mapEventRow(row: EventRow, state: EventStateRow): Event {
+export function mapEventRow(row: EventRow, state: EventStateRow, posterUrl: string | null = null): Event {
   if (
     !isEventAudience(row.audience)
     || !isEventKind(row.event_kind)
@@ -44,12 +44,18 @@ export function mapEventRow(row: EventRow, state: EventStateRow): Event {
     capacity: row.capacity,
     activeReservationCount: state.active_reservation_count,
     priceHalalas: row.price_halalas,
+    posterUrl,
     registrationStatus: row.registration_status,
     availability: state.registration_availability,
     publicationStatus: row.publication_status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function getPosterUrl(client: SupabaseClient<Database>, posterPath: string | null): string | null {
+  if (!posterPath) return null;
+  return client.storage.from("event-posters").getPublicUrl(posterPath).data.publicUrl;
 }
 
 function toEventWrite(input: EventInput) {
@@ -89,7 +95,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     return data.map((row) => {
       const state = stateByEvent.get(row.id);
       if (!state) failDataAccess();
-      return mapEventRow(row, state);
+      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
     });
   }
 
@@ -110,7 +116,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     return data.map((row) => {
       const state = stateByEvent.get(row.id);
       if (!state) failDataAccess();
-      return mapEventRow(row, state);
+      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
     });
   }
 
@@ -130,7 +136,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     if (!data) return null;
     const state = states.find((candidate) => candidate.event_id === data.id);
     if (!state) failDataAccess();
-    return mapEventRow(data, state);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
   async list(): Promise<readonly Event[]> {
@@ -144,7 +150,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     return data.map((row) => {
       const state = stateByEvent.get(row.id);
       if (!state) failDataAccess();
-      return mapEventRow(row, state);
+      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
     });
   }
 
@@ -158,7 +164,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     if (!data) return null;
     const state = states.find((candidate) => candidate.event_id === data.id);
     if (!state) failDataAccess();
-    return mapEventRow(data, state);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
   async create(input: EventInput): Promise<Event> {
@@ -170,7 +176,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
 
     if (error) failDataAccess();
     const state = await this.getState(data.id);
-    return mapEventRow(data, state);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
   async update(id: string, input: EventInput): Promise<Event> {
@@ -183,7 +189,15 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
 
     if (error) failDataAccess();
     const state = await this.getState(data.id);
-    return mapEventRow(data, state);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
+  }
+
+  async setPosterPath(id: string, posterPath: string): Promise<void> {
+    const { error } = await this.client
+      .from("events")
+      .update({ poster_path: posterPath })
+      .eq("id", id);
+    if (error) failDataAccess();
   }
 
   async changeStatus(id: string, status: EventPublicationStatus): Promise<Event> {
@@ -196,7 +210,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
 
     if (error) failDataAccess();
     const state = await this.getState(data.id);
-    return mapEventRow(data, state);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
   private async getState(eventId: string): Promise<EventStateRow> {

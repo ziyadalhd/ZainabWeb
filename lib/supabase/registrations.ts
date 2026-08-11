@@ -14,6 +14,7 @@ import type {
   RegistrationInput,
   RegistrationReceipt,
   RegistrationReminderReceipt,
+  EventFeedbackLinkReceipt,
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
 } from "@/lib/domain/types";
@@ -273,6 +274,16 @@ implements RegistrationService, AdminRegistrationRepository {
       p_reminder_id: id,
     });
     if (error) throw mapFailure(error.message);
+  }
+
+  async issueEventFeedbackLink(id: string): Promise<EventFeedbackLinkReceipt> {
+    const token = generateSecureToken();
+    const { data, error } = await this.client.rpc("issue_event_feedback_link", {
+      p_registration_id: id,
+      p_feedback_token_hash: hashSecureToken(token),
+    });
+    if (error || !data) throw mapFailure(error?.message ?? "save");
+    return { id: data, token };
   }
 }
 

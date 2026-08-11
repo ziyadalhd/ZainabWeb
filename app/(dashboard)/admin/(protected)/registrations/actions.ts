@@ -58,6 +58,11 @@ export interface RegistrationReminderActionState {
   error?: "invalid" | "save";
 }
 
+export interface EventFeedbackLinkActionState {
+  feedbackPath?: string;
+  error?: "invalid" | "save";
+}
+
 export async function prepareRegistrationReminderAction(
   id: string,
   _previousState: RegistrationReminderActionState,
@@ -73,6 +78,23 @@ export async function prepareRegistrationReminderAction(
       reminderId: reminder.id,
       managementPath: `/bookings/${reminder.managementToken}`,
     };
+  } catch {
+    return { error: "save" };
+  }
+}
+
+export async function prepareEventFeedbackLinkAction(
+  id: string,
+  _previousState: EventFeedbackLinkActionState,
+): Promise<EventFeedbackLinkActionState> {
+  void _previousState;
+  await requireAdmin();
+  if (!uuidPattern.test(id)) return { error: "invalid" };
+
+  try {
+    const repository = await createAdminRegistrationRepository();
+    const feedback = await repository.issueEventFeedbackLink(id);
+    return { feedbackPath: `/surveys/event-feedback/${feedback.token}` };
   } catch {
     return { error: "save" };
   }

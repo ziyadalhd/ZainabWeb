@@ -9,6 +9,12 @@ import type {
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
   RegistrationReminderReceipt,
+  EventFeedbackLinkReceipt,
+  EventFeedbackSurvey,
+  EventFeedbackInput,
+  AdminEventFeedbackResponse,
+  SiteSettings,
+  SiteSettingsInput,
   AdminServiceRequest,
   ServiceRequestInput,
   ServiceRequestKind,
@@ -30,6 +36,7 @@ export interface AdminEventRepository {
   create(input: EventInput): Promise<Event>;
   update(id: string, input: EventInput): Promise<Event>;
   changeStatus(id: string, status: EventPublicationStatus): Promise<Event>;
+  setPosterPath(id: string, posterPath: string): Promise<void>;
 }
 
 export interface RegistrationService {
@@ -50,6 +57,24 @@ export interface AdminRegistrationRepository {
   recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void>;
   issueReminder(id: string): Promise<RegistrationReminderReceipt>;
   markReminderSent(id: string): Promise<void>;
+  issueEventFeedbackLink(id: string): Promise<EventFeedbackLinkReceipt>;
+}
+
+export interface EventFeedbackService {
+  getByToken(token: string): Promise<EventFeedbackSurvey | null>;
+  submitByToken(token: string, input: EventFeedbackInput): Promise<void>;
+}
+
+export interface AdminEventFeedbackRepository {
+  listSubmitted(): Promise<readonly AdminEventFeedbackResponse[]>;
+}
+
+export interface SiteSettingsRepository {
+  get(): Promise<SiteSettings>;
+}
+
+export interface AdminSiteSettingsRepository extends SiteSettingsRepository {
+  update(input: SiteSettingsInput): Promise<void>;
 }
 
 export interface ServiceRequestService {
