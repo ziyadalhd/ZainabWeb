@@ -2,10 +2,8 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import type { Event } from "@/lib/domain/types";
-import {
-  formatRiyadhDateInput,
-  formatRiyadhTimeInput,
-} from "@/lib/format/date";
+import { EventDateTimePicker } from "@/features/admin/components/EventDateTimePicker";
+import { formatRiyadhDateInput, formatRiyadhTimeInput } from "@/lib/format/date";
 import type {
   EventFormActionError,
   EventFormActionState,
@@ -152,57 +150,25 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
         <legend className="text-xl font-extrabold text-[var(--brand-green-deep)]">
           الموعد بتوقيت السعودية
         </legend>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <label className="grid gap-2 font-bold" htmlFor="event-start-date">
-            تاريخ البداية
-            <input
-              id="event-start-date"
-              className={inputClassName}
-              type="date"
-              name="startDate"
-              dir="ltr"
-              defaultValue={event ? formatRiyadhDateInput(event.startsAt) : undefined}
-              required
-            />
-            {fieldError("startsAt")}
-          </label>
-          <label className="grid gap-2 font-bold" htmlFor="event-start-time">
-            وقت البداية
-            <input
-              id="event-start-time"
-              className={inputClassName}
-              type="time"
-              name="startTime"
-              dir="ltr"
-              defaultValue={event ? formatRiyadhTimeInput(event.startsAt) : undefined}
-              required
-            />
-          </label>
-          <label className="grid gap-2 font-bold" htmlFor="event-end-date">
-            تاريخ النهاية
-            <input
-              id="event-end-date"
-              className={inputClassName}
-              type="date"
-              name="endDate"
-              dir="ltr"
-              defaultValue={fallbackEnd ? formatRiyadhDateInput(fallbackEnd) : undefined}
-              required
-            />
-            {fieldError("endsAt")}
-          </label>
-          <label className="grid gap-2 font-bold" htmlFor="event-end-time">
-            وقت النهاية
-            <input
-              id="event-end-time"
-              className={inputClassName}
-              type="time"
-              name="endTime"
-              dir="ltr"
-              defaultValue={fallbackEnd ? formatRiyadhTimeInput(fallbackEnd) : undefined}
-              required
-            />
-          </label>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <EventDateTimePicker
+            id="event-start"
+            label="بداية الفعالية"
+            dateName="startDate"
+            timeName="startTime"
+            defaultDate={event ? formatRiyadhDateInput(event.startsAt) : undefined}
+            defaultTime={event ? formatRiyadhTimeInput(event.startsAt) : undefined}
+            error={state.error === "startsAt" ? errorMessages.startsAt : undefined}
+          />
+          <EventDateTimePicker
+            id="event-end"
+            label="نهاية الفعالية"
+            dateName="endDate"
+            timeName="endTime"
+            defaultDate={fallbackEnd ? formatRiyadhDateInput(fallbackEnd) : event ? formatRiyadhDateInput(event.startsAt) : undefined}
+            defaultTime={fallbackEnd ? formatRiyadhTimeInput(fallbackEnd) : undefined}
+            error={state.error === "endsAt" ? errorMessages.endsAt : undefined}
+          />
         </div>
       </fieldset>
 

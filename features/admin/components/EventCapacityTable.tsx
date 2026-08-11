@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Event } from "@/lib/domain/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { formatArabicDateTime, formatArabicNumber, formatEventPrice } from "@/lib/format/date";
+import { formatArabicEventDate, formatArabicEventTimeRange, formatArabicNumber, formatEventPrice } from "@/lib/format/date";
 import { changeEventStatusAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
 
 export function EventCapacityTable({ events, compact = false }: { events: readonly Event[]; compact?: boolean }) {
@@ -30,7 +30,7 @@ export function EventCapacityTable({ events, compact = false }: { events: readon
           {events.map((event) => (
             <tr key={event.id} className="border-t border-[var(--border)] align-top">
               <td className="px-5 py-4"><span className="block font-bold">{event.title}</span><span className="text-xs muted-copy">{event.eventTypeLabel}</span></td>
-              <td className="px-5 py-4 whitespace-nowrap">{formatArabicDateTime(event.startsAt)}</td>
+              <td className="px-5 py-4 whitespace-nowrap"><span className="block font-bold">{formatArabicEventDate(event.startsAt)}</span><span className="text-xs muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</span></td>
               <td className="px-5 py-4">{formatArabicNumber(event.activeReservationCount)} / {formatArabicNumber(event.capacity)}</td>
               <td className="px-5 py-4 whitespace-nowrap">{formatEventPrice(event.priceHalalas)}</td>
               <td className="px-5 py-4"><StatusBadge status={event.availability} /></td>

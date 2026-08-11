@@ -5,7 +5,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EventRegistrationForm } from "@/features/events/components/EventRegistrationForm";
 import type { EventAudience } from "@/lib/domain/types";
 import {
-  formatArabicDateTime,
+  formatArabicEventDate,
+  formatArabicEventTimeRange,
   formatArabicNumber,
   formatEventPrice,
 } from "@/lib/format/date";
@@ -58,15 +59,10 @@ export default async function EventDetailsPage({
           <p className="mt-4 font-bold text-[var(--brand-green-deep)]">هذه الفعالية مخصصة للنساء.</p>
 
           <dl className="mt-9 grid gap-4 border-t border-[var(--border)] pt-7 sm:grid-cols-2">
-            <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-              <dt className="text-sm muted-copy">تبدأ</dt>
-              <dd className="mt-1 font-extrabold">{formatArabicDateTime(event.startsAt)}</dd>
-            </div>
-            <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-              <dt className="text-sm muted-copy">تنتهي</dt>
-              <dd className="mt-1 font-extrabold">
-                {event.endsAt ? formatArabicDateTime(event.endsAt) : "الوقت غير محدد"}
-              </dd>
+            <div className="rounded-2xl bg-[var(--surface-soft)] p-4 sm:col-span-2">
+              <dt className="text-sm muted-copy">الموعد</dt>
+              <dd className="mt-1 text-lg font-extrabold">{formatArabicEventDate(event.startsAt)}</dd>
+              <dd className="mt-1 font-bold text-[var(--brand-green-deep)]">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</dd>
             </div>
             <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
               <dt className="text-sm muted-copy">السعة</dt>

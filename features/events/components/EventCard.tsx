@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Event, EventAudience } from "@/lib/domain/types";
 import {
-  formatArabicDateTime,
+  formatArabicEventDate,
+  formatArabicEventTimeRange,
   formatArabicNumber,
   formatEventPrice,
 } from "@/lib/format/date";
@@ -29,8 +30,7 @@ export function EventCard({ event }: { event: Event }) {
       </h2>
       <p className="mt-2 text-sm muted-copy">{event.eventTypeLabel}</p>
       <dl className="mt-6 grid gap-3 border-t border-[var(--border)] pt-5 text-sm">
-        <div className="flex justify-between gap-4"><dt className="muted-copy">البداية</dt><dd className="font-bold">{formatArabicDateTime(event.startsAt)}</dd></div>
-        {event.endsAt ? <div className="flex justify-between gap-4"><dt className="muted-copy">النهاية</dt><dd className="font-bold">{formatArabicDateTime(event.endsAt)}</dd></div> : null}
+        <div className="grid gap-1"><dt className="muted-copy">الموعد</dt><dd className="font-bold">{formatArabicEventDate(event.startsAt)}</dd><dd className="font-bold text-[var(--brand-green-deep)]">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</dd></div>
         <div className="flex justify-between gap-4"><dt className="muted-copy">السعة</dt><dd className="font-bold">{formatArabicNumber(event.capacity)} مقعدًا</dd></div>
         <div className="flex justify-between gap-4"><dt className="muted-copy">السعر</dt><dd className="font-bold">{formatEventPrice(event.priceHalalas)}</dd></div>
       </dl>

@@ -4,6 +4,14 @@ const dateTimeFormatter = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
   timeZone: "Asia/Riyadh",
 });
 
+const eventDateFormatter = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "Asia/Riyadh",
+});
+
 const numberFormatter = new Intl.NumberFormat("ar-SA");
 
 const timeFormatter = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
@@ -39,6 +47,15 @@ export interface RiyadhDateParts {
 
 export function formatArabicDateTime(value: string | Date): string {
   return dateTimeFormatter.format(typeof value === "string" ? new Date(value) : value);
+}
+
+export function formatArabicEventDate(value: string | Date): string {
+  return eventDateFormatter.format(typeof value === "string" ? new Date(value) : value);
+}
+
+export function formatArabicEventTimeRange(startsAt: string | Date, endsAt?: string | Date | null): string {
+  const start = formatArabicTime(startsAt);
+  return endsAt ? `${start} – ${formatArabicTime(endsAt)}` : start;
 }
 
 export function formatArabicNumber(value: number): string {

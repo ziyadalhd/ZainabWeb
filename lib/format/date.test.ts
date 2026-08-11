@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   formatArabicDateTime,
+  formatArabicEventDate,
+  formatArabicEventTimeRange,
   formatArabicNumber,
   formatEventPrice,
   formatRiyadhDateInput,
@@ -18,6 +20,14 @@ describe("Arabic formatting", () => {
     const formatted = formatArabicDateTime("2026-08-10T18:00:00+03:00");
     expect(formatted).toContain("٢٠٢٦");
     expect(formatted).toContain("٦:٠٠");
+  });
+
+  it("formats an event as an Arabic weekday, date, and time range", () => {
+    const startsAt = "2026-08-11T15:00:00.000Z";
+    const endsAt = "2026-08-11T17:30:00.000Z";
+    expect(formatArabicEventDate(startsAt)).toContain("الثلاثاء");
+    expect(formatArabicEventDate(startsAt)).toContain("أغسطس");
+    expect(formatArabicEventTimeRange(startsAt, endsAt)).toContain("–");
   });
 
   it("returns stable Riyadh parts independent of the server time zone", () => {
