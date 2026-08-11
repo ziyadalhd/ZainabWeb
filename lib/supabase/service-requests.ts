@@ -9,6 +9,8 @@ import type {
   ServiceRequestKind,
   ServiceRequestDetails,
   ServiceRequestReceipt,
+  ServiceRequestConflict,
+  ServiceRequestPaymentStatus,
   ServiceRequestStatus,
 } from "@/lib/domain/types";
 import { generateSecureToken, hashSecureToken, isSecureToken } from "@/lib/security/secure-token";
@@ -29,8 +31,12 @@ function isServiceRequestStatus(value: string): value is ServiceRequestStatus {
   return value === "new" || value === "under_review" || value === "accepted" || value === "rejected" || value === "cancelled";
 }
 
+function isServiceRequestPaymentStatus(value: string): value is ServiceRequestPaymentStatus {
+  return value === "unpaid" || value === "deposit_paid" || value === "paid_in_full";
+}
+
 function mapRow(row: ServiceRequestRow): AdminServiceRequest {
-  if (!isServiceRequestKind(row.request_kind) || !isServiceRequestStatus(row.status)) {
+  if (!isServiceRequestKind(row.request_kind) || !isServiceRequestStatus(row.status) || !isServiceRequestPaymentStatus(row.payment_status)) {
     throw new Error("Invalid service request row returned by the data source.");
   }
   return {
@@ -47,6 +53,11 @@ function mapRow(row: ServiceRequestRow): AdminServiceRequest {
     attendeeCount: row.attendee_count,
     useOrOccasionType: row.use_or_occasion_type,
     workshopTitle: row.workshop_title,
+    notes: row.notes,
+    offerPriceHalalas: row.offer_price_halalas,
+    offerTerms: row.offer_terms,
+    offerExpiresAt: row.offer_expires_at,
+    paymentStatus: row.payment_status,
     createdAt: row.created_at,
   };
 }
@@ -135,9 +146,56 @@ implements ServiceRequestService, AdminServiceRequestRepository {
     if (error) throw mapFailure(error.message);
   }
 
+  async respondToOfferByToken(token: string, response: "accepted" | "rejected"): Promise<void> {
+    if (!isSecureToken(token)) throw new ServiceRequestFailure("invalid");
+    const { error } = await this.client.rpc("respond_to_service_request_offer", {
+      p_management_token_hash: hashSecureToken(token),
+      p_response: response,
+    });
+    if (error) throw mapFailure(error.message);
+  }
+
   async startReview(id: string): Promise<void> {
     const { error } = await this.client.rpc("start_service_request_review", { p_request_id: id });
     if (error) throw mapFailure(error.message);
+  }
+
+  async createOffer(id: string, priceHalalas: number, terms: string, expiresAt: string | null): Promise<void> {
+    const { error } = await this.client.rpc("create_service_request_offer", {
+      p_request_id: id,
+      p_price_halalas: priceHalalas,
+      p_terms: terms,
+      p_expires_at: expiresAt ?? undefined,
+    });
+    if (error) throw mapFailure(error.message);
+  }
+
+  async setPaymentStatus(id: string, status: ServiceRequestPaymentStatus): Promise<void> {
+    const { error } = await this.client.rpc("set_service_request_payment_status", {
+      p_request_id: id,
+      p_payment_status: status,
+    });
+    if (error) throw mapFailure(error.message);
+  }
+
+  async getConflicts(id: string): Promise<readonly ServiceRequestConflict[]> {
+    const { data, error } = await this.client.rpc("get_service_request_conflicts", { p_request_id: id });
+    if (error || !data) throw new ServiceRequestFailure("save");
+    return data.flatMap((row) => {
+      if (
+        (row.conflict_source !== "event" && row.conflict_source !== "service_request")
+        || !row.conflict_title
+        || !row.conflict_starts_at
+        || !row.conflict_ends_at
+      ) return [];
+      return [{
+        source: row.conflict_source,
+        title: row.conflict_title,
+        startsAt: row.conflict_starts_at,
+        endsAt: row.conflict_ends_at,
+        status: row.conflict_status,
+      }];
+    });
   }
 }
 

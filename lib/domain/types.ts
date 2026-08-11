@@ -10,6 +10,7 @@ export type RegistrationAttendanceStatus = "pending" | "confirmed";
 export type RegistrationCheckInStatus = "pending" | "checked_in" | "absent";
 export type ServiceRequestKind = "space_booking" | "celebration_booking" | "workshop_application";
 export type ServiceRequestStatus = "new" | "under_review" | "accepted" | "rejected" | "cancelled";
+export type ServiceRequestPaymentStatus = "unpaid" | "deposit_paid" | "paid_in_full";
 
 export interface Event {
   id: EntityId;
@@ -175,5 +176,18 @@ export interface AdminServiceRequest {
   attendeeCount: number | null;
   useOrOccasionType: string | null;
   workshopTitle: string | null;
+  notes: string | null;
+  offerPriceHalalas: number | null;
+  offerTerms: string | null;
+  offerExpiresAt: IsoDateTime | null;
+  paymentStatus: ServiceRequestPaymentStatus;
   createdAt: IsoDateTime;
+}
+
+export interface ServiceRequestConflict {
+  source: "event" | "service_request";
+  title: string;
+  startsAt: IsoDateTime;
+  endsAt: IsoDateTime;
+  status: string;
 }

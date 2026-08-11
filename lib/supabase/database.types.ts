@@ -213,6 +213,7 @@ export type Database = {
           offer_price_halalas: number | null
           offer_responded_at: string | null
           offer_terms: string | null
+          payment_status: string
           phone_e164: string
           public_reference: string
           request_kind: string
@@ -243,6 +244,7 @@ export type Database = {
           offer_price_halalas?: number | null
           offer_responded_at?: string | null
           offer_terms?: string | null
+          payment_status?: string
           phone_e164: string
           public_reference?: string
           request_kind: string
@@ -273,6 +275,7 @@ export type Database = {
           offer_price_halalas?: number | null
           offer_responded_at?: string | null
           offer_terms?: string | null
+          payment_status?: string
           phone_e164?: string
           public_reference?: string
           request_kind?: string
@@ -376,6 +379,16 @@ export type Database = {
           workshop_title: string
         }[]
       }
+      get_service_request_conflicts: {
+        Args: { p_request_id: string }
+        Returns: {
+          conflict_ends_at: string
+          conflict_source: string
+          conflict_starts_at: string
+          conflict_status: string
+          conflict_title: string
+        }[]
+      }
       get_waitlist_invitation: {
         Args: { p_invitation_token_hash: string }
         Returns: {
@@ -423,6 +436,10 @@ export type Database = {
       }
       revoke_waitlist_invitation: {
         Args: { p_registration_id: string }
+        Returns: undefined
+      }
+      set_service_request_payment_status: {
+        Args: { p_payment_status: string; p_request_id: string }
         Returns: undefined
       }
       start_service_request_review: {

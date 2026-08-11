@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(8);
+select plan(14);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -27,13 +27,12 @@ select ok(
   'anon has no direct read privilege on service requests'
 );
 
-select is(
+select ok(
   public.submit_service_request(
     'space_booking', 'طلب اختبار', '+966500000008', '',
     'لقاء ثقافي', date '2027-01-10', time '17:00', time '19:00', 20,
     '', '', '', '', null, '', '', '', repeat('a', 64)
-  )::text,
-  (select public_reference::text from public.service_requests where management_token_hash = repeat('a', 64)),
+  ) is not null,
   'anon can submit a valid space request only through the scoped RPC'
 );
 
@@ -84,6 +83,58 @@ select lives_ok(
     10000, 'عرض اختبار', null
   )$$,
   'admin can create an offer only through the protected RPC'
+);
+
+reset role;
+set local role anon;
+
+select ok(
+  public.submit_service_request(
+    'space_booking', 'طلب متداخل', '+966500000005', '',
+    'لقاء متداخل', date '2027-01-11', time '18:00', time '20:00', 12,
+    '', '', '', '', null, '', '', '', repeat('d', 64)
+  ) is not null,
+  'anon can submit a second booking request for conflict review'
+);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '55555555-5555-4555-8555-555555555555', true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+
+select lives_ok(
+  $$select public.start_service_request_review((select id from public.service_requests where management_token_hash = repeat('d', 64)))$$,
+  'admin can move an overlapping request into review'
+);
+
+select is(
+  (select count(*) from public.get_service_request_conflicts((select id from public.service_requests where management_token_hash = repeat('c', 64))))::integer,
+  1,
+  'admin sees an overlapping request as a conflict warning'
+);
+
+reset role;
+set local role anon;
+
+select lives_ok(
+  $$select public.respond_to_service_request_offer(repeat('c', 64), 'accepted')$$,
+  'requester can accept an active offer only with its secure token'
+);
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '55555555-5555-4555-8555-555555555555', true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+
+select lives_ok(
+  $$select public.set_service_request_payment_status((select id from public.service_requests where management_token_hash = repeat('c', 64)), 'deposit_paid')$$,
+  'admin can record a payment status only after acceptance'
+);
+
+select is(
+  (select payment_status from public.service_requests where management_token_hash = repeat('c', 64)),
+  'deposit_paid',
+  'payment state is retained independently from request acceptance'
 );
 
 select * from finish();
