@@ -10,7 +10,7 @@ interface ServiceRequestFormProps {
   action: (state: ServiceRequestActionState, formData: FormData) => Promise<ServiceRequestActionState>;
 }
 
-const inputClassName = "min-h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)]";
+const inputClassName = "field-control";
 
 const errorMessages: Record<string, string> = {
   requesterName: "أدخلي الاسم كاملًا.",
@@ -43,11 +43,11 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
 
   if (state.reference && state.managementPath) {
     return (
-      <div role="status" className="rounded-3xl bg-[var(--color-success-bg)] p-6 text-[var(--color-success-text)]">
+      <div role="status" className="notice-success p-5">
         <h2 className="text-xl font-extrabold">تم استلام طلبك</h2>
         <p className="mt-3 text-sm">هذا الطلب لا يمثل حجزًا مؤكدًا. ستراجعه إدارة النادي ثم تتواصل معك.</p>
-        <p className="mt-4 rounded-xl bg-white/75 px-3 py-2 text-sm font-extrabold" dir="ltr">{state.reference}</p>
-        <Link className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-white px-4 py-2 font-extrabold text-[var(--brand-green-deep)] underline" href={state.managementPath}>
+        <p className="data-value mt-4 break-all border border-current/20 bg-white/75 px-3 py-2 text-sm font-extrabold" dir="ltr">{state.reference}</p>
+        <Link className="button-secondary mt-4 bg-white" href={state.managementPath}>
           عرض الطلب أو إلغاؤه
         </Link>
         <p className="mt-3 text-xs">احتفظي بهذا الرابط؛ لا يحتوي على اسم أو رقم جوال.</p>
@@ -57,7 +57,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
 
   return (
     <form action={formAction} className="grid gap-5" noValidate>
-      {state.error ? <p role="alert" className="rounded-2xl bg-[var(--color-error-bg)] px-4 py-3 text-sm font-bold text-[var(--color-error-text)]">{errorMessages[state.error] ?? errorMessages.save}</p> : null}
+      {state.error ? <p role="alert" className="notice-error text-sm">{errorMessages[state.error] ?? errorMessages.save}</p> : null}
 
       <Field>
         <label className="font-bold" htmlFor="requester-name">الاسم كاملًا</label>
@@ -65,7 +65,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
       </Field>
       <Field>
         <label className="font-bold" htmlFor="request-phone">رقم الجوال</label>
-        <input id="request-phone" className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05xxxxxxxx" required />
+        <input id="request-phone" className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="مثال: 05xxxxxxxx…" required />
         <span className="text-xs muted-copy">سيُستخدم للتواصل بشأن هذا الطلب فقط.</span>
       </Field>
       <Field>
@@ -101,7 +101,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
       </Field>
       <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true"><label htmlFor="request-website">اتركي هذا الحقل فارغًا</label><input id="request-website" name="website" tabIndex={-1} autoComplete="off" /></div>
       <p className="text-xs muted-copy">هذا طلب مراجعة وليس حجزًا فوريًا. تُحذف بيانات الطلب تلقائيًا بعد 90 يومًا من إغلاقه.</p>
-      <button type="submit" disabled={pending} className="min-h-12 rounded-2xl bg-[var(--brand-green)] px-5 py-3 font-extrabold text-white hover:bg-[var(--brand-green-deep)] disabled:cursor-wait disabled:opacity-65">{pending ? "جارٍ الإرسال…" : label}</button>
+      <button type="submit" disabled={pending} className="button-primary min-h-12 px-5 py-3">{pending ? "جارٍ الإرسال…" : label}</button>
     </form>
   );
 }

@@ -5,8 +5,9 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 export default function PublicLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <>
+      <a className="skip-link" href="#public-content">تخطي إلى المحتوى</a>
       <SiteHeader />
-      {children}
+      <div id="public-content" tabIndex={-1}>{children}</div>
       <SiteFooter />
     </>
   );

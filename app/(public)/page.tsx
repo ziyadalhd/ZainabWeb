@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClubLogo } from "@/components/brand/ClubLogo";
+import { BrandIntersection } from "@/components/brand/BrandIntersection";
 import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
 const destinations = [
@@ -20,39 +20,43 @@ export default async function HomePage() {
   ];
   return (
     <main>
-      <section className="page-shell grid min-h-[72vh] items-center gap-10 py-12 lg:grid-cols-[1fr_0.8fr]">
-        <div>
+      <section className="page-shell grid min-h-[calc(100svh-6rem)] items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(24rem,0.72fr)] lg:py-14">
+        <div className="max-w-3xl">
           <p className="eyebrow">مساحة ثقافية في مكة</p>
-          <h1 className="page-title mt-4">نادي بَيْن الثقافي</h1>
-          <p className="mt-6 max-w-2xl text-lg muted-copy">واجهة عربية للتعرّف على النادي وأقسامه وفعالياته.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/events" className="rounded-full bg-[var(--brand-green)] px-6 py-3 font-bold text-[var(--brand-ivory)]">استعراض الفعاليات</Link>
-            <Link href="/contact" className="rounded-full border border-[var(--brand-green)] px-6 py-3 font-bold text-[var(--brand-green)]">التواصل</Link>
+          <h1 className="page-title mt-5">نادي بَيْن الثقافي</h1>
+          <p className="mt-6 max-w-xl text-lg leading-8 muted-copy sm:text-xl">واجهة عربية للتعرّف على النادي وأقسامه وفعالياته.</p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link href="/events" className="button-primary px-6 py-3">استعراض الفعاليات</Link>
+            <Link href="/contact" className="button-secondary px-6 py-3">التواصل</Link>
           </div>
         </div>
-        <div className="flex justify-center lg:justify-end">
-          <ClubLogo className="h-auto w-full max-w-md" priority />
+        <div className="mx-auto w-full max-w-[31rem] lg:ml-0">
+          <BrandIntersection />
         </div>
       </section>
 
-      <section className="bg-white/60">
-        <div className="page-shell section-space grid gap-5 md:grid-cols-3">
-          {sections.map((section) => (
-            <article key={section.title} className="card-surface p-6">
-              <h2 className="text-xl font-extrabold text-[var(--brand-green-deep)]">{section.title}</h2>
-              <p className="mt-3 muted-copy">{section.body}</p>
-            </article>
-          ))}
+      <section className="border-y border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="page-shell section-space">
+          <div className="grid border-y border-[var(--brand-olive)] md:grid-cols-3">
+            {sections.map((section, index) => (
+              <article key={section.title} className={`min-w-0 py-8 md:px-8 ${index > 0 ? "border-t border-[var(--color-border)] md:border-r md:border-t-0" : ""}`}>
+                <h2 className="text-2xl font-black text-[var(--brand-forest)]">{section.title}</h2>
+                <p className="mt-4 whitespace-pre-wrap leading-8 muted-copy">{section.body}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="page-shell section-space">
         <p className="eyebrow">الأقسام</p>
-        <h2 className="mt-3 text-3xl font-extrabold text-[var(--brand-green-deep)]">ابدأ من هنا</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">ابدأ من هنا</h2>
+        <div className="mt-8 border-t border-[var(--brand-olive)]">
           {destinations.map((destination) => (
-            <Link key={destination.href} href={destination.href} className="card-surface flex min-h-32 items-end justify-between p-5 font-extrabold text-[var(--brand-green-deep)] transition-transform hover:-translate-y-1">
-              <span>{destination.label}</span><span aria-hidden="true">←</span>
+            <Link key={destination.href} href={destination.href} className="group grid min-h-20 grid-cols-[1rem_1fr_auto] items-center gap-4 border-b border-[var(--color-border)] py-3 text-[var(--brand-forest)] transition-[background-color,padding] hover:bg-[var(--brand-cream)] hover:px-3">
+              <span aria-hidden="true" className="size-3 bg-[var(--brand-amber)]" />
+              <span className="text-xl font-black sm:text-2xl">{destination.label}</span>
+              <span aria-hidden="true" className="text-2xl transition-transform group-hover:-translate-x-1">←</span>
             </Link>
           ))}
         </div>

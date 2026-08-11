@@ -23,7 +23,7 @@ export default async function AdminRequestsPage() {
   const requests = await repository.list();
   const conflicts = await Promise.all(requests.map(async (request) => request.kind === "workshop_application" ? [] : repository.getConflicts(request.id)));
   return (
-    <main className="section-space px-4 sm:px-6 lg:px-8">
+    <main className="admin-page">
       <PageHeader eyebrow="إدارة الطلبات" title="طلبات الحجز والورش" description="راجعي الطلب، ثم أعدّي عرضًا صالحًا عبر الرابط الآمن. تعارض المواعيد تحذير فقط ولا يقرر القبول تلقائيًا." />
       {requests.length === 0 ? <section className="card-surface mt-8 p-8 text-center muted-copy">لا توجد طلبات حاليًا.</section> : <section className="mt-8 grid gap-5">{requests.map((request, index) => {
         const booking = request.kind !== "workshop_application";
@@ -31,7 +31,7 @@ export default async function AdminRequestsPage() {
         return <article key={request.id} className="card-surface p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div><p className="text-sm font-bold text-[var(--brand-green-deep)]">{kindLabels[request.kind]}</p><h2 className="mt-1 text-xl font-extrabold">{request.kind === "workshop_application" ? request.workshopTitle : request.useOrOccasionType}</h2><p className="mt-1 text-xs muted-copy" dir="ltr">{request.reference}</p></div>
-            <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-sm font-extrabold">{statusLabels[request.status]}</span>
+            <span className="rounded-sm border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-3 py-1 text-sm font-extrabold">{statusLabels[request.status]}</span>
           </div>
           <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <div><p className="muted-copy">مقدمة الطلب</p><p className="mt-1 font-bold">{request.requesterName}</p><p className="mt-1 text-xs muted-copy" dir="ltr">{request.phoneE164}</p>{request.email ? <p className="mt-1 text-xs muted-copy" dir="ltr">{request.email}</p> : null}</div>
@@ -39,10 +39,10 @@ export default async function AdminRequestsPage() {
             {booking && request.status === "accepted" ? <div><p className="muted-copy">حالة الدفع</p><p className="mt-1 font-bold">{paymentLabels[request.paymentStatus]}</p></div> : null}
             {booking && request.offerPriceHalalas !== null ? <div><p className="muted-copy">العرض الحالي</p><p className="mt-1 font-bold">{formatEventPrice(request.offerPriceHalalas)}</p><p className="mt-1 text-xs muted-copy">حتى {request.offerExpiresAt ? formatArabicDateTime(request.offerExpiresAt) : "—"}</p></div> : null}
           </div>
-          {request.notes ? <p className="mt-5 whitespace-pre-wrap rounded-xl bg-[var(--surface-soft)] p-4 text-sm">{request.notes}</p> : null}
-          {booking && requestConflicts.length > 0 ? <aside className="mt-5 rounded-2xl border-2 border-[var(--color-error-text)] bg-[var(--color-error-bg)] p-4" aria-label="تحذير تعارض المواعيد"><p className="font-extrabold text-[var(--color-error-text)]">تحذير: الموعد المطلوب يتداخل مع عناصر في تقويم النادي</p><ul className="mt-3 grid gap-2 text-sm">{requestConflicts.map((conflict) => <li key={`${conflict.source}-${conflict.title}-${conflict.startsAt}`}><span className="font-bold">{conflict.source === "event" ? "فعالية" : "طلب آخر"}: {conflict.title}</span><span className="mr-2 muted-copy">{formatArabicDateTime(conflict.startsAt)} – {formatArabicDateTime(conflict.endsAt)} ({conflict.status === "accepted" ? "مقبول" : conflict.status === "under_review" ? "قيد المراجعة" : conflict.status === "published" ? "منشور" : "مسودة"})</span></li>)}</ul><p className="mt-3 text-xs font-bold text-[var(--color-error-text)]">راجعي التقويم قبل إصدار العرض؛ يمكنك المتابعة إذا كان التعارض مقصودًا.</p></aside> : null}
+          {request.notes ? <p className="mt-5 whitespace-pre-wrap border-r-4 border-[var(--brand-olive)] bg-[var(--surface-soft)] p-4 text-sm">{request.notes}</p> : null}
+          {booking && requestConflicts.length > 0 ? <aside className="notice-error mt-5 border border-[var(--color-error-text)] p-4" aria-label="تحذير تعارض المواعيد"><p className="font-extrabold">تحذير: الموعد المطلوب يتداخل مع عناصر في تقويم النادي</p><ul className="mt-3 grid gap-2 text-sm">{requestConflicts.map((conflict) => <li key={`${conflict.source}-${conflict.title}-${conflict.startsAt}`}><span className="font-bold">{conflict.source === "event" ? "فعالية" : "طلب آخر"}: {conflict.title}</span><span className="mr-2 text-[var(--color-text-muted)]">{formatArabicDateTime(conflict.startsAt)} – {formatArabicDateTime(conflict.endsAt)} ({conflict.status === "accepted" ? "مقبول" : conflict.status === "under_review" ? "قيد المراجعة" : conflict.status === "published" ? "منشور" : "مسودة"})</span></li>)}</ul><p className="mt-3 text-xs font-bold">راجعي التقويم قبل إصدار العرض؛ يمكنك المتابعة إذا كان التعارض مقصودًا.</p></aside> : null}
           <div className="mt-6 grid gap-4 border-t border-[var(--border)] pt-5">
-            {request.status === "new" ? <form action={startServiceRequestReviewAction.bind(null, request.id)}><button type="submit" className="min-h-11 rounded-xl border border-[var(--brand-green)] px-4 py-2 text-sm font-extrabold text-[var(--brand-green-deep)]">بدء المراجعة</button></form> : null}
+            {request.status === "new" ? <form action={startServiceRequestReviewAction.bind(null, request.id)}><button type="submit" className="button-secondary px-4 py-2 text-sm">بدء المراجعة</button></form> : null}
             {booking && (request.status === "new" || request.status === "under_review") ? <ServiceRequestOfferForm action={createServiceRequestOfferAction.bind(null, request.id)} priceHalalas={request.offerPriceHalalas} terms={request.offerTerms} expiresAt={request.offerExpiresAt} /> : null}
             {booking && request.status === "accepted" ? <ServiceRequestPaymentStatusForm action={setServiceRequestPaymentStatusAction.bind(null, request.id)} currentStatus={request.paymentStatus} /> : null}
           </div>

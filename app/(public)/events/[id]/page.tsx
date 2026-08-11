@@ -40,54 +40,36 @@ export default async function EventDetailsPage({
   return (
     <main className="page-shell section-space">
       <Link
-        className="inline-flex min-h-11 items-center rounded-xl px-2 font-bold text-[var(--brand-green)] hover:bg-[var(--surface-soft)]"
+        className="button-quiet"
         href="/events"
       >
-        العودة إلى الفعاليات
+        <span aria-hidden="true" className="ml-2">→</span> العودة إلى الفعاليات
       </Link>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <article className="card-surface p-6 sm:p-9">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start">
+        <article className="overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
           {event.posterUrl ? (
-            <Image
-              src={event.posterUrl}
-              alt={`بوستر ${event.title}`}
-              width={1280}
-              height={720}
-              sizes="(min-width: 1024px) 66vw, 100vw"
-              className="mb-8 aspect-video w-full rounded-3xl object-cover"
-              priority
-            />
+            <div className="relative aspect-[4/3] w-full border-b border-[var(--color-border)] bg-[var(--color-surface-muted)] sm:aspect-video">
+              <Image src={event.posterUrl} alt={`بوستر ${event.title}`} fill sizes="(min-width: 1024px) 66vw, 100vw" className="object-contain" priority />
+            </div>
           ) : null}
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-[var(--surface-soft)] px-3 py-1 text-sm font-extrabold text-[var(--brand-green)]">
-              {audienceLabels[event.audience]}
-            </span>
-            <StatusBadge status={event.availability} />
+          <div className="p-5 sm:p-9">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="border-r-4 border-[var(--brand-amber)] pr-3 text-sm font-extrabold text-[var(--brand-forest)]">{audienceLabels[event.audience]}</span>
+              <StatusBadge status={event.availability} />
+            </div>
+            <p className="eyebrow mt-8">{event.eventTypeLabel}</p>
+            <h1 className="page-title mt-3">{event.title}</h1>
+            <p className="mt-4 font-bold text-[var(--brand-forest)]">هذه الفعالية مخصصة للنساء.</p>
+            <dl className="mt-9 grid border-y border-[var(--brand-olive)] sm:grid-cols-2">
+              <div className="py-5 sm:col-span-2"><dt className="text-sm muted-copy">الموعد</dt><dd className="mt-1 text-xl font-black text-[var(--brand-forest)]">{formatArabicEventDate(event.startsAt)}</dd><dd className="mt-1 font-bold muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</dd></div>
+              <div className="border-t border-[var(--color-border)] py-5 sm:border-l sm:pl-5"><dt className="text-sm muted-copy">السعة</dt><dd className="data-value mt-1 font-extrabold">{formatArabicNumber(event.capacity)} مقعدًا</dd></div>
+              <div className="border-t border-[var(--color-border)] py-5 sm:pr-5"><dt className="text-sm muted-copy">السعر</dt><dd className="mt-1 font-extrabold">{formatEventPrice(event.priceHalalas)}</dd></div>
+            </dl>
           </div>
-
-          <p className="eyebrow mt-8">{event.eventTypeLabel}</p>
-          <h1 className="page-title mt-3">{event.title}</h1>
-          <p className="mt-4 font-bold text-[var(--brand-green-deep)]">هذه الفعالية مخصصة للنساء.</p>
-
-          <dl className="mt-9 grid gap-4 border-t border-[var(--border)] pt-7 sm:grid-cols-2">
-            <div className="rounded-2xl bg-[var(--surface-soft)] p-4 sm:col-span-2">
-              <dt className="text-sm muted-copy">الموعد</dt>
-              <dd className="mt-1 text-lg font-extrabold">{formatArabicEventDate(event.startsAt)}</dd>
-              <dd className="mt-1 font-bold text-[var(--brand-green-deep)]">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</dd>
-            </div>
-            <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-              <dt className="text-sm muted-copy">السعة</dt>
-              <dd className="mt-1 font-extrabold">{formatArabicNumber(event.capacity)} مقعدًا</dd>
-            </div>
-            <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
-              <dt className="text-sm muted-copy">السعر</dt>
-              <dd className="mt-1 font-extrabold">{formatEventPrice(event.priceHalalas)}</dd>
-            </div>
-          </dl>
         </article>
 
-        <aside className="card-surface p-6">
+        <aside className="form-surface p-5 sm:p-6 lg:sticky lg:top-32">
           {event.endsAt !== null && event.priceHalalas !== null && event.availability !== "closed" ? (
             <EventRegistrationForm
               action={registerForEventAction.bind(null, event.id, event.audience)}

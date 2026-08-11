@@ -43,7 +43,7 @@ const fieldForError: Partial<Record<EventFormActionError, string>> = {
 };
 
 const inputClassName =
-  "min-h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] shadow-sm transition-[border-color,box-shadow] hover:border-[var(--color-brand-green)]";
+  "field-control";
 
 function formatPriceInput(priceHalalas: number | null | undefined): string {
   if (priceHalalas === null || priceHalalas === undefined) return "";
@@ -88,20 +88,20 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
       ref={formRef}
       action={formAction}
       onChange={() => setDirty(true)}
-      className="mt-8 grid max-w-4xl gap-8 rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow)] sm:p-8"
+      className="form-surface mt-8 grid max-w-5xl gap-9 p-5 sm:p-8"
       noValidate
     >
       {state.error === "save" || state.error === "registrationStatus" ? (
         <p
           role="alert"
-          className="rounded-2xl bg-[var(--color-error-bg)] px-4 py-3 font-bold text-[var(--color-error-text)]"
+          className="notice-error"
         >
           {errorMessages[state.error]}
         </p>
       ) : null}
 
       <fieldset className="grid gap-5">
-        <legend className="text-xl font-extrabold text-[var(--brand-green-deep)]">
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">
           المعلومات الأساسية
         </legend>
         <label className="grid gap-2 font-bold" htmlFor="event-title">
@@ -162,8 +162,8 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
         </div>
       </fieldset>
 
-      <fieldset className="grid gap-5 border-t border-[var(--border)] pt-7">
-        <legend className="text-xl font-extrabold text-[var(--brand-green-deep)]">
+      <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">
           الموعد بتوقيت السعودية
         </legend>
         <div className="grid gap-5 lg:grid-cols-2">
@@ -188,8 +188,8 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
         </div>
       </fieldset>
 
-      <fieldset className="grid gap-5 border-t border-[var(--border)] pt-7">
-        <legend className="text-xl font-extrabold text-[var(--brand-green-deep)]">
+      <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">
           المقاعد والسعر
         </legend>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -223,7 +223,7 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
               dir="ltr"
               autoComplete="off"
               defaultValue={formatPriceInput(event?.priceHalalas)}
-              placeholder="0 للفعالية المجانية"
+              placeholder="مثال: 0 للفعالية المجانية…"
               aria-describedby={`event-price-description${state.error === "priceHalalas" ? " event-price-error" : ""}`}
               aria-invalid={state.error === "priceHalalas"}
               required
@@ -251,11 +251,11 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
         </div>
       </fieldset>
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-6">
+      <div className="flex flex-col items-stretch gap-3 border-t border-[var(--color-border)] pt-6 sm:flex-row sm:items-center">
         <button
           type="submit"
           disabled={pending}
-          className="min-h-12 rounded-2xl bg-[var(--brand-green)] px-6 py-3 font-extrabold text-white transition-[background-color,transform] hover:bg-[#173d21] active:translate-y-px disabled:cursor-wait disabled:opacity-65"
+          className="button-primary min-h-12 px-6 py-3"
         >
           {pending ? "جارٍ الحفظ…" : submitLabel}
         </button>

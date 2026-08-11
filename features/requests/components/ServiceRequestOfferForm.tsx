@@ -11,7 +11,7 @@ interface ServiceRequestOfferFormProps {
   expiresAt: string | null;
 }
 
-const inputClassName = "min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[var(--text)]";
+const inputClassName = "field-control min-h-11 px-3 py-2";
 
 function formatPrice(priceHalalas: number | null): string {
   if (priceHalalas === null) return "";
@@ -33,13 +33,13 @@ export function ServiceRequestOfferForm({ action, priceHalalas, terms, expiresAt
           : null;
 
   return (
-    <form action={formAction} className="grid gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] p-4" noValidate>
+    <form action={formAction} className="grid gap-4 border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4" noValidate>
       <div>
         <h3 className="font-extrabold text-[var(--brand-green-deep)]">صياغة عرض للطلب</h3>
         <p className="mt-1 text-xs muted-copy">سيظهر العرض لصاحبة الطلب عبر رابط المتابعة الآمن. لا يتم تحصيل أي مبلغ من الموقع.</p>
       </div>
-      {errorMessage ? <p role="alert" className="rounded-xl bg-[var(--color-error-bg)] px-3 py-2 text-sm font-bold text-[var(--color-error-text)]">{errorMessage}</p> : null}
-      {state.saved ? <p role="status" className="rounded-xl bg-[var(--color-success-bg)] px-3 py-2 text-sm font-bold text-[var(--color-success-text)]">تم حفظ العرض. سيظهر الآن من رابط متابعة الطلب.</p> : null}
+      {errorMessage ? <p role="alert" className="notice-error text-sm">{errorMessage}</p> : null}
+      {state.saved ? <p role="status" className="notice-success text-sm">تم حفظ العرض. سيظهر الآن من رابط متابعة الطلب.</p> : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-2 text-sm font-bold" htmlFor="offer-price">
           السعر بالريال السعودي
@@ -55,7 +55,7 @@ export function ServiceRequestOfferForm({ action, priceHalalas, terms, expiresAt
         شروط العرض
         <textarea id="offer-terms" className={inputClassName} name="terms" rows={4} maxLength={4000} defaultValue={terms ?? ""} required />
       </label>
-      <button type="submit" disabled={pending} className="min-h-11 w-fit rounded-xl bg-[var(--brand-green)] px-4 py-2 text-sm font-extrabold text-white disabled:cursor-wait disabled:opacity-60">{pending ? "جارٍ حفظ العرض…" : priceHalalas === null ? "إرسال العرض للرابط الآمن" : "تحديث العرض"}</button>
+      <button type="submit" disabled={pending} className="button-primary w-fit px-4 py-2 text-sm">{pending ? "جارٍ حفظ العرض…" : priceHalalas === null ? "إرسال العرض للرابط الآمن" : "تحديث العرض"}</button>
     </form>
   );
 }

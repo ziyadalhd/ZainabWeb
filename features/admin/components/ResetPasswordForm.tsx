@@ -61,19 +61,19 @@ export function ResetPasswordForm() {
   }
 
   if (isCheckingRecovery) {
-    return <p role="status" className="mt-8 rounded-2xl bg-[var(--surface)] px-4 py-3 font-bold text-[var(--brand-green-deep)]">جارٍ التحقق من رابط الاستعادة…</p>;
+    return <p role="status" className="notice-info mt-8">جارٍ التحقق من رابط الاستعادة…</p>;
   }
 
   if (!isRecoverySession) {
-    return <p role="alert" className="mt-8 rounded-2xl bg-[var(--color-error-bg)] px-4 py-3 font-bold text-[var(--color-error-text)]">رابط الاستعادة غير صالح أو انتهت صلاحيته. اطلبي رسالة استعادة جديدة ثم افتحي أحدث رابط.</p>;
+    return <p role="alert" className="notice-error mt-8">رابط الاستعادة غير صالح أو انتهت صلاحيته. اطلبي رسالة استعادة جديدة ثم افتحي أحدث رابط.</p>;
   }
 
   return (
-    <form onSubmit={submit} className="mt-8 grid gap-5 rounded-3xl border border-[var(--border)] bg-white p-6 shadow-[var(--shadow)] sm:p-8">
-      {message ? <p role="alert" className="rounded-2xl bg-[var(--color-error-bg)] px-4 py-3 font-bold text-[var(--color-error-text)]">{message}</p> : null}
-      <label className="grid gap-2 font-bold">كلمة المرور الجديدة<input className="rounded-2xl border border-[var(--border)] px-4 py-3 font-normal" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" dir="ltr" minLength={minimumPasswordLength} required /></label>
-      <label className="grid gap-2 font-bold">تأكيد كلمة المرور<input className="rounded-2xl border border-[var(--border)] px-4 py-3 font-normal" type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" dir="ltr" minLength={minimumPasswordLength} required /></label>
-      <button className="rounded-2xl bg-[var(--brand-green)] px-6 py-3 font-extrabold text-white disabled:opacity-60" type="submit" disabled={isSubmitting}>{isSubmitting ? "جارٍ الحفظ…" : "حفظ كلمة المرور"}</button>
+    <form onSubmit={submit} className="form-surface mt-8 grid gap-5 p-5 sm:p-7">
+      {message ? <p role="alert" className="notice-error">{message}</p> : null}
+      <label className="grid gap-2 font-bold">كلمة المرور الجديدة<input className="field-control font-normal" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" dir="ltr" minLength={minimumPasswordLength} required /></label>
+      <label className="grid gap-2 font-bold">تأكيد كلمة المرور<input className="field-control font-normal" type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" dir="ltr" minLength={minimumPasswordLength} required /></label>
+      <button className="button-primary min-h-12 px-6 py-3" type="submit" disabled={isSubmitting}>{isSubmitting ? "جارٍ الحفظ…" : "حفظ كلمة المرور"}</button>
     </form>
   );
 }

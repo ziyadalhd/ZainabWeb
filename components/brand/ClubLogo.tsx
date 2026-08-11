@@ -11,7 +11,7 @@ export function ClubLogo({
   variant = "on-ivory",
   alt = "شعار نادي بَيْن الثقافي",
   priority = false,
-  className = "h-auto w-20 sm:w-24",
+  className = "h-auto w-28 sm:w-36",
 }: ClubLogoProps) {
   return (
     <Image
@@ -20,8 +20,8 @@ export function ClubLogo({
       width={2993}
       height={1844}
       priority={priority}
-      sizes="(max-width: 640px) 80px, 112px"
-      className={`shrink-0 object-contain ${variant === "on-green" ? "rounded-xl bg-[var(--brand-ivory)] p-2" : ""} ${className}`}
+      sizes="(max-width: 640px) 112px, 144px"
+      className={`shrink-0 object-contain ${variant === "on-green" ? "rounded-sm bg-[var(--brand-ivory)] p-2" : ""} ${className}`}
     />
   );
 }

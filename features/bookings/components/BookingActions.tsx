@@ -23,7 +23,7 @@ export function BookingActions({
 
   if (cancelState.success === "cancelled") {
     return (
-      <div role="status" className="rounded-2xl bg-[var(--color-success-bg)] p-4 font-bold text-[var(--color-success-text)]">
+      <div role="status" className="notice-success">
         تم إلغاء الحجز وتحرير المقعد. أصبح هذا الرابط غير صالح.
       </div>
     );
@@ -38,7 +38,7 @@ export function BookingActions({
           <button
             type="submit"
             disabled={confirming}
-            className="min-h-12 w-full rounded-2xl bg-[var(--brand-green)] px-5 py-3 font-extrabold text-white disabled:opacity-65"
+            className="button-primary min-h-12 w-full px-5 py-3"
           >
             {confirming ? "جارٍ التأكيد…" : "تأكيد الحضور"}
           </button>
@@ -46,13 +46,13 @@ export function BookingActions({
       ) : null}
 
       {attendanceConfirmed ? (
-        <p role="status" className="rounded-2xl bg-[var(--color-success-bg)] p-4 font-bold text-[var(--color-success-text)]">
+        <p role="status" className="notice-success">
           تم تأكيد الحضور.
         </p>
       ) : null}
 
       {confirmState.error || cancelState.error ? (
-        <p role="alert" className="rounded-2xl bg-[var(--color-error-bg)] p-4 font-bold text-[var(--color-error-text)]">
+        <p role="alert" className="notice-error">
           {confirmState.error === "unavailable" || cancelState.error === "unavailable"
             ? "لم يعد هذا الرابط متاحًا."
             : "تعذر تنفيذ الطلب. حاول مرة أخرى بعد قليل."}
@@ -63,19 +63,19 @@ export function BookingActions({
         <button
           type="button"
           onClick={() => setConfirmingCancellation(true)}
-          className="min-h-12 rounded-2xl border border-[var(--color-error-text)] px-5 py-3 font-extrabold text-[var(--color-error-text)]"
+          className="button-danger min-h-12 px-5 py-3"
         >
           إلغاء الحجز
         </button>
       ) : (
-        <div className="rounded-2xl border border-[var(--color-error-text)] p-4">
+        <div className="border border-[var(--color-error-text)] bg-[var(--color-error-bg)] p-4">
           <p className="font-bold">هل أنت متأكدة من إلغاء الحجز وتحرير المقعد؟</p>
           <div className="mt-4 flex flex-wrap gap-3">
             <form action={cancelFormAction}>
               <button
                 type="submit"
                 disabled={cancelling}
-                className="min-h-11 rounded-xl bg-[var(--color-error-text)] px-4 py-2 font-extrabold text-white disabled:opacity-65"
+                className="button-danger min-h-11 bg-[var(--color-error-text)] px-4 py-2 text-[var(--color-on-primary)]"
               >
                 {cancelling ? "جارٍ الإلغاء…" : "نعم، إلغاء الحجز"}
               </button>
@@ -83,7 +83,7 @@ export function BookingActions({
             <button
               type="button"
               onClick={() => setConfirmingCancellation(false)}
-              className="min-h-11 rounded-xl border border-[var(--border)] px-4 py-2 font-bold"
+              className="button-quiet min-h-11 px-4 py-2"
             >
               التراجع
             </button>

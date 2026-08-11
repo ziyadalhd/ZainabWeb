@@ -16,5 +16,5 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
   const event = await repository.get(id);
   if (!event) notFound();
 
-  return <main className="px-4 py-8 sm:px-8"><PageHeader eyebrow="إدارة الفعاليات" title="تعديل الفعالية" description={`حالة النشر الحالية: ${event.publicationStatus === "draft" ? "مسودة" : event.publicationStatus === "published" ? "منشورة" : "مؤرشفة"}.`} /><EventForm action={updateEventAction.bind(null, id)} event={event} submitLabel="حفظ التعديلات" /><EventPosterForm eventTitle={event.title} posterUrl={event.posterUrl} action={uploadEventPosterAction.bind(null, id)} /></main>;
+  return <main className="admin-page"><PageHeader eyebrow="إدارة الفعاليات" title="تعديل الفعالية" description={`حالة النشر الحالية: ${event.publicationStatus === "draft" ? "مسودة" : event.publicationStatus === "published" ? "منشورة" : "مؤرشفة"}.`} /><EventForm action={updateEventAction.bind(null, id)} event={event} submitLabel="حفظ التعديلات" /><EventPosterForm eventTitle={event.title} posterUrl={event.posterUrl} action={uploadEventPosterAction.bind(null, id)} /></main>;
 }

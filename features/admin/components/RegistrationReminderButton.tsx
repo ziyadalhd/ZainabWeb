@@ -35,13 +35,13 @@ function MarkReminderSentControl({
   const [state, formAction, pending] = useActionState(action, {});
 
   if (state.sent) {
-    return <p role="status" className="rounded-xl border border-[var(--brand-green)] px-3 py-2 text-center font-bold">سُجل أنها أُرسلت يدويًا</p>;
+    return <p role="status" className="notice-success text-center">سُجل أنها أُرسلت يدويًا</p>;
   }
 
   return (
     <form action={formAction} className="grid gap-2">
       {state.error ? <p role="alert" className="text-xs font-bold text-[var(--color-error-text)]">تعذر حفظ حالة الإرسال. حاولي مرة أخرى.</p> : null}
-      <button type="submit" disabled={pending} className="w-full rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)] disabled:opacity-65">
+      <button type="submit" disabled={pending} className="button-secondary w-full px-3 py-2 text-sm">
         {pending ? "جارٍ حفظ الحالة…" : "تم الإرسال يدويًا"}
       </button>
     </form>
@@ -68,11 +68,11 @@ export function RegistrationReminderButton({
 
   if (state.managementPath && state.reminderId) {
     return (
-      <div className="grid min-w-64 gap-2 rounded-xl bg-[var(--color-success-bg)] p-3 text-[var(--color-success-text)]">
+      <div className="notice-success grid min-w-64 gap-2 p-3">
         <p className="font-bold">التذكير جاهز لهذه المسجّلة</p>
         <p className="text-xs">{attendeeName} — <span dir="ltr">{phoneE164}</span></p>
         <Link className="break-all text-xs font-bold underline" href={state.managementPath}>فحص الرابط الآمن</Link>
-        <button type="button" onClick={openWhatsapp} className="rounded-xl bg-[#1f7a3f] px-3 py-2 font-bold text-white">
+        <button type="button" onClick={openWhatsapp} className="button-primary min-h-10 px-3 py-2 text-sm">
           فتح الرسالة الجاهزة
         </button>
         <MarkReminderSentControl action={markSentAction.bind(null, state.reminderId)} />
@@ -92,7 +92,7 @@ export function RegistrationReminderButton({
       ) : null}
       {state.error ? <p role="alert" className="text-xs font-bold text-[var(--color-error-text)]">تعذر تجهيز التذكير. حدّثي الصفحة وحاولي مرة أخرى.</p> : null}
       <form action={formAction}>
-        <button type="submit" disabled={pending} className="rounded-xl bg-[#1f7a3f] px-3 py-2 font-bold text-white disabled:opacity-65">
+        <button type="submit" disabled={pending} className="button-primary min-h-10 px-3 py-2 text-sm">
           {pending ? "جارٍ تجهيز الرابط…" : "تجهيز تذكير WhatsApp"}
         </button>
       </form>

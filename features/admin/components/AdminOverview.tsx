@@ -16,14 +16,14 @@ export function AdminOverview({ events, registrations, now }: { events: readonly
 
   return (
     <div className="mt-8 grid gap-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <section aria-label="مؤشرات التشغيل" className="grid gap-px overflow-hidden border border-[var(--color-border)] bg-[var(--color-border)] sm:grid-cols-2 xl:grid-cols-3">
         <StatCard label="المسجلون" value={formatArabicNumber(registered)} note={`إجمالي السعة ${formatArabicNumber(capacity)}`} />
         <StatCard label="الانتظار والدعوات" value={formatArabicNumber(waitlisted)} note="الاختيار يدوي والدعوة صالحة 6 ساعات" />
         <StatCard label="الحضور المسجل" value={formatArabicNumber(checkedIn)} note={`${formatArabicNumber(absent)} مسجلة كغائبة في الفعاليات السابقة`} />
         <StatCard label="دفعات لم تُسجل" value={formatArabicNumber(upcomingUnpaid)} note="تسجيل يدوي فقط؛ لا يوجد تحصيل إلكتروني" />
         <StatCard label="الفعاليات المنشورة" value={formatArabicNumber(published)} note="تظهر للعامة إذا كان موعدها قادمًا" />
         <StatCard label="المسودات" value={formatArabicNumber(drafts)} note="لا تظهر في الموقع العام" />
-      </div>
+      </section>
       <EventCapacityTable events={events} compact />
     </div>
   );

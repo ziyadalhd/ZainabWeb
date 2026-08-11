@@ -38,10 +38,12 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
   }
 
   return (
-    <div className="overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)]">
-      <table className="w-full min-w-[88rem] border-collapse text-right text-sm">
+    <div>
+      <p className="mb-2 text-xs font-bold muted-copy md:hidden">مرري الجدول أفقيًا لعرض بيانات المسجلات والإجراءات.</p>
+      <div className="table-scroll" tabIndex={0} role="region" aria-label="سجلات التسجيل؛ يمكن تمريرها أفقيًا">
+      <table className="operational-table w-full min-w-[88rem] border-collapse text-right text-sm">
         <caption className="sr-only">سجلات التسجيل ووسائل التواصل والإجراءات</caption>
-        <thead className="bg-[var(--surface-soft)] text-[var(--brand-green-deep)]">
+        <thead>
           <tr>
             <th className="px-5 py-4">المسجل</th>
             <th className="px-5 py-4">الفعالية</th>
@@ -55,17 +57,17 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
         </thead>
         <tbody>
           {registrations.map((registration) => (
-            <tr key={registration.id} className="border-t border-[var(--border)] align-top">
+            <tr key={registration.id} className="border-t border-[var(--color-border)] align-top">
               <td className="px-5 py-4">
                 <span className="block font-bold">{registration.attendeeName}</span>
                 {registration.participantAge !== null ? <span className="block text-xs muted-copy">العمر: {registration.participantAge} — ولية الأمر: {registration.guardianName}</span> : null}
               </td>
               <td className="px-5 py-4"><span className="block font-bold">{registration.eventTitle}</span><span className="text-xs muted-copy">{formatArabicDateTime(registration.eventStartsAt)}</span></td>
-              <td className="px-5 py-4" dir="ltr">{registration.phoneE164}</td>
-              <td className="px-5 py-4" dir="ltr">{registration.email ?? "—"}</td>
+              <td className="data-value px-5 py-4" dir="ltr">{registration.phoneE164}</td>
+              <td className="max-w-56 break-all px-5 py-4" dir="ltr">{registration.email ?? "—"}</td>
               <td className="px-5 py-4"><div className="grid justify-items-start gap-2"><StatusBadge status={registration.status} />{registration.status === "registered" ? <StatusBadge status={registration.attendanceStatus} /> : null}{registration.status === "registered" ? <StatusBadge status={registration.checkInStatus === "pending" ? "check_in_pending" : registration.checkInStatus} /> : null}</div></td>
               <td className="px-5 py-4">{registration.status === "registered" ? <RegistrationPaymentStatusForm registrationId={registration.id} currentStatus={registration.paymentStatus} action={setRegistrationPaymentStatusAction.bind(null, registration.id)} /> : "—"}</td>
-              <td className="px-5 py-4 text-xs" dir="ltr">{registration.reference}</td>
+              <td className="data-value px-5 py-4 text-xs" dir="ltr">{registration.reference}</td>
               <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
                     {mode === "previous" && registration.status === "registered" ? (
@@ -82,11 +84,11 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
                         markSentAction={markRegistrationReminderSentAction}
                       />
                     ) : (
-                      <a href={waitlistWhatsappHref(registration)} target="_blank" rel="noreferrer" className="rounded-xl bg-[#1f7a3f] px-3 py-2 font-bold text-white">فتح WhatsApp</a>
+                      <a href={waitlistWhatsappHref(registration)} target="_blank" rel="noreferrer" className="button-primary min-h-10 px-3 py-2 text-sm">فتح WhatsApp</a>
                     )}
-                    {mode === "current" && registration.attendanceStatus === "pending" ? <form action={confirmAttendanceAction.bind(null, registration.id)}><button type="submit" className="rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)]">تأكيد الحضور</button></form> : null}
-                    {mode === "current" && registration.checkInStatus !== "checked_in" ? <form action={recordCheckInAction.bind(null, registration.id, "checked_in")}><button type="submit" className="rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)]">تسجيل الحضور</button></form> : null}
-                    {mode === "current" && registration.checkInStatus !== "absent" ? <form action={recordCheckInAction.bind(null, registration.id, "absent")}><button type="submit" className="rounded-xl border border-[var(--color-error-text)] px-3 py-2 font-bold text-[var(--color-error-text)]">تسجيل الغياب</button></form> : null}
+                    {mode === "current" && registration.attendanceStatus === "pending" ? <form action={confirmAttendanceAction.bind(null, registration.id)}><button type="submit" className="button-secondary min-h-10 px-3 py-2 text-sm">تأكيد الحضور</button></form> : null}
+                    {mode === "current" && registration.checkInStatus !== "checked_in" ? <form action={recordCheckInAction.bind(null, registration.id, "checked_in")}><button type="submit" className="button-secondary min-h-10 px-3 py-2 text-sm">تسجيل الحضور</button></form> : null}
+                    {mode === "current" && registration.checkInStatus !== "absent" ? <form action={recordCheckInAction.bind(null, registration.id, "absent")}><button type="submit" className="button-danger min-h-10 px-3 py-2 text-sm">تسجيل الغياب</button></form> : null}
                     {mode === "waitlist" && registration.status === "waitlisted" ? (
                       <WaitlistInviteButton
                         attendeeName={registration.attendeeName}
@@ -95,15 +97,16 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
                       />
                     ) : null}
                     {mode === "waitlist" && registration.status === "invited" ? (
-                      <form action={revokeInvitationAction.bind(null, registration.id)}><button type="submit" className="rounded-xl border border-[var(--color-error-text)] px-3 py-2 font-bold text-[var(--color-error-text)]">سحب الدعوة</button></form>
+                      <form action={revokeInvitationAction.bind(null, registration.id)}><button type="submit" className="button-danger min-h-10 px-3 py-2 text-sm">سحب الدعوة</button></form>
                     ) : null}
-                    <form action={(mode === "waitlist" ? cancelWaitlistedRegistrationAction : cancelRegistrationAction).bind(null, registration.id)}><button type="submit" className="rounded-xl border border-[var(--color-error-text)] px-3 py-2 font-bold text-[var(--color-error-text)]">إلغاء</button></form>
+                    <form action={(mode === "waitlist" ? cancelWaitlistedRegistrationAction : cancelRegistrationAction).bind(null, registration.id)}><button type="submit" className="button-danger min-h-10 px-3 py-2 text-sm">إلغاء</button></form>
                   </div>
                 </td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
