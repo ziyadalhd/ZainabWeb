@@ -6,6 +6,7 @@ import type {
 import {
   isRegistrationAttendanceStatus,
   isRegistrationCheckInStatus,
+  isRegistrationPaymentStatus,
   isRegistrationStatus,
 } from "@/lib/domain/registration-input";
 import type {
@@ -14,6 +15,7 @@ import type {
   RegistrationInput,
   RegistrationReceipt,
   RegistrationReminderReceipt,
+  RegistrationPaymentStatus,
   EventFeedbackLinkReceipt,
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
@@ -70,6 +72,7 @@ function mapRegistration(
     !isRegistrationStatus(row.status)
     || !isRegistrationAttendanceStatus(row.attendance_status)
     || !isRegistrationCheckInStatus(row.check_in_status)
+    || !isRegistrationPaymentStatus(row.payment_status)
   ) {
     throw new Error("Invalid registration row returned by the data source.");
   }
@@ -91,6 +94,7 @@ function mapRegistration(
     attendanceStatus: row.attendance_status,
     checkInStatus: row.check_in_status,
     checkedInAt: row.checked_in_at,
+    paymentStatus: row.payment_status,
     invitationExpiresAt: row.invitation_expires_at,
     latestReminderPreparedAt: latestReminder?.prepared_at ?? null,
     latestReminderSentAt: latestReminder?.sent_at ?? null,
@@ -284,6 +288,14 @@ implements RegistrationService, AdminRegistrationRepository {
     });
     if (error || !data) throw mapFailure(error?.message ?? "save");
     return { id: data, token };
+  }
+
+  async setPaymentStatus(id: string, status: RegistrationPaymentStatus): Promise<void> {
+    const { error } = await this.client.rpc("set_registration_payment_status", {
+      p_registration_id: id,
+      p_payment_status: status,
+    });
+    if (error) throw mapFailure(error.message);
   }
 }
 

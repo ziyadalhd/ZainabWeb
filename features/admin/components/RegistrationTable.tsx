@@ -12,10 +12,12 @@ import {
   prepareEventFeedbackLinkAction,
   recordCheckInAction,
   revokeInvitationAction,
+  setRegistrationPaymentStatusAction,
 } from "@/app/(dashboard)/admin/(protected)/registrations/actions";
 import { WaitlistInviteButton } from "@/features/admin/components/WaitlistInviteButton";
 import { RegistrationReminderButton } from "@/features/admin/components/RegistrationReminderButton";
 import { RegistrationFeedbackButton } from "@/features/admin/components/RegistrationFeedbackButton";
+import { RegistrationPaymentStatusForm } from "@/features/admin/components/RegistrationPaymentStatusForm";
 
 interface RegistrationTableProps {
   registrations: readonly Registration[];
@@ -37,7 +39,7 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
 
   return (
     <div className="overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)]">
-      <table className="w-full min-w-[78rem] border-collapse text-right text-sm">
+      <table className="w-full min-w-[88rem] border-collapse text-right text-sm">
         <caption className="sr-only">سجلات التسجيل ووسائل التواصل والإجراءات</caption>
         <thead className="bg-[var(--surface-soft)] text-[var(--brand-green-deep)]">
           <tr>
@@ -46,6 +48,7 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
             <th className="px-5 py-4">الجوال</th>
             <th className="px-5 py-4">البريد</th>
             <th className="px-5 py-4">الحالة</th>
+            <th className="px-5 py-4">الدفع</th>
             <th className="px-5 py-4">رقم المرجع</th>
             <th className="px-5 py-4">الإجراءات</th>
           </tr>
@@ -61,6 +64,7 @@ export function RegistrationTable({ registrations, mode }: RegistrationTableProp
               <td className="px-5 py-4" dir="ltr">{registration.phoneE164}</td>
               <td className="px-5 py-4" dir="ltr">{registration.email ?? "—"}</td>
               <td className="px-5 py-4"><div className="grid justify-items-start gap-2"><StatusBadge status={registration.status} />{registration.status === "registered" ? <StatusBadge status={registration.attendanceStatus} /> : null}{registration.status === "registered" ? <StatusBadge status={registration.checkInStatus === "pending" ? "check_in_pending" : registration.checkInStatus} /> : null}</div></td>
+              <td className="px-5 py-4">{registration.status === "registered" ? <RegistrationPaymentStatusForm registrationId={registration.id} currentStatus={registration.paymentStatus} action={setRegistrationPaymentStatusAction.bind(null, registration.id)} /> : "—"}</td>
               <td className="px-5 py-4 text-xs" dir="ltr">{registration.reference}</td>
               <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">

@@ -12,6 +12,7 @@ vi.mock("@/app/(dashboard)/admin/(protected)/registrations/actions", () => ({
   prepareRegistrationReminderAction: vi.fn(),
   recordCheckInAction: vi.fn(),
   revokeInvitationAction: vi.fn(),
+  setRegistrationPaymentStatusAction: vi.fn(),
 }));
 
 const registration: Registration = {
@@ -31,6 +32,7 @@ const registration: Registration = {
   attendanceStatus: "pending",
   checkInStatus: "pending",
   checkedInAt: null,
+  paymentStatus: "unpaid",
   invitationExpiresAt: null,
   latestReminderPreparedAt: null,
   latestReminderSentAt: null,

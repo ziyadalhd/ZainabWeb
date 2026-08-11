@@ -9,6 +9,7 @@ export type EventPublicationStatus = "draft" | "published" | "archived";
 export type RegistrationStatus = "registered" | "waitlisted" | "invited" | "cancelled";
 export type RegistrationAttendanceStatus = "pending" | "confirmed";
 export type RegistrationCheckInStatus = "pending" | "checked_in" | "absent";
+export type RegistrationPaymentStatus = "unpaid" | "deposit_paid" | "paid_in_full";
 export type ServiceRequestKind = "space_booking" | "celebration_booking" | "workshop_application";
 export type ServiceRequestStatus = "new" | "under_review" | "accepted" | "rejected" | "cancelled";
 export type ServiceRequestPaymentStatus = "unpaid" | "deposit_paid" | "paid_in_full";
@@ -76,6 +77,7 @@ export interface Registration {
   attendanceStatus: RegistrationAttendanceStatus;
   checkInStatus: RegistrationCheckInStatus;
   checkedInAt: IsoDateTime | null;
+  paymentStatus: RegistrationPaymentStatus;
   invitationExpiresAt: IsoDateTime | null;
   latestReminderPreparedAt: IsoDateTime | null;
   latestReminderSentAt: IsoDateTime | null;
@@ -125,6 +127,26 @@ export interface EventFeedbackInput {
 
 export interface EventFeedbackSurvey {
   eventTitle: string;
+}
+
+export interface InterestedContactInput {
+  contactName: string;
+  phoneE164: string;
+  email: string;
+}
+
+export interface InterestedContactReceipt {
+  unsubscribeToken: string;
+}
+
+export interface AdminInterestedContact {
+  id: EntityId;
+  contactName: string;
+  phoneE164: string;
+  email: string;
+  consentedAt: IsoDateTime;
+  unsubscribedAt: IsoDateTime | null;
+  createdAt: IsoDateTime;
 }
 
 export interface EventFeedbackLinkReceipt {

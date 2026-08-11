@@ -118,6 +118,8 @@ Record approved architectural decisions here only after explicit user approval. 
 - Content: editable site settings in the protected dashboard own club copy, contact details, default venue, social links, and literary-partner information. Values are public by design; social controls remain hidden until a real URL is saved.
 - Event posters: optional posters use the public `event-posters` Supabase Storage bucket. Only allowlisted administrators can upload or delete PNG, JPEG, or WebP objects; public visitors can only retrieve the selected public object URL.
 - Event feedback: the administrator issues a separate 32-byte-token link to an active registration. The database stores only its SHA-256 hash and accepts one approved response. When the participant selects anonymous submission, the registration reference is set to `NULL` in the response record before it is visible to administrators.
+- Interested contacts: the public consent form collects the approved name, Saudi mobile, and mandatory email. Consent is unchecked by default and required only to complete the explicit signup. A new 32-byte unsubscribe token is shown after submission and its SHA-256 hash is the only token value persisted. Resubmitting the same normalized email refreshes consent and rotates the old unsubscribe token; no broadcast or automatic delivery is enabled by this feature.
+- Event payment: standard event registrations use the approved manual states `unpaid`, `deposit_paid`, and `paid_in_full`. Only an allowlisted administrator can change that value through a narrowly scoped RPC. The payment state remains separate from registration, attendance confirmation, and check-in, and never invokes payment processing.
 
 ## Communications and protection: 2026-08-09
 

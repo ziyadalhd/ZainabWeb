@@ -134,6 +134,42 @@ export type Database = {
         }
         Relationships: []
       }
+      interested_contacts: {
+        Row: {
+          consented_at: string
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          phone_e164: string
+          unsubscribe_token_hash: string
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          consented_at?: string
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          phone_e164: string
+          unsubscribe_token_hash: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consented_at?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          phone_e164?: string
+          unsubscribe_token_hash?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       registration_reminders: {
         Row: {
           id: string
@@ -187,6 +223,7 @@ export type Database = {
           invitation_token_hash: string | null
           invited_at: string | null
           participant_age: number | null
+          payment_status: string
           phone_e164: string
           price_halalas_at_booking: number
           promoted_at: string | null
@@ -215,6 +252,7 @@ export type Database = {
           invitation_token_hash?: string | null
           invited_at?: string | null
           participant_age?: number | null
+          payment_status?: string
           phone_e164: string
           price_halalas_at_booking: number
           promoted_at?: string | null
@@ -243,6 +281,7 @@ export type Database = {
           invitation_token_hash?: string | null
           invited_at?: string | null
           participant_age?: number | null
+          payment_status?: string
           phone_e164?: string
           price_halalas_at_booking?: number
           promoted_at?: string | null
@@ -553,6 +592,10 @@ export type Database = {
         Args: { p_registration_id: string }
         Returns: undefined
       }
+      set_registration_payment_status: {
+        Args: { p_payment_status: string; p_registration_id: string }
+        Returns: undefined
+      }
       set_service_request_payment_status: {
         Args: { p_payment_status: string; p_request_id: string }
         Returns: undefined
@@ -570,6 +613,15 @@ export type Database = {
           p_suggestions: string
         }
         Returns: undefined
+      }
+      submit_interested_contact: {
+        Args: {
+          p_contact_name: string
+          p_email: string
+          p_phone_e164: string
+          p_unsubscribe_token_hash: string
+        }
+        Returns: string
       }
       submit_service_request: {
         Args: {
@@ -593,6 +645,10 @@ export type Database = {
           p_workshop_title: string
         }
         Returns: string
+      }
+      unsubscribe_interested_contact: {
+        Args: { p_unsubscribe_token_hash: string }
+        Returns: undefined
       }
     }
     Enums: {

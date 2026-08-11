@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { isRegistrationCheckInStatus } from "@/lib/domain/registration-input";
+import { isRegistrationCheckInStatus, isRegistrationPaymentStatus } from "@/lib/domain/registration-input";
+import type { RegistrationPaymentStatus } from "@/lib/domain/types";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -61,6 +62,11 @@ export interface RegistrationReminderActionState {
 export interface EventFeedbackLinkActionState {
   feedbackPath?: string;
   error?: "invalid" | "save";
+}
+
+export interface RegistrationPaymentActionState {
+  saved?: true;
+  error?: "status" | "save";
 }
 
 export async function prepareRegistrationReminderAction(
@@ -166,4 +172,24 @@ export async function recordCheckInAction(id: string, outcome: string) {
 
   revalidateRegistrationViews();
   redirect("/admin/registrations/current?success=check-in");
+}
+
+export async function setRegistrationPaymentStatusAction(
+  id: string,
+  _previousState: RegistrationPaymentActionState,
+  formData: FormData,
+): Promise<RegistrationPaymentActionState> {
+  await requireAdmin();
+  const status = String(formData.get("paymentStatus") ?? "");
+  if (!uuidPattern.test(id) || !isRegistrationPaymentStatus(status)) return { error: "status" };
+
+  try {
+    const repository = await createAdminRegistrationRepository();
+    await repository.setPaymentStatus(id, status satisfies RegistrationPaymentStatus);
+  } catch {
+    return { error: "save" };
+  }
+
+  revalidateRegistrationViews();
+  return { saved: true };
 }

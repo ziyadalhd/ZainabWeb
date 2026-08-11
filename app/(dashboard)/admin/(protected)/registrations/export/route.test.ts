@@ -31,6 +31,7 @@ const registration: Registration = {
   attendanceStatus: "pending",
   checkInStatus: "pending",
   checkedInAt: null,
+  paymentStatus: "unpaid",
   invitationExpiresAt: null,
   latestReminderPreparedAt: null,
   latestReminderSentAt: null,

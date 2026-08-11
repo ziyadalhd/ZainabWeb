@@ -23,6 +23,7 @@ const currentRegistration: Registration = {
   attendanceStatus: "pending",
   checkInStatus: "pending",
   checkedInAt: null,
+  paymentStatus: "unpaid",
   invitationExpiresAt: null,
   latestReminderPreparedAt: null,
   latestReminderSentAt: null,
@@ -54,6 +55,7 @@ describe("registration CSV export", () => {
     expect(csv).toMatch(/^\uFEFF"رقم المرجع"/);
     expect(csv).toContain("\"'=UNSAFE()\"");
     expect(csv).toContain("\"بانتظار التأكيد\"");
+    expect(csv).toContain("\"غير مدفوع\"");
     expect(csv).toContain("\"\"");
   });
 });

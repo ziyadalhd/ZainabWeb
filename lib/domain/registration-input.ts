@@ -46,6 +46,10 @@ export function isRegistrationCheckInStatus(value: string): value is "pending" |
   return value === "pending" || value === "checked_in" || value === "absent";
 }
 
+export function isRegistrationPaymentStatus(value: string): value is "unpaid" | "deposit_paid" | "paid_in_full" {
+  return value === "unpaid" || value === "deposit_paid" || value === "paid_in_full";
+}
+
 export function validateRegistrationInput(
   formData: FormData,
   audience: EventAudience,

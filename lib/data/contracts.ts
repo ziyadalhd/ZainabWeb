@@ -9,6 +9,10 @@ import type {
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
   RegistrationReminderReceipt,
+  RegistrationPaymentStatus,
+  InterestedContactInput,
+  InterestedContactReceipt,
+  AdminInterestedContact,
   EventFeedbackLinkReceipt,
   EventFeedbackSurvey,
   EventFeedbackInput,
@@ -58,6 +62,16 @@ export interface AdminRegistrationRepository {
   issueReminder(id: string): Promise<RegistrationReminderReceipt>;
   markReminderSent(id: string): Promise<void>;
   issueEventFeedbackLink(id: string): Promise<EventFeedbackLinkReceipt>;
+  setPaymentStatus(id: string, status: RegistrationPaymentStatus): Promise<void>;
+}
+
+export interface InterestedContactService {
+  submit(input: InterestedContactInput): Promise<InterestedContactReceipt>;
+  unsubscribe(token: string): Promise<void>;
+}
+
+export interface AdminInterestedContactRepository {
+  list(): Promise<readonly AdminInterestedContact[]>;
 }
 
 export interface EventFeedbackService {

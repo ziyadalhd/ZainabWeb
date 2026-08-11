@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isRegistrationCheckInStatus,
+  isRegistrationPaymentStatus,
   normalizeSaudiMobile,
   validateRegistrationInput,
 } from "@/lib/domain/registration-input";
@@ -26,6 +27,13 @@ describe("registration input", () => {
     expect(isRegistrationCheckInStatus("checked_in")).toBe(true);
     expect(isRegistrationCheckInStatus("absent")).toBe(true);
     expect(isRegistrationCheckInStatus("paid")).toBe(false);
+  });
+
+  it("recognizes only the approved manual payment states", () => {
+    expect(isRegistrationPaymentStatus("unpaid")).toBe(true);
+    expect(isRegistrationPaymentStatus("deposit_paid")).toBe(true);
+    expect(isRegistrationPaymentStatus("paid_in_full")).toBe(true);
+    expect(isRegistrationPaymentStatus("paid")).toBe(false);
   });
 
   it("trims fields and keeps email optional", () => {

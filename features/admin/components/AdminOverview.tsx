@@ -12,6 +12,7 @@ export function AdminOverview({ events, registrations, now }: { events: readonly
   const pastRegistrations = registrations.filter((registration) => new Date(registration.eventStartsAt).getTime() < now && registration.status === "registered");
   const checkedIn = pastRegistrations.filter((registration) => registration.checkInStatus === "checked_in").length;
   const absent = pastRegistrations.filter((registration) => registration.checkInStatus === "absent").length;
+  const upcomingUnpaid = registrations.filter((registration) => registration.status === "registered" && new Date(registration.eventStartsAt).getTime() >= now && registration.paymentStatus === "unpaid").length;
 
   return (
     <div className="mt-8 grid gap-6">
@@ -19,6 +20,7 @@ export function AdminOverview({ events, registrations, now }: { events: readonly
         <StatCard label="المسجلون" value={formatArabicNumber(registered)} note={`إجمالي السعة ${formatArabicNumber(capacity)}`} />
         <StatCard label="الانتظار والدعوات" value={formatArabicNumber(waitlisted)} note="الاختيار يدوي والدعوة صالحة 6 ساعات" />
         <StatCard label="الحضور المسجل" value={formatArabicNumber(checkedIn)} note={`${formatArabicNumber(absent)} مسجلة كغائبة في الفعاليات السابقة`} />
+        <StatCard label="دفعات لم تُسجل" value={formatArabicNumber(upcomingUnpaid)} note="تسجيل يدوي فقط؛ لا يوجد تحصيل إلكتروني" />
         <StatCard label="الفعاليات المنشورة" value={formatArabicNumber(published)} note="تظهر للعامة إذا كان موعدها قادمًا" />
         <StatCard label="المسودات" value={formatArabicNumber(drafts)} note="لا تظهر في الموقع العام" />
       </div>

@@ -15,6 +15,12 @@ const attendanceStatusLabels = {
   confirmed: "تم التأكيد",
 } as const;
 
+const paymentStatusLabels = {
+  unpaid: "غير مدفوع",
+  deposit_paid: "دُفعت العربون",
+  paid_in_full: "مدفوع بالكامل",
+} as const;
+
 const headers = [
   "رقم المرجع",
   "المسجل",
@@ -26,6 +32,7 @@ const headers = [
   "موعد الفعالية",
   "حالة التسجيل",
   "حالة الحضور",
+  "حالة الدفع",
   "سعر الحجز (هللة)",
   "تاريخ التسجيل",
 ] as const;
@@ -68,6 +75,7 @@ export function buildRegistrationsCsv(registrations: readonly Registration[]): s
     formatArabicDateTime(registration.eventStartsAt),
     registrationStatusLabels[registration.status],
     registration.status === "registered" ? attendanceStatusLabels[registration.attendanceStatus] : null,
+    registration.status === "registered" ? paymentStatusLabels[registration.paymentStatus] : null,
     registration.priceHalalasAtBooking,
     formatArabicDateTime(registration.createdAt),
   ].map(escapeCsvValue).join(","));
