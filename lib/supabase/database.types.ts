@@ -35,6 +35,7 @@ export type Database = {
           capacity: number
           created_at: string
           ends_at: string | null
+          event_kind: string
           event_type_label: string
           id: string
           price_halalas: number | null
@@ -49,6 +50,7 @@ export type Database = {
           capacity: number
           created_at?: string
           ends_at?: string | null
+          event_kind?: string
           event_type_label: string
           id?: string
           price_halalas?: number | null
@@ -63,6 +65,7 @@ export type Database = {
           capacity?: number
           created_at?: string
           ends_at?: string | null
+          event_kind?: string
           event_type_label?: string
           id?: string
           price_halalas?: number | null

@@ -4,6 +4,7 @@ import { mapEventRow } from "@/lib/supabase/events";
 const row = {
   id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
   title: "لقاء",
+  event_kind: "club_event",
   audience: "adults",
   event_type_label: "قراءة",
   starts_at: "2026-08-10T15:00:00.000Z",
@@ -27,6 +28,7 @@ describe("mapEventRow", () => {
     expect(mapEventRow(row, state)).toEqual({
       id: row.id,
       title: "لقاء",
+      kind: "club_event",
       audience: "adults",
       eventTypeLabel: "قراءة",
       startsAt: row.starts_at,
@@ -44,5 +46,6 @@ describe("mapEventRow", () => {
 
   it("rejects unexpected constrained values", () => {
     expect(() => mapEventRow({ ...row, publication_status: "deleted" }, state)).toThrow();
+    expect(() => mapEventRow({ ...row, event_kind: "unknown" }, state)).toThrow();
   });
 });

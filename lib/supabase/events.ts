@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AdminEventRepository, EventCatalog } from "@/lib/data/contracts";
 import {
   isEventAudience,
+  isEventKind,
   isEventPublicationStatus,
   isEventRegistrationStatus,
 } from "@/lib/domain/event-input";
@@ -24,6 +25,7 @@ function isEventAvailability(value: string): value is EventAvailability {
 export function mapEventRow(row: EventRow, state: EventStateRow): Event {
   if (
     !isEventAudience(row.audience)
+    || !isEventKind(row.event_kind)
     || !isEventPublicationStatus(row.publication_status)
     || !isEventRegistrationStatus(row.registration_status)
     || !isEventAvailability(state.registration_availability)
@@ -34,6 +36,7 @@ export function mapEventRow(row: EventRow, state: EventStateRow): Event {
   return {
     id: row.id,
     title: row.title,
+    kind: row.event_kind,
     audience: row.audience,
     eventTypeLabel: row.event_type_label,
     startsAt: row.starts_at,
@@ -52,6 +55,7 @@ export function mapEventRow(row: EventRow, state: EventStateRow): Event {
 function toEventWrite(input: EventInput) {
   return {
     title: input.title,
+    event_kind: input.kind,
     audience: input.audience,
     event_type_label: input.eventTypeLabel,
     starts_at: input.startsAt,
@@ -74,6 +78,27 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
       this.client
         .from("events")
         .select("*")
+        .eq("publication_status", "published")
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true }),
+      this.client.rpc("get_event_registration_states"),
+    ]);
+
+    if (error || statesError || !states) failDataAccess();
+    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+    return data.map((row) => {
+      const state = stateByEvent.get(row.id);
+      if (!state) failDataAccess();
+      return mapEventRow(row, state);
+    });
+  }
+
+  async listUpcomingBaynTrips(): Promise<readonly Event[]> {
+    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+      this.client
+        .from("events")
+        .select("*")
+        .eq("event_kind", "bayn_trip")
         .eq("publication_status", "published")
         .gte("starts_at", new Date().toISOString())
         .order("starts_at", { ascending: true }),

@@ -20,7 +20,7 @@
 | M1 — Production data model | **In Progress** | مرتفع | 3–5 أيام |
 | M2 — Public event registration | **In Progress** | مرتفع | 3–5 أيام |
 | M3 — Admin operations center | **In Progress** | مرتفع | 4–6 أيام |
-| M4 — Venue, celebration, and workshop requests | **In Progress** | مرتفع | 4–6 أيام |
+| M4 — Venue, celebration, and workshop requests | **Completed** | مرتفع | مكتملة |
 | M5 — Email, messaging, contacts, and surveys | **In Progress** | مرتفع | 4–6 أيام |
 | M6 — Content, design, accessibility, and SEO | **Pending** | متوسط | 3–5 أيام |
 | M7 — Security, observability, and launch | **Pending** | متوسط–مرتفع | 3–5 أيام |
@@ -101,7 +101,7 @@
 - **Completed** — تشغيل نماذج `/space-booking`, `/celebration-booking`، وطلب الورشة بالحقول المعتمدة، مع تحقق خادمي وروابط إدارة آمنة لا تكشف بيانات شخصية.
 - **Completed** — حفظ طلبات حجز المساحة والحفلات والورش في مشروع Supabase التطوير فقط؛ لا يقرأ البيانات الشخصية إلا المسؤول المعتمد، وتحذف تلقائيًا بعد 90 يومًا من قبول أو رفض أو إلغاء الطلب.
 - **Completed** — قائمة طلبات محمية في لوحة الإدارة مع بدء المراجعة.
-- تشغيل `/bayn-trips` ضمن مسار الفعاليات القياسي.
+- **Completed** — تشغيل `/bayn-trips` ضمن مسار الفعاليات القياسي، مع اختيار صريح بين «فعالية النادي» و«رحلة بَيْن» داخل نموذج الإدارة.
 - **Completed** — مراجعة طلبات حجز المساحة والحفلات، وصياغة عرض بسعر وشروط وصلاحية قابلة للتعديل (48 ساعة افتراضيًا)، وقبول أو رفض صاحبة الطلب من رابطها الآمن.
 - **Completed** — حالة دفع يدوّية مستقلة للطلبات المقبولة: غير مدفوع، دُفعت العربون، أو مدفوع بالكامل. لا توجد بوابة دفع.
 - **Completed** — تحذير قوي في لوحة الإدارة عند تداخل الطلب مع فعالية غير مؤرشفة أو طلب حجز آخر قيد المراجعة/مقبول، من دون رفض أو قبول تلقائي.

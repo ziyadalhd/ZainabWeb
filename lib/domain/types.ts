@@ -2,6 +2,7 @@ export type EntityId = string;
 export type IsoDateTime = string;
 export type Rating = 1 | 2 | 3 | 4 | 5;
 export type EventAudience = "adults" | "youth" | "children";
+export type EventKind = "club_event" | "bayn_trip";
 export type EventRegistrationStatus = "open" | "closed";
 export type EventAvailability = "available" | "full" | "closed";
 export type EventPublicationStatus = "draft" | "published" | "archived";
@@ -15,6 +16,7 @@ export type ServiceRequestPaymentStatus = "unpaid" | "deposit_paid" | "paid_in_f
 export interface Event {
   id: EntityId;
   title: string;
+  kind: EventKind;
   audience: EventAudience;
   eventTypeLabel: string;
   startsAt: IsoDateTime;
@@ -31,6 +33,7 @@ export interface Event {
 
 export interface EventInput {
   title: string;
+  kind: EventKind;
   audience: EventAudience;
   eventTypeLabel: string;
   startsAt: IsoDateTime;

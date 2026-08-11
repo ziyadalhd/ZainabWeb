@@ -2,9 +2,17 @@ import type { Event } from "@/lib/domain/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { EventCard } from "@/features/events/components/EventCard";
 
-export function EventList({ events }: { events: readonly Event[] }) {
+export function EventList({
+  events,
+  emptyTitle = "لا توجد فعاليات قادمة حاليًا",
+  emptyDescription = "ستظهر هنا الفعاليات القادمة بعد نشرها من إدارة النادي.",
+}: {
+  events: readonly Event[];
+  emptyTitle?: string;
+  emptyDescription?: string;
+}) {
   if (events.length === 0) {
-    return <EmptyState title="لا توجد فعاليات قادمة حاليًا" description="ستظهر هنا الفعاليات القادمة بعد نشرها من إدارة النادي." />;
+    return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
 
   return (

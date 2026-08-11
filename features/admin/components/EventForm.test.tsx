@@ -6,6 +6,8 @@ describe("EventForm", () => {
   it("renders the approved fields and explains draft behavior", () => {
     render(<EventForm action={vi.fn()} submitLabel="حفظ المسودة" />);
     expect(screen.getByRole("textbox", { name: "عنوان الفعالية" })).toBeRequired();
+    expect(screen.getByRole("combobox", { name: /مسار الفعالية/ })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "رحلة بَيْن" })).toBeInTheDocument();
     expect(screen.getByLabelText("الفئة")).toBeInTheDocument();
     expect(screen.getByLabelText("نوع الفعالية")).toBeInTheDocument();
     expect(screen.getByText("بداية الفعالية")).toBeInTheDocument();

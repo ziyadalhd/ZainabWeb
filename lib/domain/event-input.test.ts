@@ -9,6 +9,7 @@ import {
 function validFormData() {
   const formData = new FormData();
   formData.set("title", "  لقاء القراءة  ");
+  formData.set("kind", "club_event");
   formData.set("audience", "adults");
   formData.set("eventTypeLabel", " لقاء ");
   formData.set("startDate", "2026-08-10");
@@ -32,6 +33,7 @@ describe("event input", () => {
       ok: true,
       value: {
         title: "لقاء القراءة",
+        kind: "club_event",
         audience: "adults",
         eventTypeLabel: "لقاء",
         startsAt: "2026-08-10T15:00:00.000Z",
@@ -44,6 +46,9 @@ describe("event input", () => {
     const invalid = validFormData();
     invalid.set("audience", "all");
     expect(validateEventInput(invalid)).toEqual({ ok: false, error: "audience" });
+    invalid.set("audience", "adults");
+    invalid.set("kind", "other");
+    expect(validateEventInput(invalid)).toEqual({ ok: false, error: "kind" });
   });
 
   it("rejects fractional capacity and values above the approved maximum", () => {

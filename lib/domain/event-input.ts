@@ -1,17 +1,20 @@
 import type {
   EventAudience,
+  EventKind,
   EventInput,
   EventPublicationStatus,
   EventRegistrationStatus,
 } from "@/lib/domain/types";
 
 const audiences: readonly EventAudience[] = ["adults", "youth", "children"];
+const eventKinds: readonly EventKind[] = ["club_event", "bayn_trip"];
 const registrationStatuses: readonly EventRegistrationStatus[] = ["open", "closed"];
 const publicationStatuses: readonly EventPublicationStatus[] = ["draft", "published", "archived"];
 
 export type EventInputErrorCode =
   | "title"
   | "audience"
+  | "kind"
   | "eventTypeLabel"
   | "startsAt"
   | "endsAt"
@@ -25,6 +28,10 @@ export type EventInputResult =
 
 export function isEventAudience(value: string): value is EventAudience {
   return audiences.includes(value as EventAudience);
+}
+
+export function isEventKind(value: string): value is EventKind {
+  return eventKinds.includes(value as EventKind);
 }
 
 export function isEventRegistrationStatus(value: string): value is EventRegistrationStatus {
@@ -92,6 +99,9 @@ export function validateEventInput(formData: FormData): EventInputResult {
   const audience = String(formData.get("audience") ?? "");
   if (!isEventAudience(audience)) return { ok: false, error: "audience" };
 
+  const kind = String(formData.get("kind") ?? "");
+  if (!isEventKind(kind)) return { ok: false, error: "kind" };
+
   const eventTypeLabel = String(formData.get("eventTypeLabel") ?? "").trim();
   if (!eventTypeLabel) return { ok: false, error: "eventTypeLabel" };
 
@@ -127,6 +137,7 @@ export function validateEventInput(formData: FormData): EventInputResult {
     ok: true,
     value: {
       title,
+      kind,
       audience,
       eventTypeLabel,
       startsAt,

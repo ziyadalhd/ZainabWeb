@@ -14,6 +14,7 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 export type EventFormActionError =
   | "title"
   | "audience"
+  | "kind"
   | "eventTypeLabel"
   | "startsAt"
   | "endsAt"

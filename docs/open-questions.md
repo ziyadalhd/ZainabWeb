@@ -13,10 +13,6 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 
 - Which manually recorded payment states are valid for standard event registrations? The approved request workflow defines `unpaid`, `deposit paid`, and `paid in full`, but that list has not been approved for event registrations. Check-in and absence can proceed independently without this decision; no online payment will be added.
 
-## رحلات بَيْن
-
-- How should an administrator identify an event as a `رحلات بَيْن` event in the existing event form? The current free-text event-type label is not a reliable, approved classification for filtering the public `/bayn-trips` route. Confirm whether the event form should gain an explicit category choice, or provide another approved classification rule.
-
 ## Launch identity and contact
 
 - Which available `bayn` domain will be purchased?

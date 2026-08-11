@@ -21,6 +21,7 @@ interface EventFormProps {
 const errorMessages: Record<EventFormActionError, string> = {
   title: "أدخل عنوانًا للفعالية.",
   audience: "اختر فئة صحيحة.",
+  kind: "اختر مسارًا صحيحًا للفعالية.",
   eventTypeLabel: "أدخل نوع الفعالية.",
   startsAt: "أدخل تاريخ البداية ووقتها بتوقيت السعودية.",
   endsAt: "يجب أن تكون نهاية الفعالية بعد بدايتها.",
@@ -33,6 +34,7 @@ const errorMessages: Record<EventFormActionError, string> = {
 const fieldForError: Partial<Record<EventFormActionError, string>> = {
   title: "title",
   audience: "audience",
+  kind: "event-kind",
   eventTypeLabel: "eventTypeLabel",
   startsAt: "startDate",
   endsAt: "endDate",
@@ -116,6 +118,20 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
           {fieldError("title")}
         </label>
         <div className="grid gap-5 sm:grid-cols-2">
+          <label className="grid gap-2 font-bold" htmlFor="event-kind">
+            مسار الفعالية
+            <select
+              id="event-kind"
+              className={inputClassName}
+              name="kind"
+              defaultValue={event?.kind ?? "club_event"}
+            >
+              <option value="club_event">فعالية النادي</option>
+              <option value="bayn_trip">رحلة بَيْن</option>
+            </select>
+            <span className="text-xs font-normal muted-copy">رحلة بَيْن تظهر أيضًا في صفحة رحلات بَيْن وتستخدم التسجيل نفسه.</span>
+            {fieldError("kind")}
+          </label>
           <label className="grid gap-2 font-bold" htmlFor="event-audience">
             الفئة
             <select

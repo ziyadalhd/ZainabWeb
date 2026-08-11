@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(16);
+select plan(19);
 
 insert into auth.users (
   instance_id,
@@ -135,6 +135,24 @@ select is(
 select lives_ok(
   $$update public.events set publication_status = 'published' where title = 'مسودة جديدة'$$,
   'approved admin can change publication status'
+);
+
+select is(
+  (select event_kind from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'),
+  'club_event',
+  'existing events safely default to the club event kind'
+);
+
+select lives_ok(
+  $$insert into public.events (title, audience, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('رحلة اختبار', 'adults', 'bayn_trip', 'رحلة', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
+  'approved admin can classify an event as a Bayn trip'
+);
+
+select throws_ok(
+  $$insert into public.events (title, audience, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('تصنيف خاطئ', 'adults', 'other', 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
+  '23514',
+  null,
+  'database rejects an unknown event kind'
 );
 
 select throws_ok(

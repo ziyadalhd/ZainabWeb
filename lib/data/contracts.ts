@@ -20,6 +20,7 @@ import type {
 
 export interface EventCatalog {
   listUpcomingEvents(): Promise<readonly Event[]>;
+  listUpcomingBaynTrips(): Promise<readonly Event[]>;
   getUpcomingEvent(id: string): Promise<Event | null>;
 }
 
