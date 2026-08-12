@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import type { ServiceRequestActionState } from "@/app/(public)/requests/actions";
 import type { ServiceRequestKind } from "@/lib/domain/types";
+import { formatArabicEventDate, formatArabicTime } from "@/lib/format/date";
 
 interface ServiceRequestFormProps {
   kind: ServiceRequestKind;
@@ -36,10 +37,21 @@ function Field({ children }: Readonly<{ children: ReactNode }>) {
   return <div className="grid gap-2">{children}</div>;
 }
 
+function schedulePreview(date: string, time: string): Date | null {
+  if (!date || !time) return null;
+  const value = new Date(`${date}T${time}:00+03:00`);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+
 export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
+  const [requestedDate, setRequestedDate] = useState("");
+  const [requestedStartTime, setRequestedStartTime] = useState("");
+  const [requestedEndTime, setRequestedEndTime] = useState("");
   const workshop = kind === "workshop_application";
   const label = kind === "space_booking" ? "إرسال طلب حجز المساحة" : kind === "celebration_booking" ? "إرسال طلب إقامة الحفل" : "إرسال طلب الورشة";
+  const startPreview = schedulePreview(requestedDate, requestedStartTime);
+  const endPreview = schedulePreview(requestedDate, requestedEndTime);
 
   if (state.reference && state.managementPath) {
     return (
@@ -98,11 +110,20 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
           <legend className="request-group__title">تفاصيل الطلب</legend>
           <div className="grid gap-5 pt-2">
             <Field><label className="font-bold" htmlFor="request-use">نوع الاستخدام أو المناسبة</label><input id="request-use" className={inputClassName} name="useOrOccasionType" maxLength={160} required /></Field>
-            <Field><label className="font-bold" htmlFor="request-date">التاريخ المطلوب</label><input id="request-date" className={inputClassName} name="requestedDate" type="date" required /></Field>
-            <div className="grid gap-4 min-[380px]:grid-cols-2">
-              <Field><label className="font-bold" htmlFor="request-start">وقت البداية</label><input id="request-start" className={inputClassName} name="requestedStartTime" type="time" required /></Field>
-              <Field><label className="font-bold" htmlFor="request-end">وقت النهاية</label><input id="request-end" className={inputClassName} name="requestedEndTime" type="time" required /></Field>
-            </div>
+            <fieldset className="date-time-choice">
+              <legend className="font-black text-[var(--brand-forest)]">الموعد المناسب</legend>
+              <p className="mt-1 text-sm muted-copy">اختاري اليوم، ثم وقت البداية والنهاية. جميع الأوقات بتوقيت السعودية.</p>
+              <div className="mt-4 grid gap-4">
+                <Field><label className="font-bold" htmlFor="request-date">التاريخ</label><input id="request-date" className={inputClassName} name="requestedDate" type="date" value={requestedDate} onChange={(event) => setRequestedDate(event.target.value)} required /></Field>
+                <div className="grid gap-4 min-[380px]:grid-cols-2">
+                  <Field><label className="font-bold" htmlFor="request-start">من الساعة</label><input id="request-start" className={inputClassName} name="requestedStartTime" type="time" step="900" value={requestedStartTime} onChange={(event) => setRequestedStartTime(event.target.value)} required dir="ltr" /></Field>
+                  <Field><label className="font-bold" htmlFor="request-end">إلى الساعة</label><input id="request-end" className={inputClassName} name="requestedEndTime" type="time" step="900" value={requestedEndTime} onChange={(event) => setRequestedEndTime(event.target.value)} required dir="ltr" /></Field>
+                </div>
+              </div>
+              <p className="date-time-preview data-value mt-4" aria-live="polite">
+                {startPreview ? <>{formatArabicEventDate(startPreview)} · من {formatArabicTime(startPreview)}{endPreview ? ` إلى ${formatArabicTime(endPreview)}` : ""}</> : "اختاري التاريخ ووقت البداية لعرض الموعد هنا."}
+              </p>
+            </fieldset>
             <Field><label className="font-bold" htmlFor="request-attendance">عدد الحاضرات المتوقع</label><input id="request-attendance" className={inputClassName} name="attendeeCount" type="number" min="1" inputMode="numeric" required /></Field>
           </div>
         </fieldset>

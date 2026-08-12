@@ -5,7 +5,7 @@ import { EventCard } from "@/features/events/components/EventCard";
 export function EventList({
   events,
   emptyTitle = "لا توجد فعاليات قادمة حاليًا",
-  emptyDescription = "ستظهر هنا الفعاليات القادمة بعد نشرها من إدارة النادي.",
+  emptyDescription = "لا توجد فعاليات منشورة الآن. عودي قريبًا للاطلاع على الجديد.",
 }: {
   events: readonly Event[];
   emptyTitle?: string;

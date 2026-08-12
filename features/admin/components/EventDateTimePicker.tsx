@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { formatArabicEventDate, formatArabicTime } from "@/lib/format/date";
 
 interface EventDateTimePickerProps {
@@ -13,75 +13,29 @@ interface EventDateTimePickerProps {
   error?: string;
 }
 
-const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-const pad = (value: number) => String(value).padStart(2, "0");
-
-function dateDefaults(value?: string) {
-  const [year, month, day] = (value ?? "").split("-").map(Number);
-  const today = new Date();
-  return {
-    year: Number.isInteger(year) && year > 0 ? year : today.getFullYear(),
-    month: Number.isInteger(month) && month >= 1 && month <= 12 ? month : today.getMonth() + 1,
-    day: Number.isInteger(day) && day >= 1 && day <= 31 ? day : today.getDate(),
-  };
-}
-
-function timeDefaults(value?: string) {
-  const [hour, minute] = (value ?? "").split(":").map(Number);
-  return { hour: Number.isInteger(hour) && hour >= 0 && hour <= 23 ? hour : 18, minute: Number.isInteger(minute) && minute >= 0 && minute <= 59 ? minute : 0 };
+function isValidDate(value: Date): boolean {
+  return !Number.isNaN(value.getTime());
 }
 
 export function EventDateTimePicker({ id, label, dateName, timeName, defaultDate, defaultTime, error }: EventDateTimePickerProps) {
-  const initialDate = dateDefaults(defaultDate);
-  const initialTime = timeDefaults(defaultTime);
-  const [year, setYear] = useState(initialDate.year);
-  const [month, setMonth] = useState(initialDate.month);
-  const [day, setDay] = useState(initialDate.day);
-  const [hour, setHour] = useState(initialTime.hour);
-  const [minute, setMinute] = useState(initialTime.minute);
-  const maxDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const safeDay = Math.min(day, maxDay);
-  const dateValue = `${year}-${pad(month)}-${pad(safeDay)}`;
-  const timeValue = `${pad(hour)}:${pad(minute)}`;
-  const years = useMemo(() => Array.from({ length: 12 }, (_, index) => new Date().getFullYear() - 1 + index), []);
+  const [dateValue, setDateValue] = useState(defaultDate ?? "");
+  const [timeValue, setTimeValue] = useState(defaultTime ?? "18:00");
   const preview = new Date(`${dateValue}T${timeValue}:00+03:00`);
 
   return (
-    <section className="border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 sm:p-5" aria-labelledby={`${id}-label`}>
+    <section className="date-time-choice" aria-labelledby={`${id}-label`}>
       <h3 id={`${id}-label`} className="font-black text-[var(--brand-forest)]">{label}</h3>
-      <input type="hidden" name={dateName} value={dateValue} />
-      <input type="hidden" name={timeName} value={timeValue} />
-      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1.4fr_1fr]">
-        <label className="grid gap-1 text-sm font-bold" htmlFor={`${id}-day`}>اليوم
-          <select id={`${id}-day`} value={safeDay} onChange={(event) => setDay(Number(event.target.value))} className="field-control min-h-11 bg-white px-3">
-            {Array.from({ length: maxDay }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value}</option>)}
-          </select>
+      <p className="mt-1 text-sm muted-copy">اختاري التاريخ، ثم حددي الوقت مباشرةً. الوقت بتوقيت السعودية.</p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
+        <label className="grid gap-1 text-sm font-bold" htmlFor={`${id}-date`}>التاريخ
+          <input id={`${id}-date`} className="field-control bg-white" name={dateName} type="date" value={dateValue} onChange={(event) => setDateValue(event.target.value)} required />
         </label>
-        <label className="grid gap-1 text-sm font-bold" htmlFor={`${id}-month`}>الشهر
-          <select id={`${id}-month`} value={month} onChange={(event) => setMonth(Number(event.target.value))} className="field-control min-h-11 bg-white px-3">
-            {monthNames.map((name, index) => <option key={name} value={index + 1}>{name}</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-bold" htmlFor={`${id}-year`}>السنة
-          <select id={`${id}-year`} value={year} onChange={(event) => setYear(Number(event.target.value))} className="field-control min-h-11 bg-white px-3">
-            {years.map((value) => <option key={value} value={value}>{value}</option>)}
-          </select>
+        <label className="grid gap-1 text-sm font-bold" htmlFor={`${id}-time`}>الوقت
+          <input id={`${id}-time`} className="field-control bg-white" name={timeName} type="time" step="900" value={timeValue} onChange={(event) => setTimeValue(event.target.value)} required dir="ltr" />
         </label>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <label className="grid gap-1 text-sm font-bold" htmlFor={`${id}-hour`}>الساعة
-          <select id={`${id}-hour`} value={hour} onChange={(event) => setHour(Number(event.target.value))} className="field-control min-h-11 bg-white px-3" dir="ltr">
-            {Array.from({ length: 24 }, (_, index) => <option key={index} value={index}>{pad(index)}</option>)}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm font-bold" htmlFor={`${id}-minute`}>الدقيقة
-          <select id={`${id}-minute`} value={minute} onChange={(event) => setMinute(Number(event.target.value))} className="field-control min-h-11 bg-white px-3" dir="ltr">
-            {Array.from({ length: 60 }, (_, index) => <option key={index} value={index}>{pad(index)}</option>)}
-          </select>
-        </label>
-      </div>
-      <p className="data-value mt-4 border-r-4 border-[var(--brand-amber)] bg-white px-3 py-2 text-sm font-extrabold text-[var(--brand-forest)]" aria-live="polite">
-        {formatArabicEventDate(preview)} · {formatArabicTime(preview)}
+      <p className="date-time-preview data-value mt-4" aria-live="polite">
+        {isValidDate(preview) ? <>{formatArabicEventDate(preview)} · {formatArabicTime(preview)}</> : "اختاري التاريخ والوقت لعرض الموعد هنا."}
       </p>
       {error ? <p className="mt-2 text-sm font-bold text-[var(--color-error-text)]">{error}</p> : null}
     </section>

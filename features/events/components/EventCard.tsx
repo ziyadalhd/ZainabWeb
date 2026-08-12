@@ -4,8 +4,8 @@ import type { Event, EventAudience } from "@/lib/domain/types";
 import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
-  formatArabicNumber,
   formatEventPrice,
+  formatSeatCapacity,
 } from "@/lib/format/date";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
@@ -44,7 +44,7 @@ export function EventCard({ event }: { event: Event }) {
         </h2>
         <dl className="mt-5 grid gap-3 border-t border-[var(--color-border)] pt-4 text-sm">
           <div className="grid gap-0.5"><dt className="text-xs muted-copy">الموعد</dt><dd className="font-extrabold text-[var(--brand-forest)]">{formatArabicEventDate(event.startsAt)}</dd><dd className="font-bold muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</dd></div>
-          <div className="grid grid-cols-2 gap-3"><div><dt className="text-xs muted-copy">السعة</dt><dd className="data-value font-bold">{formatArabicNumber(event.capacity)} مقعدًا</dd></div><div><dt className="text-xs muted-copy">السعر</dt><dd className="font-bold">{formatEventPrice(event.priceHalalas)}</dd></div></div>
+          <div className="grid grid-cols-2 gap-3"><div><dt className="text-xs muted-copy">المقاعد</dt><dd className="data-value font-bold">{formatSeatCapacity(event.capacity)}</dd></div><div><dt className="text-xs muted-copy">السعر</dt><dd className="font-bold">{formatEventPrice(event.priceHalalas)}</dd></div></div>
         </dl>
         <Link className="button-primary mt-6 w-full sm:mt-auto sm:w-fit" href={`/events/${event.id}`} aria-label={`عرض تفاصيل ${event.title}`}>
           عرض التفاصيل

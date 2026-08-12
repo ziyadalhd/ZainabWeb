@@ -8,8 +8,8 @@ import type { EventAudience } from "@/lib/domain/types";
 import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
-  formatArabicNumber,
   formatEventPrice,
+  formatSeatCapacity,
 } from "@/lib/format/date";
 import { createEventCatalog } from "@/lib/supabase/events";
 import { registerForEventAction } from "@/app/(public)/events/[id]/actions";
@@ -63,7 +63,7 @@ export default async function EventDetailsPage({
             <p className="mt-4 font-bold text-[var(--brand-forest)]">هذه الفعالية مخصصة للنساء.</p>
             <dl className="mt-9 grid border-y border-[var(--brand-olive)] sm:grid-cols-2">
               <div className="py-5 sm:col-span-2"><dt className="text-sm muted-copy">الموعد</dt><dd className="mt-1 text-xl font-black text-[var(--brand-forest)]">{formatArabicEventDate(event.startsAt)}</dd><dd className="mt-1 font-bold muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</dd></div>
-              <div className="border-t border-[var(--color-border)] py-5 sm:border-l sm:pl-5"><dt className="text-sm muted-copy">السعة</dt><dd className="data-value mt-1 font-extrabold">{formatArabicNumber(event.capacity)} مقعدًا</dd></div>
+              <div className="border-t border-[var(--color-border)] py-5 sm:border-l sm:pl-5"><dt className="text-sm muted-copy">المقاعد</dt><dd className="data-value mt-1 font-extrabold">{formatSeatCapacity(event.capacity)}</dd></div>
               <div className="border-t border-[var(--color-border)] py-5 sm:pr-5"><dt className="text-sm muted-copy">السعر</dt><dd className="mt-1 font-extrabold">{formatEventPrice(event.priceHalalas)}</dd></div>
             </dl>
           </div>
