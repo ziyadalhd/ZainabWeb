@@ -26,10 +26,10 @@ export function WaitlistInviteButton({
 
   if (state.invitationPath) {
     return (
-      <div className="grid gap-2 rounded-xl bg-[var(--color-success-bg)] p-3 text-[var(--color-success-text)]">
+      <div className="notice-success grid gap-2 p-3">
         <p className="font-bold">أُنشئت الدعوة لمدة 6 ساعات.</p>
         <Link className="break-all text-xs font-bold underline" href={state.invitationPath}>فتح رابط الدعوة</Link>
-        <button type="button" onClick={openWhatsapp} className="rounded-xl bg-[#1f7a3f] px-3 py-2 font-bold text-white">
+        <button type="button" onClick={openWhatsapp} className="button-primary min-h-10 px-3 py-2 text-sm">
           فتح رسالة WhatsApp
         </button>
         <p className="text-xs">فتح WhatsApp لا يعني أن الرسالة أُرسلت؛ تحققي منها وأرسليها يدويًا.</p>
@@ -41,7 +41,7 @@ export function WaitlistInviteButton({
     <div className="grid gap-2">
       {state.error ? <p role="alert" className="text-xs font-bold text-[var(--color-error-text)]">تعذر إنشاء الدعوة. تأكدي من توفر مقعد ثم حاولي مرة أخرى.</p> : null}
       <form action={formAction}>
-        <button type="submit" disabled={pending} className="rounded-xl bg-[var(--brand-green)] px-3 py-2 font-bold text-white disabled:opacity-65">
+        <button type="submit" disabled={pending} className="button-primary px-3 py-2 text-sm">
           {pending ? "جارٍ إنشاء الدعوة…" : "اختيار وإصدار دعوة"}
         </button>
       </form>

@@ -44,16 +44,14 @@ export default async function AdminCalendarPage({
   const month = getCalendarMonth(requestedMonth);
 
   return (
-    <main className="px-4 py-8 sm:px-8">
+    <main className="admin-page">
       <PageHeader eyebrow="لوحة الإدارة" title="التقويم" description="تقويم ميلادي عربي يعرض الفعاليات بتوقيت السعودية." />
-      <nav aria-label="التنقل بين أشهر التقويم" className="mt-8 flex flex-wrap items-center gap-3">
-        <Link className="min-h-11 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold hover:bg-[var(--surface-soft)]" href={monthHref(month, -1)}>الشهر السابق</Link>
-        <Link className="min-h-11 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold hover:bg-[var(--surface-soft)]" href="/admin/calendar">الشهر الحالي</Link>
-        <Link className="min-h-11 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 font-bold hover:bg-[var(--surface-soft)]" href={monthHref(month, 1)}>الشهر التالي</Link>
+      <nav aria-label="التنقل بين أشهر التقويم" className="mt-8 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <Link className="button-quiet" href={monthHref(month, -1)}>الشهر السابق</Link>
+        <Link className="button-quiet" href={monthHref(month, 1)}>الشهر التالي</Link>
+        <Link className="button-secondary col-span-2" href="/admin/calendar">الشهر الحالي</Link>
       </nav>
-      <div className="mt-5 overflow-x-auto pb-2">
-        <div className="min-w-[46rem]"><CalendarMonthGrid events={events} month={month} /></div>
-      </div>
+      <div className="mt-5"><CalendarMonthGrid events={events} month={month} /></div>
     </main>
   );
 }

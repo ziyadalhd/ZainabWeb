@@ -23,7 +23,7 @@ export default async function WaitlistInvitationPage({
         <div className="mx-auto max-w-xl card-surface p-7 sm:p-10">
           <h1 className="page-title">الدعوة غير متاحة</h1>
           <p className="mt-4 muted-copy">قد تكون الدعوة منتهية، أو سُحبت، أو قُبلت سابقًا.</p>
-          <Link className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-[var(--brand-green)] px-4 py-2 font-bold text-white" href="/events">عرض الفعاليات</Link>
+          <Link className="button-primary mt-6" href="/events">عرض الفعاليات</Link>
         </div>
       </main>
     );
@@ -36,11 +36,11 @@ export default async function WaitlistInvitationPage({
         <h1 className="page-title mt-3">{invitation.eventTitle}</h1>
         <p className="mt-4 font-bold">{invitation.attendeeName}</p>
         <dl className="mt-7 grid gap-4">
-          <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
+          <div className="border-r-4 border-[var(--brand-olive)] bg-[var(--color-surface-muted)] p-4">
             <dt className="text-sm muted-copy">موعد الفعالية</dt>
             <dd className="mt-1 font-extrabold">{formatArabicDateTime(invitation.eventStartsAt)}</dd>
           </div>
-          <div className="rounded-2xl bg-[var(--color-warning-bg)] p-4 text-[var(--color-warning-text)]">
+          <div className="notice-warning p-4">
             <dt className="text-sm">تنتهي صلاحية الدعوة</dt>
             <dd className="mt-1 font-extrabold">{formatArabicDateTime(invitation.expiresAt)}</dd>
           </div>

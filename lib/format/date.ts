@@ -62,6 +62,13 @@ export function formatArabicNumber(value: number): string {
   return numberFormatter.format(value);
 }
 
+export function formatSeatCapacity(value: number): string {
+  if (value === 1) return "مقعد واحد";
+  if (value === 2) return "مقعدان";
+  if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} مقاعد`;
+  return `${formatArabicNumber(value)} مقعدًا`;
+}
+
 export function formatArabicTime(value: string | Date): string {
   return timeFormatter.format(typeof value === "string" ? new Date(value) : value);
 }

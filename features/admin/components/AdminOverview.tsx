@@ -1,7 +1,7 @@
 import type { Event, Registration } from "@/lib/domain/types";
 import { StatCard } from "@/components/ui/StatCard";
 import { EventCapacityTable } from "@/features/admin/components/EventCapacityTable";
-import { formatArabicNumber } from "@/lib/format/date";
+import { formatArabicNumber, formatSeatCapacity } from "@/lib/format/date";
 
 export function AdminOverview({ events, registrations, now }: { events: readonly Event[]; registrations: readonly Registration[]; now: number }) {
   const published = events.filter((event) => event.publicationStatus === "published").length;
@@ -16,14 +16,14 @@ export function AdminOverview({ events, registrations, now }: { events: readonly
 
   return (
     <div className="mt-8 grid gap-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <StatCard label="المسجلون" value={formatArabicNumber(registered)} note={`إجمالي السعة ${formatArabicNumber(capacity)}`} />
-        <StatCard label="الانتظار والدعوات" value={formatArabicNumber(waitlisted)} note="الاختيار يدوي والدعوة صالحة 6 ساعات" />
-        <StatCard label="الحضور المسجل" value={formatArabicNumber(checkedIn)} note={`${formatArabicNumber(absent)} مسجلة كغائبة في الفعاليات السابقة`} />
-        <StatCard label="دفعات لم تُسجل" value={formatArabicNumber(upcomingUnpaid)} note="تسجيل يدوي فقط؛ لا يوجد تحصيل إلكتروني" />
+      <section aria-label="مؤشرات التشغيل" className="grid gap-px overflow-hidden border border-[var(--color-border)] bg-[var(--color-border)] sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard label="مسجلات للفعاليات القادمة" value={formatArabicNumber(registered)} note={`تتسع الفعاليات المنشورة لـ ${formatSeatCapacity(capacity)}`} />
+        <StatCard label="بانتظار مقعد" value={formatArabicNumber(waitlisted)} note="اختاري البديلة بنفسك عند توفر مقعد" />
+        <StatCard label="تم تسجيل حضورهن" value={formatArabicNumber(checkedIn)} note={`${formatArabicNumber(absent)} غائبة في الفعاليات السابقة`} />
+        <StatCard label="دفعات تحتاج تسجيلًا" value={formatArabicNumber(upcomingUnpaid)} note="التسجيل يدوي داخل لوحة الإدارة" />
         <StatCard label="الفعاليات المنشورة" value={formatArabicNumber(published)} note="تظهر للعامة إذا كان موعدها قادمًا" />
         <StatCard label="المسودات" value={formatArabicNumber(drafts)} note="لا تظهر في الموقع العام" />
-      </div>
+      </section>
       <EventCapacityTable events={events} compact />
     </div>
   );

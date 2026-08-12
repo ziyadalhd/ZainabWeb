@@ -39,7 +39,7 @@ const errorField: Partial<Record<RegistrationActionError, string>> = {
 };
 
 const inputClassName =
-  "min-h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)]";
+  "field-control";
 
 export function EventRegistrationForm({ action, audience, availability }: EventRegistrationFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
@@ -55,20 +55,20 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
   if (state.reference && state.status) {
     const registered = state.status === "registered";
     return (
-      <div role="status" className={`rounded-3xl p-6 ${registered ? "bg-[var(--color-success-bg)] text-[var(--color-success-text)]" : "bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]"}`}>
+      <div role="status" className={registered ? "notice-success p-5" : "notice-warning p-5"}>
         <h2 className="text-xl font-extrabold">
           {registered ? "تم تسجيلك في الفعالية" : "تمت إضافتك إلى قائمة الانتظار"}
         </h2>
         <p className="mt-3 text-sm">
           احتفظ بالرقم المرجعي، وستتواصل إدارة النادي عبر WhatsApp عند الحاجة.
         </p>
-        <p className="mt-4 rounded-xl bg-white/70 px-3 py-2 text-sm font-extrabold" dir="ltr">
+        <p className="data-value mt-4 break-all border border-current/20 bg-white/70 px-3 py-2 text-sm font-extrabold" dir="ltr">
           {state.reference}
         </p>
         <p className="mt-3 text-xs">لا يتم تحصيل أي مبلغ عبر الموقع؛ الدفع في مقر الفعالية.</p>
         {state.managementPath ? (
           <Link
-            className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-white px-4 py-2 font-extrabold text-[var(--brand-green-deep)] underline"
+            className="button-secondary mt-4 bg-white"
             href={state.managementPath}
           >
             إدارة الحجز أو إلغاؤه
@@ -87,7 +87,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
       </div>
 
       {state.error && !errorField[state.error] ? (
-        <p role="alert" className="rounded-2xl bg-[var(--color-error-bg)] px-4 py-3 text-sm font-bold text-[var(--color-error-text)]">
+        <p role="alert" className="notice-error text-sm">
           {errorMessages[state.error]}
         </p>
       ) : null}
@@ -157,7 +157,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
       </div>
 
       {minorRegistration ? (
-        <label className="flex items-start gap-3 rounded-2xl bg-[var(--surface-soft)] p-4 text-sm font-bold" htmlFor="guardian-consent">
+        <label className="flex items-start gap-3 border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm font-bold" htmlFor="guardian-consent">
           <input id="guardian-consent" className="mt-1 size-5 shrink-0" name="guardianConsent" type="checkbox" required />
           <span>أقر بأنني ولية أمر المشاركة أو مخولة منها، وأوافق على تسجيلها والتواصل معي بخصوص الفعالية.</span>
           {state.error === "guardianConsent" ? <span className="text-[var(--color-error-text)]">{errorMessages.guardianConsent}</span> : null}
@@ -173,7 +173,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
         هذه الفعالية مخصصة للنساء. تُستخدم بيانات التواصل لإدارة هذا التسجيل فقط، وتُحذف تلقائيًا بعد 90 يومًا من انتهاء الفعالية.
       </p>
 
-      <button type="submit" disabled={pending} className="min-h-12 rounded-2xl bg-[var(--brand-green)] px-5 py-3 font-extrabold text-white hover:bg-[var(--brand-green-deep)] disabled:cursor-wait disabled:opacity-65">
+      <button type="submit" disabled={pending} className="button-primary min-h-12 w-full px-5 py-3">
         {pending ? "جارٍ التسجيل…" : availability === "full" ? "الانضمام إلى قائمة الانتظار" : "تأكيد التسجيل"}
       </button>
     </form>

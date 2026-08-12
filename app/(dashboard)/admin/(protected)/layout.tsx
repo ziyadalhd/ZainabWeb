@@ -7,14 +7,15 @@ export default async function ProtectedAdminLayout({ children }: Readonly<{ chil
   await requireAdmin();
 
   return (
-    <div className="min-h-screen bg-[var(--surface-soft)] lg:grid lg:grid-cols-[17rem_1fr]">
+    <div className="min-h-screen bg-[var(--color-page)] lg:grid lg:grid-cols-[18rem_1fr]">
+      <a className="skip-link" href="#admin-content">تخطي إلى المحتوى</a>
       <AdminSidebar />
       <div className="min-w-0">
         <AdminHeader />
-        <div role="status" className="border-b border-[#d9c989] bg-[#fff7d6] px-4 py-2 text-center text-xs font-bold text-[#5e4b12]">
-          إدارة الفعاليات والتسجيلات مفعلة. إرسال WhatsApp يتم يدويًا، ولا يوجد تحصيل إلكتروني.
+        <div role="status" className="border-b border-[var(--color-border)] bg-[var(--color-warning-bg)] px-4 py-2 text-center text-xs font-bold text-[var(--color-warning-text)]">
+          التذكيرات تُجهز من قائمة المسجلات ثم تُرسل يدويًا عبر WhatsApp.
         </div>
-        {children}
+        <div id="admin-content" tabIndex={-1}>{children}</div>
       </div>
     </div>
   );

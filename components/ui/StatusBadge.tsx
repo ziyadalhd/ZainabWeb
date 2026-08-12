@@ -21,13 +21,41 @@ const labels = {
 
 export type StatusBadgeValue = keyof typeof labels;
 
+const statusTone: Record<StatusBadgeValue, "positive" | "warning" | "neutral" | "danger"> = {
+  available: "positive",
+  full: "warning",
+  open: "positive",
+  closed: "neutral",
+  pending: "warning",
+  check_in_pending: "neutral",
+  confirmed: "positive",
+  checked_in: "positive",
+  absent: "danger",
+  cancelled: "danger",
+  registered: "positive",
+  waitlisted: "warning",
+  invited: "warning",
+  draft: "neutral",
+  published: "positive",
+  archived: "neutral",
+  subscribed: "positive",
+  unsubscribed: "neutral",
+};
+
+const toneClass = {
+  positive: "border-[var(--brand-olive)] bg-[var(--color-success-bg)] text-[var(--color-success-text)]",
+  warning: "border-[var(--brand-amber)] bg-[var(--color-warning-bg)] text-[var(--color-warning-text)]",
+  neutral: "border-[var(--color-border)] bg-[var(--color-surface-muted)] text-[var(--color-text)]",
+  danger: "border-[var(--color-error-text)] bg-[var(--color-error-bg)] text-[var(--color-error-text)]",
+} as const;
+
 export function StatusBadge({ status }: { status: StatusBadgeValue }) {
-  const positive = status === "available" || status === "open" || status === "confirmed" || status === "checked_in" || status === "published" || status === "registered" || status === "subscribed";
+  const tone = statusTone[status];
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-extrabold ${positive ? "bg-[#e8f0e3] text-[var(--brand-green-deep)]" : "bg-zinc-100 text-zinc-700"}`}
+      className={`inline-flex items-center gap-2 rounded-sm border px-2.5 py-1 text-xs font-extrabold ${toneClass[tone]}`}
     >
-      <span aria-hidden="true" className={`size-1.5 rounded-full ${positive ? "bg-[var(--brand-green)]" : "bg-zinc-500"}`} />
+      <span aria-hidden="true" className="font-black">{tone === "danger" ? "!" : tone === "warning" ? "•" : tone === "positive" ? "✓" : "—"}</span>
       {labels[status]}
     </span>
   );

@@ -9,7 +9,7 @@ export default function CelebrationBookingPage() {
   return (
     <main className="page-shell section-space">
       <PageHeader eyebrow="طلبات النادي" title="حجز إقامة حفلات" description="أرسلي طلبك لمراجعته من الإدارة. لا يُعد الطلب حجزًا مؤكدًا." />
-      <section className="card-surface mt-8 max-w-3xl p-6 sm:p-8">
+      <section className="mt-7 max-w-3xl">
         <ServiceRequestForm kind="celebration_booking" action={submitServiceRequestAction.bind(null, "celebration_booking")} />
       </section>
     </main>

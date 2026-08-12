@@ -11,5 +11,5 @@ export default async function InterestedPage() {
   await requireAdmin();
   const repository = await createAdminInterestedContactRepository();
   const contacts = await repository.list();
-  return <main className="px-4 py-8 sm:px-8"><PageHeader eyebrow="لوحة الإدارة" title="المهتمون" description="قائمة من وافقت على تلقي معلومات الفعاليات القادمة. الإرسال الجماعي غير مفعّل بعد." /><div className="mt-8"><InterestedContactsTable contacts={contacts} /></div></main>;
+  return <main className="admin-page"><PageHeader eyebrow="لوحة الإدارة" title="المهتمون" description="قائمة من وافقت على تلقي معلومات الفعاليات القادمة. الإرسال الجماعي غير مفعّل بعد." /><div className="mt-8"><InterestedContactsTable contacts={contacts} /></div></main>;
 }

@@ -5,6 +5,7 @@ import {
   formatArabicEventTimeRange,
   formatArabicNumber,
   formatEventPrice,
+  formatSeatCapacity,
   formatRiyadhDateInput,
   formatRiyadhDateTimeLocal,
   formatRiyadhTimeInput,
@@ -14,6 +15,10 @@ import {
 describe("Arabic formatting", () => {
   it("uses Arabic digits for numbers", () => {
     expect(formatArabicNumber(123)).toBe("١٢٣");
+    expect(formatSeatCapacity(1)).toBe("مقعد واحد");
+    expect(formatSeatCapacity(2)).toBe("مقعدان");
+    expect(formatSeatCapacity(5)).toBe("٥ مقاعد");
+    expect(formatSeatCapacity(11)).toBe("١١ مقعدًا");
   });
 
   it("formats a Gregorian date in the Riyadh time zone", () => {

@@ -8,10 +8,12 @@ export function AdminEventFeedbackTable({ responses }: { responses: readonly Adm
   }
 
   return (
-    <div className="overflow-x-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)]">
-      <table className="w-full min-w-[54rem] border-collapse text-right text-sm">
+    <div>
+      <p className="mb-2 text-xs font-bold muted-copy md:hidden">مرري الجدول أفقيًا لعرض جميع تفاصيل التقييمات.</p>
+      <div className="table-scroll" tabIndex={0} role="region" aria-label="إجابات التقييم؛ يمكن تمريرها أفقيًا">
+      <table className="operational-table w-full min-w-[54rem] border-collapse text-right text-sm">
         <caption className="sr-only">إجابات تقييم الفعاليات</caption>
-        <thead className="bg-[var(--surface-soft)] text-[var(--brand-green-deep)]">
+        <thead>
           <tr>
             <th className="px-5 py-4">الفعالية</th>
             <th className="px-5 py-4">المشاركة</th>
@@ -23,7 +25,7 @@ export function AdminEventFeedbackTable({ responses }: { responses: readonly Adm
         </thead>
         <tbody>
           {responses.map((response) => (
-            <tr key={response.id} className="border-t border-[var(--border)] align-top">
+            <tr key={response.id} className="border-t border-[var(--color-border)] align-top">
               <td className="px-5 py-4 font-bold">{response.eventTitle}</td>
               <td className="px-5 py-4">{response.attendeeName ?? "مجهول"}</td>
               <td className="px-5 py-4">{formatArabicNumber(response.hospitalityRating)} / ٥</td>
@@ -34,6 +36,7 @@ export function AdminEventFeedbackTable({ responses }: { responses: readonly Adm
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

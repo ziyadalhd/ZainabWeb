@@ -20,5 +20,5 @@ export default async function AdminOverviewPage() {
     registrationRepository.list(),
   ]);
   const now = getCurrentTimestamp();
-  return <main className="px-4 py-8 sm:px-8"><PageHeader eyebrow="لوحة الإدارة" title="نظرة عامة" description="ملخص مباشر للفعاليات والتسجيلات وقائمة الانتظار." /><AdminOverview events={events} registrations={registrations} now={now} /></main>;
+  return <main className="admin-page"><PageHeader eyebrow="لوحة الإدارة" title="نظرة عامة" description="ملخص مباشر للفعاليات والتسجيلات وقائمة الانتظار." /><AdminOverview events={events} registrations={registrations} now={now} /></main>;
 }

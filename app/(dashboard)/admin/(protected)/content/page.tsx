@@ -12,5 +12,5 @@ export default async function ContentPage() {
   await requireAdmin();
   const repository = await createAdminSiteSettingsRepository();
   const settings = await repository.get();
-  return <main className="px-4 py-8 sm:px-8"><PageHeader eyebrow="لوحة الإدارة" title="محتوى الموقع" description="حدّثي النصوص والمقر والتواصل والشريك الأدبي. الروابط الاجتماعية لا تظهر للعامة إلا بعد حفظ رابط حقيقي." /><SiteSettingsForm settings={settings} action={updateSiteSettingsAction} /></main>;
+  return <main className="admin-page"><PageHeader eyebrow="لوحة الإدارة" title="محتوى الموقع" description="حدّثي النصوص والمقر والتواصل والشريك الأدبي. الروابط الاجتماعية لا تظهر للعامة إلا بعد حفظ رابط حقيقي." /><SiteSettingsForm settings={settings} action={updateSiteSettingsAction} /></main>;
 }

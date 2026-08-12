@@ -13,7 +13,7 @@ export function RegistrationFeedbackButton({
 
   if (state.feedbackPath) {
     return (
-      <div className="grid gap-2 rounded-xl bg-[var(--color-success-bg)] p-3 text-[var(--color-success-text)]">
+      <div className="notice-success grid gap-2 p-3">
         <p className="text-xs font-bold">رابط تقييم الفعالية جاهز لمرة واحدة.</p>
         <Link href={state.feedbackPath} className="break-all text-xs font-bold underline">فحص الرابط الآمن</Link>
       </div>
@@ -23,7 +23,7 @@ export function RegistrationFeedbackButton({
   return (
     <form action={formAction} className="grid gap-2">
       {state.error ? <p role="alert" className="text-xs font-bold text-[var(--color-error-text)]">تعذر تجهيز الرابط. حدّثي الصفحة وحاولي مرة أخرى.</p> : null}
-      <button type="submit" disabled={pending} className="rounded-xl border border-[var(--brand-green)] px-3 py-2 font-bold text-[var(--brand-green)] disabled:opacity-65">
+      <button type="submit" disabled={pending} className="button-secondary px-3 py-2 text-sm">
         {pending ? "جارٍ تجهيز الرابط…" : "تجهيز رابط تقييم"}
       </button>
     </form>

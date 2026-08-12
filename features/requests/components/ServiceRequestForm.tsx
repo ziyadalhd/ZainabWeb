@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import type { ServiceRequestActionState } from "@/app/(public)/requests/actions";
 import type { ServiceRequestKind } from "@/lib/domain/types";
+import { formatArabicEventDate, formatArabicTime } from "@/lib/format/date";
 
 interface ServiceRequestFormProps {
   kind: ServiceRequestKind;
   action: (state: ServiceRequestActionState, formData: FormData) => Promise<ServiceRequestActionState>;
 }
 
-const inputClassName = "min-h-12 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)]";
+const inputClassName = "field-control";
 
 const errorMessages: Record<string, string> = {
   requesterName: "أدخلي الاسم كاملًا.",
@@ -36,18 +37,29 @@ function Field({ children }: Readonly<{ children: ReactNode }>) {
   return <div className="grid gap-2">{children}</div>;
 }
 
+function schedulePreview(date: string, time: string): Date | null {
+  if (!date || !time) return null;
+  const value = new Date(`${date}T${time}:00+03:00`);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+
 export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
+  const [requestedDate, setRequestedDate] = useState("");
+  const [requestedStartTime, setRequestedStartTime] = useState("");
+  const [requestedEndTime, setRequestedEndTime] = useState("");
   const workshop = kind === "workshop_application";
   const label = kind === "space_booking" ? "إرسال طلب حجز المساحة" : kind === "celebration_booking" ? "إرسال طلب إقامة الحفل" : "إرسال طلب الورشة";
+  const startPreview = schedulePreview(requestedDate, requestedStartTime);
+  const endPreview = schedulePreview(requestedDate, requestedEndTime);
 
   if (state.reference && state.managementPath) {
     return (
-      <div role="status" className="rounded-3xl bg-[var(--color-success-bg)] p-6 text-[var(--color-success-text)]">
+      <div role="status" className="notice-success p-5">
         <h2 className="text-xl font-extrabold">تم استلام طلبك</h2>
         <p className="mt-3 text-sm">هذا الطلب لا يمثل حجزًا مؤكدًا. ستراجعه إدارة النادي ثم تتواصل معك.</p>
-        <p className="mt-4 rounded-xl bg-white/75 px-3 py-2 text-sm font-extrabold" dir="ltr">{state.reference}</p>
-        <Link className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-white px-4 py-2 font-extrabold text-[var(--brand-green-deep)] underline" href={state.managementPath}>
+        <p className="data-value mt-4 break-all border border-current/20 bg-white/75 px-3 py-2 text-sm font-extrabold" dir="ltr">{state.reference}</p>
+        <Link className="button-secondary mt-4 bg-white" href={state.managementPath}>
           عرض الطلب أو إلغاؤه
         </Link>
         <p className="mt-3 text-xs">احتفظي بهذا الرابط؛ لا يحتوي على اسم أو رقم جوال.</p>
@@ -56,52 +68,81 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
   }
 
   return (
-    <form action={formAction} className="grid gap-5" noValidate>
-      {state.error ? <p role="alert" className="rounded-2xl bg-[var(--color-error-bg)] px-4 py-3 text-sm font-bold text-[var(--color-error-text)]">{errorMessages[state.error] ?? errorMessages.save}</p> : null}
+    <form action={formAction} className="request-form" noValidate>
+      {state.error ? <p role="alert" className="notice-error text-sm">{errorMessages[state.error] ?? errorMessages.save}</p> : null}
 
-      <Field>
-        <label className="font-bold" htmlFor="requester-name">الاسم كاملًا</label>
-        <input id="requester-name" className={inputClassName} name="requesterName" autoComplete="name" maxLength={120} required />
-      </Field>
-      <Field>
-        <label className="font-bold" htmlFor="request-phone">رقم الجوال</label>
-        <input id="request-phone" className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05xxxxxxxx" required />
-        <span className="text-xs muted-copy">سيُستخدم للتواصل بشأن هذا الطلب فقط.</span>
-      </Field>
-      <Field>
-        <label className="font-bold" htmlFor="request-email">البريد الإلكتروني <span className="text-sm font-normal muted-copy">(اختياري)</span></label>
-        <input id="request-email" className={inputClassName} name="email" type="email" inputMode="email" autoComplete="email" dir="ltr" maxLength={254} />
-      </Field>
+      <fieldset className="request-group">
+        <legend className="request-group__title">بيانات التواصل</legend>
+        <div className="grid gap-5 pt-2">
+          <Field>
+            <label className="font-bold" htmlFor="requester-name">الاسم كاملًا</label>
+            <input id="requester-name" className={inputClassName} name="requesterName" autoComplete="name" maxLength={120} required />
+          </Field>
+          <Field>
+            <label className="font-bold" htmlFor="request-phone">رقم الجوال</label>
+            <input id="request-phone" className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05xxxxxxxx" required />
+            <span className="text-xs muted-copy">سيُستخدم للتواصل بشأن هذا الطلب فقط.</span>
+          </Field>
+          <Field>
+            <label className="font-bold" htmlFor="request-email">البريد الإلكتروني <span className="text-sm font-normal muted-copy">(اختياري)</span></label>
+            <input id="request-email" className={inputClassName} name="email" type="email" inputMode="email" autoComplete="email" dir="ltr" maxLength={254} />
+          </Field>
+        </div>
+      </fieldset>
 
       {workshop ? (
-        <>
-          <Field><label className="font-bold" htmlFor="workshop-title">عنوان الورشة</label><input id="workshop-title" className={inputClassName} name="workshopTitle" maxLength={200} required /></Field>
-          <Field><label className="font-bold" htmlFor="workshop-description">وصف الورشة</label><textarea id="workshop-description" className={inputClassName} name="workshopDescription" rows={5} maxLength={4000} required /></Field>
-          <Field><label className="font-bold" htmlFor="workshop-audience">الفئة المستهدفة</label><input id="workshop-audience" className={inputClassName} name="workshopTargetAudience" maxLength={200} required /></Field>
-          <Field><label className="font-bold" htmlFor="workshop-duration">مدة الورشة</label><input id="workshop-duration" className={inputClassName} name="workshopDuration" maxLength={160} required /></Field>
-          <Field><label className="font-bold" htmlFor="workshop-attendance">عدد الحاضرات المتوقع</label><input id="workshop-attendance" className={inputClassName} name="workshopExpectedAttendance" type="number" min="1" inputMode="numeric" required /></Field>
-          <Field><label className="font-bold" htmlFor="workshop-requirements">متطلبات الورشة</label><textarea id="workshop-requirements" className={inputClassName} name="workshopRequirements" rows={4} maxLength={2000} required /></Field>
-          <Field><label className="font-bold" htmlFor="workshop-portfolio">رابط الخبرة أو الملف <span className="text-sm font-normal muted-copy">(اختياري)</span></label><input id="workshop-portfolio" className={inputClassName} name="workshopPortfolioUrl" type="url" inputMode="url" dir="ltr" /></Field>
-        </>
-      ) : (
-        <>
-          <Field><label className="font-bold" htmlFor="request-use">نوع الاستخدام أو المناسبة</label><input id="request-use" className={inputClassName} name="useOrOccasionType" maxLength={160} required /></Field>
-          <Field><label className="font-bold" htmlFor="request-date">التاريخ المطلوب</label><input id="request-date" className={inputClassName} name="requestedDate" type="date" required /></Field>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field><label className="font-bold" htmlFor="request-start">وقت البداية</label><input id="request-start" className={inputClassName} name="requestedStartTime" type="time" required /></Field>
-            <Field><label className="font-bold" htmlFor="request-end">وقت النهاية</label><input id="request-end" className={inputClassName} name="requestedEndTime" type="time" required /></Field>
+        <fieldset className="request-group">
+          <legend className="request-group__title">تفاصيل الورشة</legend>
+          <div className="grid gap-5 pt-2">
+            <Field><label className="font-bold" htmlFor="workshop-title">عنوان الورشة</label><input id="workshop-title" className={inputClassName} name="workshopTitle" maxLength={200} required /></Field>
+            <Field><label className="font-bold" htmlFor="workshop-description">وصف الورشة</label><textarea id="workshop-description" className={inputClassName} name="workshopDescription" rows={5} maxLength={4000} required /></Field>
+            <Field><label className="font-bold" htmlFor="workshop-audience">الفئة المستهدفة</label><input id="workshop-audience" className={inputClassName} name="workshopTargetAudience" maxLength={200} required /></Field>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field><label className="font-bold" htmlFor="workshop-duration">مدة الورشة</label><input id="workshop-duration" className={inputClassName} name="workshopDuration" maxLength={160} required /></Field>
+              <Field><label className="font-bold" htmlFor="workshop-attendance">عدد الحاضرات المتوقع</label><input id="workshop-attendance" className={inputClassName} name="workshopExpectedAttendance" type="number" min="1" inputMode="numeric" required /></Field>
+            </div>
+            <Field><label className="font-bold" htmlFor="workshop-requirements">متطلبات الورشة</label><textarea id="workshop-requirements" className={inputClassName} name="workshopRequirements" rows={4} maxLength={2000} required /></Field>
+            <Field><label className="font-bold" htmlFor="workshop-portfolio">رابط الخبرة أو الملف <span className="text-sm font-normal muted-copy">(اختياري)</span></label><input id="workshop-portfolio" className={inputClassName} name="workshopPortfolioUrl" type="url" inputMode="url" dir="ltr" /></Field>
           </div>
-          <Field><label className="font-bold" htmlFor="request-attendance">عدد الحاضرات المتوقع</label><input id="request-attendance" className={inputClassName} name="attendeeCount" type="number" min="1" inputMode="numeric" required /></Field>
-        </>
+        </fieldset>
+      ) : (
+        <fieldset className="request-group">
+          <legend className="request-group__title">تفاصيل الطلب</legend>
+          <div className="grid gap-5 pt-2">
+            <Field><label className="font-bold" htmlFor="request-use">نوع الاستخدام أو المناسبة</label><input id="request-use" className={inputClassName} name="useOrOccasionType" maxLength={160} required /></Field>
+            <fieldset className="date-time-choice">
+              <legend className="font-black text-[var(--brand-forest)]">الموعد المناسب</legend>
+              <p className="mt-1 text-sm muted-copy">اختاري اليوم، ثم وقت البداية والنهاية. جميع الأوقات بتوقيت السعودية.</p>
+              <div className="mt-4 grid gap-4">
+                <Field><label className="font-bold" htmlFor="request-date">التاريخ</label><input id="request-date" className={inputClassName} name="requestedDate" type="date" value={requestedDate} onChange={(event) => setRequestedDate(event.target.value)} required /></Field>
+                <div className="grid gap-4 min-[380px]:grid-cols-2">
+                  <Field><label className="font-bold" htmlFor="request-start">من الساعة</label><input id="request-start" className={inputClassName} name="requestedStartTime" type="time" step="900" value={requestedStartTime} onChange={(event) => setRequestedStartTime(event.target.value)} required dir="ltr" /></Field>
+                  <Field><label className="font-bold" htmlFor="request-end">إلى الساعة</label><input id="request-end" className={inputClassName} name="requestedEndTime" type="time" step="900" value={requestedEndTime} onChange={(event) => setRequestedEndTime(event.target.value)} required dir="ltr" /></Field>
+                </div>
+              </div>
+              <p className="date-time-preview data-value mt-4" aria-live="polite">
+                {startPreview ? <>{formatArabicEventDate(startPreview)} · من {formatArabicTime(startPreview)}{endPreview ? ` إلى ${formatArabicTime(endPreview)}` : ""}</> : "اختاري التاريخ ووقت البداية لعرض الموعد هنا."}
+              </p>
+            </fieldset>
+            <Field><label className="font-bold" htmlFor="request-attendance">عدد الحاضرات المتوقع</label><input id="request-attendance" className={inputClassName} name="attendeeCount" type="number" min="1" inputMode="numeric" required /></Field>
+          </div>
+        </fieldset>
       )}
 
-      <Field>
-        <label className="font-bold" htmlFor="request-notes">ملاحظات <span className="text-sm font-normal muted-copy">(اختياري)</span></label>
-        <textarea id="request-notes" className={inputClassName} name="notes" rows={4} maxLength={4000} />
-      </Field>
+      <fieldset className="request-group">
+        <legend className="request-group__title">معلومات إضافية</legend>
+        <div className="pt-2">
+          <Field>
+            <label className="font-bold" htmlFor="request-notes">ملاحظات <span className="text-sm font-normal muted-copy">(اختياري)</span></label>
+            <textarea id="request-notes" className={inputClassName} name="notes" rows={4} maxLength={4000} />
+          </Field>
+        </div>
+      </fieldset>
       <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true"><label htmlFor="request-website">اتركي هذا الحقل فارغًا</label><input id="request-website" name="website" tabIndex={-1} autoComplete="off" /></div>
-      <p className="text-xs muted-copy">هذا طلب مراجعة وليس حجزًا فوريًا. تُحذف بيانات الطلب تلقائيًا بعد 90 يومًا من إغلاقه.</p>
-      <button type="submit" disabled={pending} className="min-h-12 rounded-2xl bg-[var(--brand-green)] px-5 py-3 font-extrabold text-white hover:bg-[var(--brand-green-deep)] disabled:cursor-wait disabled:opacity-65">{pending ? "جارٍ الإرسال…" : label}</button>
+      <div className="request-form__footer">
+        <p className="text-xs muted-copy">هذا طلب مراجعة وليس حجزًا فوريًا. تُحذف بيانات الطلب تلقائيًا بعد 90 يومًا من إغلاقه.</p>
+        <button type="submit" disabled={pending} className="button-primary min-h-12 px-5 py-3">{pending ? "جارٍ الإرسال…" : label}</button>
+      </div>
     </form>
   );
 }

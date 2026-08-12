@@ -19,7 +19,7 @@ function RatingField({ name, legend, error }: { name: string; legend: string; er
       <legend className="font-extrabold text-[var(--brand-green-deep)]">{legend}</legend>
       <div className="mt-3 flex flex-wrap gap-3" dir="ltr">
         {ratings.map((rating) => (
-          <label key={rating} className="flex size-12 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-white font-bold has-checked:border-[var(--brand-green)] has-checked:bg-[var(--brand-green)] has-checked:text-[var(--brand-ivory)]">
+          <label key={rating} className="flex size-12 cursor-pointer items-center justify-center rounded-sm border border-[var(--color-border)] bg-white font-bold has-checked:border-[var(--brand-forest)] has-checked:bg-[var(--brand-forest)] has-checked:text-[var(--color-on-primary)]">
             <input type="radio" name={name} value={rating} className="sr-only" required />
             {rating}
           </label>
@@ -38,25 +38,25 @@ export function EventFeedbackForm({
   const [state, formAction, pending] = useActionState(action, {});
 
   return (
-    <form action={formAction} className="card-surface mt-10 grid gap-8 p-6 sm:p-8" noValidate>
+    <form action={formAction} className="form-surface mt-10 grid gap-8 p-5 sm:p-8" noValidate>
       <RatingField name="hospitalityRating" legend="تقييم الضيافة" error={state.error === "hospitalityRating" ? errors.hospitalityRating : undefined} />
       <RatingField name="materialRating" legend="تقييم المادة" error={state.error === "materialRating" ? errors.materialRating : undefined} />
       <label className="grid gap-3 font-extrabold text-[var(--brand-green-deep)]">
         المقترحات
-        <textarea name="suggestions" rows={5} maxLength={4000} className="resize-y rounded-2xl border border-[var(--border)] bg-white px-4 py-3 font-normal text-[var(--text)]" />
+        <textarea name="suggestions" rows={5} maxLength={4000} className="field-control resize-y bg-white font-normal" />
       </label>
       {state.error === "suggestions" ? <p role="alert" className="font-bold text-[var(--color-error-text)]">{errors.suggestions}</p> : null}
       <fieldset>
         <legend className="font-extrabold text-[var(--brand-green-deep)]">إظهار الاسم للمسؤولة</legend>
         <p className="mt-2 text-sm muted-copy">يمكنكِ إرسال التقييم باسمك أو دون إظهار هويتك.</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-[var(--border)] bg-white p-4 font-bold"><input type="radio" name="identityVisible" value="true" required /> نعم، أظهري اسمي</label>
-          <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-[var(--border)] bg-white p-4 font-bold"><input type="radio" name="identityVisible" value="false" required /> لا، أرسليه مجهولًا</label>
+          <label className="flex cursor-pointer items-center gap-3 border border-[var(--color-border)] bg-white p-4 font-bold"><input type="radio" name="identityVisible" value="true" required /> نعم، أظهري اسمي</label>
+          <label className="flex cursor-pointer items-center gap-3 border border-[var(--color-border)] bg-white p-4 font-bold"><input type="radio" name="identityVisible" value="false" required /> لا، أرسليه مجهولًا</label>
         </div>
         {state.error === "identityVisible" ? <p role="alert" className="mt-3 font-bold text-[var(--color-error-text)]">{errors.identityVisible}</p> : null}
       </fieldset>
-      {state.error === "save" ? <p role="alert" className="rounded-2xl bg-[var(--color-error-bg)] p-4 font-bold text-[var(--color-error-text)]">{errors.save}</p> : null}
-      <button type="submit" disabled={pending} className="rounded-full bg-[var(--brand-green)] px-6 py-3 font-bold text-white disabled:opacity-65">{pending ? "جارٍ إرسال التقييم…" : "إرسال التقييم"}</button>
+      {state.error === "save" ? <p role="alert" className="notice-error">{errors.save}</p> : null}
+      <button type="submit" disabled={pending} className="button-primary px-6 py-3">{pending ? "جارٍ إرسال التقييم…" : "إرسال التقييم"}</button>
     </form>
   );
 }

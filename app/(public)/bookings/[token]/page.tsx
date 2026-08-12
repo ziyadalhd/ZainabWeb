@@ -27,7 +27,7 @@ export default async function BookingManagementPage({
         <div className="mx-auto max-w-xl card-surface p-7 sm:p-10">
           <h1 className="page-title">رابط الحجز غير متاح</h1>
           <p className="mt-4 muted-copy">قد يكون الرابط منتهيًا، أو أُلغي الحجز، أو انتهت الفعالية.</p>
-          <Link className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-[var(--brand-green)] px-4 py-2 font-bold text-white" href="/events">عرض الفعاليات</Link>
+          <Link className="button-primary mt-6" href="/events">عرض الفعاليات</Link>
         </div>
       </main>
     );
@@ -41,19 +41,19 @@ export default async function BookingManagementPage({
         <p className="mt-3 font-bold">{booking.attendeeName}</p>
 
         <dl className="mt-7 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
+          <div className="border-r-4 border-[var(--brand-olive)] bg-[var(--color-surface-muted)] p-4">
             <dt className="text-sm muted-copy">الموعد</dt>
             <dd className="mt-1 font-extrabold">{formatArabicDateTime(booking.eventStartsAt)}</dd>
           </div>
-          <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
+          <div className="border-r-4 border-[var(--brand-olive)] bg-[var(--color-surface-muted)] p-4">
             <dt className="text-sm muted-copy">السعر وقت الحجز</dt>
             <dd className="mt-1 font-extrabold">{formatEventPrice(booking.priceHalalasAtBooking)}</dd>
           </div>
-          <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
+          <div className="border-r-4 border-[var(--brand-olive)] bg-[var(--color-surface-muted)] p-4">
             <dt className="text-sm muted-copy">حالة الحجز</dt>
             <dd className="mt-2"><StatusBadge status={booking.status} /></dd>
           </div>
-          <div className="rounded-2xl bg-[var(--surface-soft)] p-4">
+          <div className="border-r-4 border-[var(--brand-olive)] bg-[var(--color-surface-muted)] p-4">
             <dt className="text-sm muted-copy">الحضور</dt>
             <dd className="mt-2"><StatusBadge status={booking.attendanceStatus} /></dd>
           </div>

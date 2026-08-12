@@ -22,7 +22,7 @@
 | M3 — Admin operations center | **In Progress** | مرتفع | 4–6 أيام |
 | M4 — Venue, celebration, and workshop requests | **Completed** | مرتفع | مكتملة |
 | M5 — Email, messaging, contacts, and surveys | **In Progress** | مرتفع | 4–6 أيام |
-| M6 — Content, design, accessibility, and SEO | **Pending** | متوسط | 3–5 أيام |
+| M6 — Content, design, accessibility, and SEO | **In Progress** | متوسط | 3–5 أيام |
 | M7 — Security, observability, and launch | **Pending** | متوسط–مرتفع | 3–5 أيام |
 
 التقدير الإجمالي المتبقي: `22–35` يومًا هندسيًا. لا يشمل انتظار شراء الدومين أو مراجعة المحتوى أو إعداد الحسابات الخارجية.
@@ -131,8 +131,8 @@
 ### Deliverables
 
 - **Completed** — إدارة النصوص والمقر والتواصل والشريك الأدبي من لوحة التحكم؛ الروابط الاجتماعية لا تظهر للعامة قبل حفظ رابط حقيقي.
-- تطبيق الهوية الهادئة وخط ثمانية وشعار SVG.
-- مراجعة كاملة وفق `web-design-guidelines` للعربية وRTL والوصولية.
+- **In Progress** — تطبيق الهوية الهادئة وخط ثمانية وشعار SVG على فرع المقارنة `codex/design-refresh`؛ ينتظر قبول المعاينة قبل الدمج.
+- **In Progress** — مراجعة `web-design-guidelines` للعربية وRTL والوصولية؛ نجحت الفحوص الآلية ومعاينة دخول الإدارة محليًا، وتبقى مراجعة المسارات المتصلة بالبيانات على Preview.
 - Metadata وsitemap وrobots وصفحات الخصوصية والشروط.
 
 **Success criteria:** لا محتوى إنجليزي ظاهر، لا روابط مختلقة، وكل مسار صالح للوحة المفاتيح والجوال.
