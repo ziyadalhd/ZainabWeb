@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { submitInterestedContactAction } from "@/app/(public)/surveys/interested-contact/actions";
+import { TurnstileField } from "@/features/security/components/TurnstileField";
 
 export const metadata: Metadata = { title: "تسجيل المهتمين" };
 
@@ -9,6 +10,7 @@ const errorMessages: Record<string, string> = {
   phone: "اكتبي رقم جوال سعودي صحيحًا.",
   email: "اكتبي بريدًا إلكترونيًا صحيحًا.",
   consent: "يلزم تحديد موافقتك لتسجيل اهتمامك بالفعاليات القادمة.",
+  turnstile: "تعذر التحقق الأمني. أكملي التحقق ثم حاولي مرة أخرى.",
   invalid: "تعذر حفظ الطلب. تحققي من البيانات ثم حاولي مرة أخرى.",
   save: "تعذر حفظ الطلب الآن. حاولي مرة أخرى لاحقًا.",
 };
@@ -38,6 +40,7 @@ export default async function InterestedContactPage({ searchParams }: { searchPa
             <input name="upcomingEventsConsent" type="checkbox" className="mt-1 size-5 accent-[var(--brand-green)]" />
             <span>أوافق على أن يستخدم النادي بياناتي لإرسال معلومات الفعاليات القادمة. هذه الموافقة اختيارية وليست محددة مسبقًا، ويمكنني إلغاؤها عبر الرابط الآمن.</span>
           </label>
+          <TurnstileField />
           <button type="submit" className="button-primary min-h-12 px-5 py-3">تسجيل الاهتمام</button>
         </form>
       </section>

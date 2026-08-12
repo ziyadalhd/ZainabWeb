@@ -8,6 +8,7 @@ import {
   createRegistrationService,
   RegistrationFailure,
 } from "@/lib/supabase/registrations";
+import { verifyTurnstile } from "@/lib/security/turnstile";
 
 export type RegistrationActionError =
   | "attendeeName"
@@ -18,6 +19,7 @@ export type RegistrationActionError =
   | "guardianConsent"
   | "duplicate"
   | "unavailable"
+  | "turnstile"
   | "save";
 
 export interface RegistrationActionState {
@@ -33,6 +35,9 @@ export async function registerForEventAction(
   _previousState: RegistrationActionState,
   formData: FormData,
 ): Promise<RegistrationActionState> {
+  const turnstile = await verifyTurnstile(formData);
+  if (!turnstile.ok) return { error: "turnstile" };
+
   const catalog = await createEventCatalog();
   const event = await catalog.getUpcomingEvent(eventId);
   if (

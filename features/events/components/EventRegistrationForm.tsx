@@ -7,6 +7,7 @@ import type {
   RegistrationActionError,
   RegistrationActionState,
 } from "@/app/(public)/events/[id]/actions";
+import { TurnstileField } from "@/features/security/components/TurnstileField";
 
 interface EventRegistrationFormProps {
   action: (
@@ -26,6 +27,7 @@ const errorMessages: Record<RegistrationActionError, string> = {
   guardianConsent: "موافقة ولية الأمر مطلوبة لتسجيل القاصرات.",
   duplicate: "يوجد تسجيل سابق لهذه الفعالية بنفس الجوال أو البريد.",
   unavailable: "التسجيل غير متاح لهذه الفعالية حاليًا.",
+  turnstile: "تعذر التحقق الأمني. أكملي التحقق ثم حاولي مرة أخرى.",
   save: "تعذر إكمال التسجيل. حاول مرة أخرى بعد قليل.",
 };
 
@@ -172,6 +174,8 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
       <p className="text-xs muted-copy">
         هذه الفعالية مخصصة للنساء. تُستخدم بيانات التواصل لإدارة هذا التسجيل فقط، وتُحذف تلقائيًا بعد 90 يومًا من انتهاء الفعالية.
       </p>
+
+      <TurnstileField />
 
       <button type="submit" disabled={pending} className="button-primary min-h-12 w-full px-5 py-3">
         {pending ? "جارٍ التسجيل…" : availability === "full" ? "الانضمام إلى قائمة الانتظار" : "تأكيد التسجيل"}

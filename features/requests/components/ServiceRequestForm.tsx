@@ -5,6 +5,7 @@ import { useActionState, useState, type ReactNode } from "react";
 import type { ServiceRequestActionState } from "@/app/(public)/requests/actions";
 import type { ServiceRequestKind } from "@/lib/domain/types";
 import { formatArabicEventDate, formatArabicTime } from "@/lib/format/date";
+import { TurnstileField } from "@/features/security/components/TurnstileField";
 
 interface ServiceRequestFormProps {
   kind: ServiceRequestKind;
@@ -30,6 +31,7 @@ const errorMessages: Record<string, string> = {
   workshopPortfolioUrl: "تحققي من رابط الخبرة أو الملف.",
   notes: "الملاحظات أطول من الحد المسموح.",
   invalid: "تعذر التحقق من الطلب. أعيدي المحاولة.",
+  turnstile: "تعذر التحقق الأمني. أكملي التحقق ثم حاولي مرة أخرى.",
   save: "تعذر إرسال الطلب الآن. حاولي مرة أخرى بعد قليل.",
 };
 
@@ -141,6 +143,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
       <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true"><label htmlFor="request-website">اتركي هذا الحقل فارغًا</label><input id="request-website" name="website" tabIndex={-1} autoComplete="off" /></div>
       <div className="request-form__footer">
         <p className="text-xs muted-copy">هذا طلب مراجعة وليس حجزًا فوريًا. تُحذف بيانات الطلب تلقائيًا بعد 90 يومًا من إغلاقه.</p>
+        <TurnstileField />
         <button type="submit" disabled={pending} className="button-primary min-h-12 px-5 py-3">{pending ? "جارٍ الإرسال…" : label}</button>
       </div>
     </form>

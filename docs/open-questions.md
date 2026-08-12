@@ -1,6 +1,6 @@
 # Open Questions
 
-Last updated: `2026-08-11`
+Last updated: `2026-08-12`
 
 This file contains only unresolved decisions and launch inputs. Approved behavior belongs in `AGENTS.md`, `PLAN.md`, and `docs/architecture-decisions.md`.
 
@@ -16,6 +16,7 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 - What is the final administrator email used for Auth, alerts, and account recovery?
 - What are the club's default venue name and address?
 - What legal entity or responsible-person details and contact channel should appear in the privacy policy and terms?
+- The owner confirmed they have a Saudi freelance-work document. Before public launch, what is the exact provider name shown on it, what activity does it cover, and what dedicated business contact channel should receive privacy and customer requests? The document number, national ID, and document image must not be published. See `docs/legal-launch-inputs.md`.
 - What are the real Instagram and TikTok URLs? Keep the controls hidden or disabled until supplied.
 - The current `0537918640` number is personal and temporary. What future WhatsApp Business number will replace it?
 
