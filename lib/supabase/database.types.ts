@@ -29,41 +29,414 @@ export type Database = {
         }
         Relationships: []
       }
+      event_feedback_links: {
+        Row: {
+          created_at: string
+          event_id: string
+          feedback_token_hash: string
+          hospitality_rating: number | null
+          id: string
+          identity_visible: boolean | null
+          material_rating: number | null
+          registration_id: string | null
+          submitted_at: string | null
+          suggestions: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          feedback_token_hash: string
+          hospitality_rating?: number | null
+          id?: string
+          identity_visible?: boolean | null
+          material_rating?: number | null
+          registration_id?: string | null
+          submitted_at?: string | null
+          suggestions?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          feedback_token_hash?: string
+          hospitality_rating?: number | null
+          id?: string
+          identity_visible?: boolean | null
+          material_rating?: number | null
+          registration_id?: string | null
+          submitted_at?: string | null
+          suggestions?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_feedback_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_feedback_links_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           audience: string
-          availability: string
           capacity: number
           created_at: string
+          ends_at: string | null
+          event_kind: string
           event_type_label: string
           id: string
+          poster_path: string | null
+          price_halalas: number | null
           publication_status: string
+          registration_status: string
           starts_at: string
           title: string
           updated_at: string
         }
         Insert: {
           audience: string
-          availability?: string
           capacity: number
           created_at?: string
+          ends_at?: string | null
+          event_kind?: string
           event_type_label: string
           id?: string
+          poster_path?: string | null
+          price_halalas?: number | null
           publication_status?: string
+          registration_status?: string
           starts_at: string
           title: string
           updated_at?: string
         }
         Update: {
           audience?: string
-          availability?: string
           capacity?: number
           created_at?: string
+          ends_at?: string | null
+          event_kind?: string
           event_type_label?: string
           id?: string
+          poster_path?: string | null
+          price_halalas?: number | null
           publication_status?: string
+          registration_status?: string
           starts_at?: string
           title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      interested_contacts: {
+        Row: {
+          consented_at: string
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          phone_e164: string
+          unsubscribe_token_hash: string
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          consented_at?: string
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          phone_e164: string
+          unsubscribe_token_hash: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consented_at?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          phone_e164?: string
+          unsubscribe_token_hash?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registration_reminders: {
+        Row: {
+          id: string
+          management_token_hash: string
+          prepared_at: string
+          registration_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          id?: string
+          management_token_hash: string
+          prepared_at?: string
+          registration_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          id?: string
+          management_token_hash?: string
+          prepared_at?: string
+          registration_id?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_reminders_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registrations: {
+        Row: {
+          attendance_status: string
+          attendee_name: string
+          booking_token_hash: string | null
+          cancelled_at: string | null
+          check_in_status: string
+          checked_in_at: string | null
+          created_at: string
+          email: string | null
+          event_id: string
+          guardian_consent: boolean
+          guardian_name: string | null
+          id: string
+          invitation_accepted_at: string | null
+          invitation_expired_at: string | null
+          invitation_expires_at: string | null
+          invitation_revoked_at: string | null
+          invitation_token_hash: string | null
+          invited_at: string | null
+          participant_age: number | null
+          payment_status: string
+          phone_e164: string
+          price_halalas_at_booking: number
+          promoted_at: string | null
+          public_reference: string
+          retention_until: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attendance_status?: string
+          attendee_name: string
+          booking_token_hash?: string | null
+          cancelled_at?: string | null
+          check_in_status?: string
+          checked_in_at?: string | null
+          created_at?: string
+          email?: string | null
+          event_id: string
+          guardian_consent?: boolean
+          guardian_name?: string | null
+          id?: string
+          invitation_accepted_at?: string | null
+          invitation_expired_at?: string | null
+          invitation_expires_at?: string | null
+          invitation_revoked_at?: string | null
+          invitation_token_hash?: string | null
+          invited_at?: string | null
+          participant_age?: number | null
+          payment_status?: string
+          phone_e164: string
+          price_halalas_at_booking: number
+          promoted_at?: string | null
+          public_reference?: string
+          retention_until: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          attendance_status?: string
+          attendee_name?: string
+          booking_token_hash?: string | null
+          cancelled_at?: string | null
+          check_in_status?: string
+          checked_in_at?: string | null
+          created_at?: string
+          email?: string | null
+          event_id?: string
+          guardian_consent?: boolean
+          guardian_name?: string | null
+          id?: string
+          invitation_accepted_at?: string | null
+          invitation_expired_at?: string | null
+          invitation_expires_at?: string | null
+          invitation_revoked_at?: string | null
+          invitation_token_hash?: string | null
+          invited_at?: string | null
+          participant_age?: number | null
+          payment_status?: string
+          phone_e164?: string
+          price_halalas_at_booking?: number
+          promoted_at?: string | null
+          public_reference?: string
+          retention_until?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_requests: {
+        Row: {
+          attendee_count: number | null
+          created_at: string
+          email: string | null
+          id: string
+          management_token_hash: string
+          notes: string | null
+          offer_expires_at: string | null
+          offer_price_halalas: number | null
+          offer_responded_at: string | null
+          offer_terms: string | null
+          payment_status: string
+          phone_e164: string
+          public_reference: string
+          request_kind: string
+          requested_date: string | null
+          requested_end_time: string | null
+          requested_start_time: string | null
+          requester_name: string
+          retention_until: string | null
+          status: string
+          updated_at: string
+          use_or_occasion_type: string | null
+          workshop_description: string | null
+          workshop_duration: string | null
+          workshop_expected_attendance: number | null
+          workshop_portfolio_url: string | null
+          workshop_requirements: string | null
+          workshop_target_audience: string | null
+          workshop_title: string | null
+        }
+        Insert: {
+          attendee_count?: number | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          management_token_hash: string
+          notes?: string | null
+          offer_expires_at?: string | null
+          offer_price_halalas?: number | null
+          offer_responded_at?: string | null
+          offer_terms?: string | null
+          payment_status?: string
+          phone_e164: string
+          public_reference?: string
+          request_kind: string
+          requested_date?: string | null
+          requested_end_time?: string | null
+          requested_start_time?: string | null
+          requester_name: string
+          retention_until?: string | null
+          status?: string
+          updated_at?: string
+          use_or_occasion_type?: string | null
+          workshop_description?: string | null
+          workshop_duration?: string | null
+          workshop_expected_attendance?: number | null
+          workshop_portfolio_url?: string | null
+          workshop_requirements?: string | null
+          workshop_target_audience?: string | null
+          workshop_title?: string | null
+        }
+        Update: {
+          attendee_count?: number | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          management_token_hash?: string
+          notes?: string | null
+          offer_expires_at?: string | null
+          offer_price_halalas?: number | null
+          offer_responded_at?: string | null
+          offer_terms?: string | null
+          payment_status?: string
+          phone_e164?: string
+          public_reference?: string
+          request_kind?: string
+          requested_date?: string | null
+          requested_end_time?: string | null
+          requested_start_time?: string | null
+          requester_name?: string
+          retention_until?: string | null
+          status?: string
+          updated_at?: string
+          use_or_occasion_type?: string | null
+          workshop_description?: string | null
+          workshop_duration?: string | null
+          workshop_expected_attendance?: number | null
+          workshop_portfolio_url?: string | null
+          workshop_requirements?: string | null
+          workshop_target_audience?: string | null
+          workshop_title?: string | null
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          club_introduction: string | null
+          contact_phone: string | null
+          default_venue_address: string | null
+          default_venue_name: string | null
+          id: boolean
+          instagram_url: string | null
+          literary_partner_body: string | null
+          literary_partner_title: string | null
+          name_story: string | null
+          objectives: string | null
+          tiktok_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          club_introduction?: string | null
+          contact_phone?: string | null
+          default_venue_address?: string | null
+          default_venue_name?: string | null
+          id?: boolean
+          instagram_url?: string | null
+          literary_partner_body?: string | null
+          literary_partner_title?: string | null
+          name_story?: string | null
+          objectives?: string | null
+          tiktok_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          club_introduction?: string | null
+          contact_phone?: string | null
+          default_venue_address?: string | null
+          default_venue_name?: string | null
+          id?: boolean
+          instagram_url?: string | null
+          literary_partner_body?: string | null
+          literary_partner_title?: string | null
+          name_story?: string | null
+          objectives?: string | null
+          tiktok_url?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -73,7 +446,210 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_waitlist_invitation: {
+        Args: { p_invitation_token_hash: string }
+        Returns: undefined
+      }
+      cancel_booking_by_token: {
+        Args: { p_booking_token_hash: string }
+        Returns: undefined
+      }
+      cancel_registration: {
+        Args: { p_registration_id: string }
+        Returns: undefined
+      }
+      cancel_service_request_by_token: {
+        Args: { p_management_token_hash: string }
+        Returns: undefined
+      }
+      confirm_booking_attendance_by_token: {
+        Args: { p_booking_token_hash: string }
+        Returns: undefined
+      }
+      confirm_registration_attendance: {
+        Args: { p_registration_id: string }
+        Returns: undefined
+      }
+      create_service_request_offer: {
+        Args: {
+          p_expires_at?: string
+          p_price_halalas: number
+          p_request_id: string
+          p_terms: string
+        }
+        Returns: string
+      }
+      get_booking_by_token: {
+        Args: { p_booking_token_hash: string }
+        Returns: {
+          attendance_status: string
+          attendee_name: string
+          event_ends_at: string
+          event_starts_at: string
+          event_title: string
+          price_halalas_at_booking: number
+          registration_status: string
+        }[]
+      }
+      get_event_feedback_by_token: {
+        Args: { p_feedback_token_hash: string }
+        Returns: {
+          event_title: string
+        }[]
+      }
+      get_event_registration_states: {
+        Args: never
+        Returns: {
+          active_reservation_count: number
+          event_id: string
+          registration_availability: string
+        }[]
+      }
+      get_service_request_by_token: {
+        Args: { p_management_token_hash: string }
+        Returns: {
+          attendee_count: number
+          notes: string
+          offer_expires_at: string
+          offer_price_halalas: number
+          offer_terms: string
+          request_kind: string
+          request_status: string
+          requested_date: string
+          requested_end_time: string
+          requested_start_time: string
+          requester_name: string
+          use_or_occasion_type: string
+          workshop_description: string
+          workshop_duration: string
+          workshop_expected_attendance: number
+          workshop_portfolio_url: string
+          workshop_requirements: string
+          workshop_target_audience: string
+          workshop_title: string
+        }[]
+      }
+      get_service_request_conflicts: {
+        Args: { p_request_id: string }
+        Returns: {
+          conflict_ends_at: string
+          conflict_source: string
+          conflict_starts_at: string
+          conflict_status: string
+          conflict_title: string
+        }[]
+      }
+      get_waitlist_invitation: {
+        Args: { p_invitation_token_hash: string }
+        Returns: {
+          attendee_name: string
+          event_starts_at: string
+          event_title: string
+          invitation_expires_at: string
+        }[]
+      }
+      invite_waitlisted_registration: {
+        Args: { p_invitation_token_hash: string; p_registration_id: string }
+        Returns: string
+      }
+      issue_event_feedback_link: {
+        Args: { p_feedback_token_hash: string; p_registration_id: string }
+        Returns: string
+      }
+      issue_registration_reminder: {
+        Args: { p_management_token_hash: string; p_registration_id: string }
+        Returns: string
+      }
+      mark_registration_reminder_sent: {
+        Args: { p_reminder_id: string }
+        Returns: undefined
+      }
+      record_registration_check_in: {
+        Args: { p_check_in_status: string; p_registration_id: string }
+        Returns: undefined
+      }
+      register_for_event: {
+        Args: {
+          p_attendee_name: string
+          p_booking_token_hash: string
+          p_email: string
+          p_event_id: string
+          p_guardian_consent: boolean
+          p_guardian_name: string
+          p_participant_age: number
+          p_phone_e164: string
+        }
+        Returns: {
+          registration_reference: string
+          registration_status: string
+        }[]
+      }
+      respond_to_service_request_offer: {
+        Args: { p_management_token_hash: string; p_response: string }
+        Returns: undefined
+      }
+      revoke_waitlist_invitation: {
+        Args: { p_registration_id: string }
+        Returns: undefined
+      }
+      set_registration_payment_status: {
+        Args: { p_payment_status: string; p_registration_id: string }
+        Returns: undefined
+      }
+      set_service_request_payment_status: {
+        Args: { p_payment_status: string; p_request_id: string }
+        Returns: undefined
+      }
+      start_service_request_review: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      submit_event_feedback_by_token: {
+        Args: {
+          p_feedback_token_hash: string
+          p_hospitality_rating: number
+          p_identity_visible: boolean
+          p_material_rating: number
+          p_suggestions: string
+        }
+        Returns: undefined
+      }
+      submit_interested_contact: {
+        Args: {
+          p_contact_name: string
+          p_email: string
+          p_phone_e164: string
+          p_unsubscribe_token_hash: string
+        }
+        Returns: string
+      }
+      submit_service_request: {
+        Args: {
+          p_attendee_count: number
+          p_email: string
+          p_management_token_hash: string
+          p_notes: string
+          p_phone_e164: string
+          p_request_kind: string
+          p_requested_date: string
+          p_requested_end_time: string
+          p_requested_start_time: string
+          p_requester_name: string
+          p_use_or_occasion_type: string
+          p_workshop_description: string
+          p_workshop_duration: string
+          p_workshop_expected_attendance: number
+          p_workshop_portfolio_url: string
+          p_workshop_requirements: string
+          p_workshop_target_audience: string
+          p_workshop_title: string
+        }
+        Returns: string
+      }
+      unsubscribe_interested_contact: {
+        Args: { p_unsubscribe_token_hash: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

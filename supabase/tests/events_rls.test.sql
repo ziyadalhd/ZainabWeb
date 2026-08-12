@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(13);
+select plan(19);
 
 insert into auth.users (
   instance_id,
@@ -48,26 +48,28 @@ insert into public.events (
   audience,
   event_type_label,
   starts_at,
+  ends_at,
   capacity,
-  availability,
+  price_halalas,
+  registration_status,
   publication_status
 )
 values
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'منشورة قادمة', 'adults', 'لقاء', now() + interval '7 days', 20, 'available', 'published'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2', 'مسودة قادمة', 'youth', 'ورشة', now() + interval '8 days', 15, 'available', 'draft'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'مؤرشفة قادمة', 'children', 'قراءة', now() + interval '9 days', 10, 'full', 'archived'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'منشورة سابقة', 'adults', 'لقاء', now() - interval '1 day', 20, 'available', 'published');
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'منشورة قادمة', 'adults', 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours', 20, 0, 'open', 'published'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2', 'مسودة قادمة', 'youth', 'ورشة', now() + interval '8 days', now() + interval '8 days 2 hours', 15, 7500, 'open', 'draft'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'مؤرشفة قادمة', 'children', 'قراءة', now() + interval '9 days', now() + interval '9 days 2 hours', 10, 5000, 'closed', 'archived'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'منشورة سابقة', 'adults', 'لقاء', now() - interval '1 day', now() - interval '22 hours', 20, 0, 'open', 'published');
 
 set local role anon;
 
 select is(
-  (select count(*)::integer from public.events),
+  (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
   1,
   'anon sees only upcoming published events'
 );
 
 select is(
-  (select title from public.events),
+  (select title from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'),
   'منشورة قادمة',
   'anon sees the expected published event'
 );
@@ -85,7 +87,7 @@ select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select is(
-  (select count(*)::integer from public.events),
+  (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
   1,
   'non-admin authenticated user only sees the public row'
 );
@@ -108,7 +110,7 @@ select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select is(
-  (select count(*)::integer from public.events),
+  (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
   4,
   'approved admin sees all events'
 );
@@ -120,7 +122,7 @@ select is(
 );
 
 select lives_ok(
-  $$insert into public.events (title, audience, event_type_label, starts_at, capacity) values ('مسودة جديدة', 'adults', 'لقاء', now() + interval '10 days', 25)$$,
+  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('مسودة جديدة', 'adults', 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
   'approved admin can create a draft'
 );
 
@@ -133,6 +135,45 @@ select is(
 select lives_ok(
   $$update public.events set publication_status = 'published' where title = 'مسودة جديدة'$$,
   'approved admin can change publication status'
+);
+
+select is(
+  (select event_kind from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'),
+  'club_event',
+  'existing events safely default to the club event kind'
+);
+
+select lives_ok(
+  $$insert into public.events (title, audience, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('رحلة اختبار', 'adults', 'bayn_trip', 'رحلة', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
+  'approved admin can classify an event as a Bayn trip'
+);
+
+select throws_ok(
+  $$insert into public.events (title, audience, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('تصنيف خاطئ', 'adults', 'other', 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
+  '23514',
+  null,
+  'database rejects an unknown event kind'
+);
+
+select throws_ok(
+  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('سعة زائدة', 'adults', 'لقاء', now() + interval '11 days', now() + interval '11 days 2 hours', 51, 0)$$,
+  '23514',
+  null,
+  'database rejects capacity above 50'
+);
+
+select throws_ok(
+  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('نهاية خاطئة', 'adults', 'لقاء', now() + interval '12 days', now() + interval '12 days', 20, 0)$$,
+  '23514',
+  null,
+  'database rejects an end time that is not after the start'
+);
+
+select throws_ok(
+  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('سعر خاطئ', 'adults', 'لقاء', now() + interval '13 days', now() + interval '13 days 2 hours', 20, -1)$$,
+  '23514',
+  null,
+  'database rejects a negative price'
 );
 
 select ok(

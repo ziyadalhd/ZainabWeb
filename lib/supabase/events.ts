@@ -2,20 +2,33 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AdminEventRepository, EventCatalog } from "@/lib/data/contracts";
 import {
   isEventAudience,
-  isEventAvailability,
+  isEventKind,
   isEventPublicationStatus,
+  isEventRegistrationStatus,
 } from "@/lib/domain/event-input";
-import type { Event, EventInput, EventPublicationStatus } from "@/lib/domain/types";
+import type {
+  Event,
+  EventAvailability,
+  EventInput,
+  EventPublicationStatus,
+} from "@/lib/domain/types";
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
+type EventStateRow = Database["public"]["Functions"]["get_event_registration_states"]["Returns"][number];
 
-export function mapEventRow(row: EventRow): Event {
+function isEventAvailability(value: string): value is EventAvailability {
+  return value === "available" || value === "full" || value === "closed";
+}
+
+export function mapEventRow(row: EventRow, state: EventStateRow, posterUrl: string | null = null): Event {
   if (
     !isEventAudience(row.audience)
-    || !isEventAvailability(row.availability)
+    || !isEventKind(row.event_kind)
     || !isEventPublicationStatus(row.publication_status)
+    || !isEventRegistrationStatus(row.registration_status)
+    || !isEventAvailability(state.registration_availability)
   ) {
     throw new Error("Invalid event row returned by the data source.");
   }
@@ -23,25 +36,39 @@ export function mapEventRow(row: EventRow): Event {
   return {
     id: row.id,
     title: row.title,
+    kind: row.event_kind,
     audience: row.audience,
     eventTypeLabel: row.event_type_label,
     startsAt: row.starts_at,
+    endsAt: row.ends_at,
     capacity: row.capacity,
-    availability: row.availability,
+    activeReservationCount: state.active_reservation_count,
+    priceHalalas: row.price_halalas,
+    posterUrl,
+    registrationStatus: row.registration_status,
+    availability: state.registration_availability,
     publicationStatus: row.publication_status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }
 
+function getPosterUrl(client: SupabaseClient<Database>, posterPath: string | null): string | null {
+  if (!posterPath) return null;
+  return client.storage.from("event-posters").getPublicUrl(posterPath).data.publicUrl;
+}
+
 function toEventWrite(input: EventInput) {
   return {
     title: input.title,
+    event_kind: input.kind,
     audience: input.audience,
     event_type_label: input.eventTypeLabel,
     starts_at: input.startsAt,
+    ends_at: input.endsAt,
     capacity: input.capacity,
-    availability: input.availability,
+    price_halalas: input.priceHalalas,
+    registration_status: input.registrationStatus,
   };
 }
 
@@ -53,36 +80,91 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   async listUpcomingEvents(): Promise<readonly Event[]> {
-    const { data, error } = await this.client
-      .from("events")
-      .select("*")
-      .eq("publication_status", "published")
-      .gte("starts_at", new Date().toISOString())
-      .order("starts_at", { ascending: true });
+    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+      this.client
+        .from("events")
+        .select("*")
+        .eq("publication_status", "published")
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true }),
+      this.client.rpc("get_event_registration_states"),
+    ]);
 
-    if (error) failDataAccess();
-    return data.map(mapEventRow);
+    if (error || statesError || !states) failDataAccess();
+    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+    return data.map((row) => {
+      const state = stateByEvent.get(row.id);
+      if (!state) failDataAccess();
+      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
+    });
+  }
+
+  async listUpcomingBaynTrips(): Promise<readonly Event[]> {
+    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+      this.client
+        .from("events")
+        .select("*")
+        .eq("event_kind", "bayn_trip")
+        .eq("publication_status", "published")
+        .gte("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: true }),
+      this.client.rpc("get_event_registration_states"),
+    ]);
+
+    if (error || statesError || !states) failDataAccess();
+    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+    return data.map((row) => {
+      const state = stateByEvent.get(row.id);
+      if (!state) failDataAccess();
+      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
+    });
+  }
+
+  async getUpcomingEvent(id: string): Promise<Event | null> {
+    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+      this.client
+        .from("events")
+        .select("*")
+        .eq("id", id)
+        .eq("publication_status", "published")
+        .gte("starts_at", new Date().toISOString())
+        .maybeSingle(),
+      this.client.rpc("get_event_registration_states"),
+    ]);
+
+    if (error || statesError || !states) failDataAccess();
+    if (!data) return null;
+    const state = states.find((candidate) => candidate.event_id === data.id);
+    if (!state) failDataAccess();
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
   async list(): Promise<readonly Event[]> {
-    const { data, error } = await this.client
-      .from("events")
-      .select("*")
-      .order("starts_at", { ascending: true });
+    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+      this.client.from("events").select("*").order("starts_at", { ascending: true }),
+      this.client.rpc("get_event_registration_states"),
+    ]);
 
-    if (error) failDataAccess();
-    return data.map(mapEventRow);
+    if (error || statesError || !states) failDataAccess();
+    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+    return data.map((row) => {
+      const state = stateByEvent.get(row.id);
+      if (!state) failDataAccess();
+      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
+    });
   }
 
   async get(id: string): Promise<Event | null> {
-    const { data, error } = await this.client
-      .from("events")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+      this.client.from("events").select("*").eq("id", id).maybeSingle(),
+      this.client.rpc("get_event_registration_states"),
+    ]);
 
-    if (error) failDataAccess();
-    return data ? mapEventRow(data) : null;
+    if (error || statesError || !states) failDataAccess();
+    if (!data) return null;
+    const state = states.find((candidate) => candidate.event_id === data.id);
+    if (!state) failDataAccess();
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
   async create(input: EventInput): Promise<Event> {
@@ -93,7 +175,8 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
       .single();
 
     if (error) failDataAccess();
-    return mapEventRow(data);
+    const state = await this.getState(data.id);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
   async update(id: string, input: EventInput): Promise<Event> {
@@ -105,7 +188,16 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
       .single();
 
     if (error) failDataAccess();
-    return mapEventRow(data);
+    const state = await this.getState(data.id);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
+  }
+
+  async setPosterPath(id: string, posterPath: string): Promise<void> {
+    const { error } = await this.client
+      .from("events")
+      .update({ poster_path: posterPath })
+      .eq("id", id);
+    if (error) failDataAccess();
   }
 
   async changeStatus(id: string, status: EventPublicationStatus): Promise<Event> {
@@ -117,7 +209,15 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
       .single();
 
     if (error) failDataAccess();
-    return mapEventRow(data);
+    const state = await this.getState(data.id);
+    return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
+  }
+
+  private async getState(eventId: string): Promise<EventStateRow> {
+    const { data, error } = await this.client.rpc("get_event_registration_states");
+    const state = data?.find((candidate) => candidate.event_id === eventId);
+    if (error || !state) failDataAccess();
+    return state;
   }
 }
 

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { thmanyahSans } from "./fonts";
 import "./globals.css";
@@ -9,6 +9,10 @@ export const metadata: Metadata = {
     template: "%s | نادي بَيْن الثقافي",
   },
   description: "الموقع العربي لنادي بَيْن الثقافي في مكة.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FFF1CA",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

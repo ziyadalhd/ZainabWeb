@@ -5,10 +5,10 @@ interface EmptyStateProps {
 
 export function EmptyState({ title, description }: EmptyStateProps) {
   return (
-    <section className="card-surface mt-8 px-6 py-10 text-center" aria-live="polite">
-      <span aria-hidden="true" className="mx-auto flex size-12 items-center justify-center rounded-full bg-[var(--surface-soft)] text-xl text-[var(--brand-green)]">•</span>
-      <h2 className="mt-4 text-xl font-extrabold text-[var(--brand-green-deep)]">{title}</h2>
-      <p className="mx-auto mt-2 max-w-xl muted-copy">{description}</p>
+    <section className="mt-8 border-y border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-10 sm:px-8" aria-live="polite">
+      <span aria-hidden="true" className="block h-1 w-12 bg-[var(--brand-amber)]" />
+      <h2 className="mt-5 text-xl font-black text-[var(--brand-forest)]">{title}</h2>
+      <p className="mt-2 max-w-2xl leading-7 muted-copy">{description}</p>
     </section>
   );
 }

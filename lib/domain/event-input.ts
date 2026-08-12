@@ -1,21 +1,26 @@
 import type {
   EventAudience,
-  EventAvailability,
+  EventKind,
   EventInput,
   EventPublicationStatus,
+  EventRegistrationStatus,
 } from "@/lib/domain/types";
 
 const audiences: readonly EventAudience[] = ["adults", "youth", "children"];
-const availabilities: readonly EventAvailability[] = ["available", "full"];
+const eventKinds: readonly EventKind[] = ["club_event", "bayn_trip"];
+const registrationStatuses: readonly EventRegistrationStatus[] = ["open", "closed"];
 const publicationStatuses: readonly EventPublicationStatus[] = ["draft", "published", "archived"];
 
 export type EventInputErrorCode =
   | "title"
   | "audience"
+  | "kind"
   | "eventTypeLabel"
   | "startsAt"
+  | "endsAt"
   | "capacity"
-  | "availability";
+  | "priceHalalas"
+  | "registrationStatus";
 
 export type EventInputResult =
   | { ok: true; value: EventInput }
@@ -25,8 +30,12 @@ export function isEventAudience(value: string): value is EventAudience {
   return audiences.includes(value as EventAudience);
 }
 
-export function isEventAvailability(value: string): value is EventAvailability {
-  return availabilities.includes(value as EventAvailability);
+export function isEventKind(value: string): value is EventKind {
+  return eventKinds.includes(value as EventKind);
+}
+
+export function isEventRegistrationStatus(value: string): value is EventRegistrationStatus {
+  return registrationStatuses.includes(value as EventRegistrationStatus);
 }
 
 export function isEventPublicationStatus(value: string): value is EventPublicationStatus {
@@ -59,6 +68,30 @@ export function riyadhDateTimeLocalToIso(value: string): string | null {
   return new Date(timestamp).toISOString();
 }
 
+export function riyadhDateAndTimeToIso(date: string, time: string): string | null {
+  return riyadhDateTimeLocalToIso(`${date}T${time}`);
+}
+
+function normalizeArabicDigits(value: string): string {
+  return value
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
+}
+
+export function parsePriceSarToHalalas(value: string): number | null {
+  const normalized = normalizeArabicDigits(value.trim()).replace(/[,٫]/, ".");
+  const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(normalized);
+  if (!match) return null;
+
+  const whole = Number(match[1]);
+  const fraction = Number((match[2] ?? "").padEnd(2, "0"));
+  const halalas = whole * 100 + fraction;
+
+  return Number.isSafeInteger(halalas) && halalas <= 2_147_483_647
+    ? halalas
+    : null;
+}
+
 export function validateEventInput(formData: FormData): EventInputResult {
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return { ok: false, error: "title" };
@@ -66,24 +99,53 @@ export function validateEventInput(formData: FormData): EventInputResult {
   const audience = String(formData.get("audience") ?? "");
   if (!isEventAudience(audience)) return { ok: false, error: "audience" };
 
+  const kind = String(formData.get("kind") ?? "");
+  if (!isEventKind(kind)) return { ok: false, error: "kind" };
+
   const eventTypeLabel = String(formData.get("eventTypeLabel") ?? "").trim();
   if (!eventTypeLabel) return { ok: false, error: "eventTypeLabel" };
 
-  const startsAt = riyadhDateTimeLocalToIso(String(formData.get("startsAt") ?? ""));
+  const startsAt = riyadhDateAndTimeToIso(
+    String(formData.get("startDate") ?? ""),
+    String(formData.get("startTime") ?? ""),
+  );
   if (!startsAt) return { ok: false, error: "startsAt" };
 
-  const capacityText = String(formData.get("capacity") ?? "");
+  const endsAt = riyadhDateAndTimeToIso(
+    String(formData.get("endDate") ?? ""),
+    String(formData.get("endTime") ?? ""),
+  );
+  if (!endsAt || new Date(endsAt) <= new Date(startsAt)) {
+    return { ok: false, error: "endsAt" };
+  }
+
+  const capacityText = normalizeArabicDigits(String(formData.get("capacity") ?? ""));
   const capacity = Number(capacityText);
-  if (!/^\d+$/.test(capacityText) || !Number.isSafeInteger(capacity) || capacity <= 0) {
+  if (!/^\d+$/.test(capacityText) || !Number.isSafeInteger(capacity) || capacity <= 0 || capacity > 50) {
     return { ok: false, error: "capacity" };
   }
 
-  const availability = String(formData.get("availability") ?? "");
-  if (!isEventAvailability(availability)) return { ok: false, error: "availability" };
+  const priceHalalas = parsePriceSarToHalalas(String(formData.get("priceSar") ?? ""));
+  if (priceHalalas === null) return { ok: false, error: "priceHalalas" };
+
+  const registrationStatus = String(formData.get("registrationStatus") ?? "");
+  if (!isEventRegistrationStatus(registrationStatus)) {
+    return { ok: false, error: "registrationStatus" };
+  }
 
   return {
     ok: true,
-    value: { title, audience, eventTypeLabel, startsAt, capacity, availability },
+    value: {
+      title,
+      kind,
+      audience,
+      eventTypeLabel,
+      startsAt,
+      endsAt,
+      capacity,
+      priceHalalas,
+      registrationStatus,
+    },
   };
 }
 
