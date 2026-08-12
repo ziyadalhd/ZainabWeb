@@ -104,7 +104,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
         <label className="font-bold" htmlFor="registration-phone">
           {minorRegistration ? "جوال ولية الأمر" : "رقم الجوال"}
         </label>
-        <input id="registration-phone" className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="مثال: 05xxxxxxxx…" aria-describedby={`registration-phone-description${state.error === "phone" ? " registration-phone-error" : ""}`} aria-invalid={state.error === "phone"} required />
+        <input id="registration-phone" className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05xxxxxxxx" aria-describedby={`registration-phone-description${state.error === "phone" ? " registration-phone-error" : ""}`} aria-invalid={state.error === "phone"} required />
         <span id="registration-phone-description" className="text-xs muted-copy">سيُستخدم للتواصل عبر WhatsApp بخصوص الحجز والتذكير.</span>
         {state.error === "phone" ? <span id="registration-phone-error" className="text-sm text-[var(--color-error-text)]">{errorMessages.phone}</span> : null}
       </div>

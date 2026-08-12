@@ -6,9 +6,11 @@ export default function PublicLayout({ children }: Readonly<{ children: ReactNod
   return (
     <>
       <a className="skip-link" href="#public-content">تخطي إلى المحتوى</a>
-      <SiteHeader />
-      <div id="public-content" tabIndex={-1}>{children}</div>
-      <SiteFooter />
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <div id="public-content" tabIndex={-1} className="flex-1">{children}</div>
+        <SiteFooter />
+      </div>
     </>
   );
 }

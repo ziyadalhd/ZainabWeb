@@ -12,25 +12,24 @@ const destinations = [
 ];
 
 export default async function HomePage() {
-  const settings = await getPublicSiteSettings();
+  const settings = await getPublicSiteSettings().catch(() => null);
   const sections = [
-    { title: "عن النادي", body: settings.clubIntroduction ?? "محتوى هذه الصفحة قيد الإعداد." },
-    { title: "فكرة اسم بَيْن", body: settings.nameStory ?? "محتوى هذه الصفحة قيد الإعداد." },
-    { title: "أهداف النادي", body: settings.objectives ?? "محتوى هذه الصفحة قيد الإعداد." },
+    { title: "عن النادي", body: settings?.clubIntroduction ?? "محتوى هذه الصفحة قيد الإعداد." },
+    { title: "فكرة اسم بَيْن", body: settings?.nameStory ?? "محتوى هذه الصفحة قيد الإعداد." },
+    { title: "أهداف النادي", body: settings?.objectives ?? "محتوى هذه الصفحة قيد الإعداد." },
   ];
   return (
     <main>
-      <section className="page-shell grid min-h-[calc(100svh-6rem)] items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(24rem,0.72fr)] lg:py-14">
+      <section className="page-shell grid items-center gap-9 py-10 sm:py-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(24rem,0.72fr)] lg:py-20">
         <div className="max-w-3xl">
           <p className="eyebrow">مساحة ثقافية في مكة</p>
           <h1 className="page-title mt-5">نادي بَيْن الثقافي</h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 muted-copy sm:text-xl">واجهة عربية للتعرّف على النادي وأقسامه وفعالياته.</p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div className="mt-7 flex flex-col gap-3 min-[380px]:flex-row min-[380px]:flex-wrap">
             <Link href="/events" className="button-primary px-6 py-3">استعراض الفعاليات</Link>
             <Link href="/contact" className="button-secondary px-6 py-3">التواصل</Link>
           </div>
         </div>
-        <div className="mx-auto w-full max-w-[31rem] lg:ml-0">
+        <div className="mx-auto w-full max-w-[20rem] sm:max-w-[25rem] lg:ml-0 lg:max-w-[31rem]">
           <BrandIntersection />
         </div>
       </section>

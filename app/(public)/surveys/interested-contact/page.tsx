@@ -27,7 +27,7 @@ export default async function InterestedContactPage({ searchParams }: { searchPa
           </div>
           <div className="grid gap-2">
             <label htmlFor="contact-phone" className="font-extrabold text-[var(--brand-green-deep)]">رقم الجوال السعودي</label>
-            <input id="contact-phone" name="phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="مثال: 05xxxxxxxx…" dir="ltr" className="field-control text-right" />
+            <input id="contact-phone" name="phone" required type="tel" inputMode="tel" autoComplete="tel" placeholder="05xxxxxxxx" dir="ltr" className="field-control text-right" />
           </div>
           <div className="grid gap-2">
             <label htmlFor="contact-email" className="font-extrabold text-[var(--brand-green-deep)]">البريد الإلكتروني</label>

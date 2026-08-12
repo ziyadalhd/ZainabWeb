@@ -9,7 +9,7 @@ export default function WorkshopApplicationPage() {
   return (
     <main className="page-shell section-space">
       <PageHeader eyebrow="استبيانات" title="طلب تقديم ورشة" />
-      <section className="form-surface mt-8 max-w-3xl p-6 sm:p-8">
+      <section className="mt-7 max-w-3xl">
         <ServiceRequestForm kind="workshop_application" action={submitServiceRequestAction.bind(null, "workshop_application")} />
       </section>
     </main>

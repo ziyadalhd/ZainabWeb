@@ -14,7 +14,7 @@
   --color-surface-muted: #f3f0df;
   --color-text: #18361e;
   --color-text-muted: #53634f;
-  --color-border: #c9cfb8;
+  --color-border: #d6d9c8;
   --color-border-strong: #708a58;
   --color-primary: #204f28;
   --color-primary-hover: #173b1e;
@@ -49,9 +49,9 @@
   --muted: var(--color-text-muted);
   --border: var(--color-border);
 
-  --radius-control: 0.625rem;
-  --radius-surface: 0.875rem;
-  --shadow-raised: 0 14px 35px rgb(32 79 40 / 0.09);
+  --radius-control: 0.75rem;
+  --radius-surface: 1rem;
+  --shadow-raised: 0 18px 50px rgb(32 79 40 / 0.08);
   --shadow: var(--shadow-raised);
 }
 
@@ -169,7 +169,7 @@ body {
 }
 
 .section-space {
-  padding-block: clamp(3rem, 7vw, 6.5rem);
+  padding-block: clamp(2.75rem, 5vw, 4.75rem);
 }
 
 .eyebrow {
@@ -221,6 +221,7 @@ body {
   border-block-start: 0.35rem solid var(--brand-amber);
   border-radius: var(--radius-surface);
   background: var(--color-surface);
+  box-shadow: 0 10px 30px rgb(32 79 40 / 0.055);
 }
 
 .button-primary,
@@ -293,7 +294,7 @@ body {
 }
 
 .field-control {
-  min-height: 3rem;
+  min-height: 3.25rem;
   width: 100%;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
@@ -301,6 +302,35 @@ body {
   padding: 0.75rem 0.9rem;
   color: var(--color-text);
   transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.request-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.request-group {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  padding: clamp(1.1rem, 3.5vw, 1.75rem);
+  box-shadow: 0 10px 28px rgb(32 79 40 / 0.045);
+}
+
+.request-group__title {
+  padding-inline: 0.5rem;
+  color: var(--brand-forest);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.request-form__footer {
+  display: grid;
+  gap: 0.85rem;
+  border-radius: var(--radius-surface);
+  background: var(--brand-cream);
+  padding: 1rem;
 }
 
 .field-control:hover {
@@ -417,15 +447,16 @@ body {
 
 @media (max-width: 639px) {
   .page-shell {
-    width: min(100% - 1.25rem, 80rem);
+    width: min(100% - 2rem, 80rem);
   }
 
   .section-space {
-    padding-block: 2.75rem;
+    padding-block: 2.25rem 3.5rem;
   }
 
   .page-title {
-    font-size: clamp(2rem, 12vw, 3rem);
+    font-size: clamp(2rem, 9.5vw, 2.6rem);
+    line-height: 1.16;
   }
 
   .button-primary,
