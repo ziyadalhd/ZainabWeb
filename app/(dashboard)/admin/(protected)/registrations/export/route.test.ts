@@ -19,7 +19,7 @@ const registration: Registration = {
   reference: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
   eventId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
   eventTitle: "لقاء القراءة",
-  eventStartsAt: "2026-08-12T15:00:00.000Z",
+  eventStartsAt: "2099-08-12T15:00:00.000Z",
   attendeeName: "مشاركة",
   phoneE164: "+966500000001",
   email: null,

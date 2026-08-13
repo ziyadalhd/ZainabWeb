@@ -11,7 +11,7 @@ export default async function EventsPage() {
   const events = await catalog.listUpcomingEvents();
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="نادي بَيْن الثقافي" title="الفعاليات" description="اختاري من الفعاليات المنشورة للكبار واليافعين والصغار." />
+      <PageHeader eyebrow="نادي بَيْن الثقافي" title="الفعاليات" description="اكتشفي الفعاليات القادمة، واختاري ما يناسب الفئة العمرية." />
       <EventList events={events} />
     </main>
   );

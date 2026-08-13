@@ -58,6 +58,20 @@ export function formatArabicEventTimeRange(startsAt: string | Date, endsAt?: str
   return endsAt ? `${start} – ${formatArabicTime(endsAt)}` : start;
 }
 
+function localRiyadhDateTime(date: string, time: string): Date | null {
+  const normalizedTime = time.slice(0, 5);
+  const value = new Date(`${date}T${normalizedTime}:00+03:00`);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+
+export function formatArabicRequestedSchedule(date: string | null, start: string | null, end: string | null): string {
+  if (!date || !start || !end) return "الموعد غير مكتمل";
+  const startsAt = localRiyadhDateTime(date, start);
+  const endsAt = localRiyadhDateTime(date, end);
+  if (!startsAt || !endsAt) return "الموعد غير مكتمل";
+  return `${formatArabicEventDate(startsAt)} · ${formatArabicEventTimeRange(startsAt, endsAt)}`;
+}
+
 export function formatArabicNumber(value: number): string {
   return numberFormatter.format(value);
 }

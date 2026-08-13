@@ -4,6 +4,7 @@ import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
   formatArabicNumber,
+  formatArabicRequestedSchedule,
   formatEventPrice,
   formatSeatCapacity,
   formatRiyadhDateInput,
@@ -33,6 +34,16 @@ describe("Arabic formatting", () => {
     expect(formatArabicEventDate(startsAt)).toContain("الثلاثاء");
     expect(formatArabicEventDate(startsAt)).toContain("أغسطس");
     expect(formatArabicEventTimeRange(startsAt, endsAt)).toContain("–");
+  });
+
+  it("formats a requested local schedule without exposing database date or time syntax", () => {
+    const formatted = formatArabicRequestedSchedule("2026-08-13", "20:30:00", "21:45:00");
+    expect(formatted).toContain("الخميس");
+    expect(formatted).toContain("أغسطس");
+    expect(formatted).toContain("٨:٣٠");
+    expect(formatted).toContain("٩:٤٥");
+    expect(formatted).not.toContain("2026-08-13");
+    expect(formatArabicRequestedSchedule(null, null, null)).toBe("الموعد غير مكتمل");
   });
 
   it("returns stable Riyadh parts independent of the server time zone", () => {

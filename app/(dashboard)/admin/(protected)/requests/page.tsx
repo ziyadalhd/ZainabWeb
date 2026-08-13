@@ -6,17 +6,12 @@ import {
 } from "@/app/(dashboard)/admin/(protected)/requests/actions";
 import { ServiceRequestOfferForm } from "@/features/requests/components/ServiceRequestOfferForm";
 import { ServiceRequestPaymentStatusForm } from "@/features/requests/components/ServiceRequestPaymentStatusForm";
-import { formatArabicDateTime, formatEventPrice } from "@/lib/format/date";
+import { formatArabicDateTime, formatArabicNumber, formatArabicRequestedSchedule, formatEventPrice } from "@/lib/format/date";
 import { createAdminServiceRequestRepository } from "@/lib/supabase/service-requests";
 
 const kindLabels = { space_booking: "حجز مساحة", celebration_booking: "إقامة حفل", workshop_application: "طلب ورشة" };
 const statusLabels = { new: "جديد", under_review: "قيد المراجعة", accepted: "مقبول", rejected: "مرفوض", cancelled: "ملغى" };
 const paymentLabels = { unpaid: "غير مدفوع", deposit_paid: "دُفعت العربون", paid_in_full: "مدفوع بالكامل" };
-
-function requestDateTime(date: string | null, start: string | null, end: string | null) {
-  if (!date || !start || !end) return null;
-  return `${date} · ${start}–${end}`;
-}
 
 export default async function AdminRequestsPage() {
   const repository = await createAdminServiceRequestRepository();
@@ -35,7 +30,7 @@ export default async function AdminRequestsPage() {
           </div>
           <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <div><p className="muted-copy">مقدمة الطلب</p><p className="mt-1 font-bold">{request.requesterName}</p><p className="mt-1 text-xs muted-copy" dir="ltr">{request.phoneE164}</p>{request.email ? <p className="mt-1 text-xs muted-copy" dir="ltr">{request.email}</p> : null}</div>
-            {booking ? <div><p className="muted-copy">الموعد المطلوب</p><p className="mt-1 font-bold">{requestDateTime(request.requestedDate, request.requestedStartTime, request.requestedEndTime)}</p><p className="mt-1 text-xs muted-copy">{request.attendeeCount} حاضرة متوقعة</p></div> : <div><p className="muted-copy">موجز الورشة</p><p className="mt-1 font-bold">{request.workshopTitle}</p></div>}
+            {booking ? <div><p className="muted-copy">الموعد المطلوب</p><p className="mt-1 font-bold">{formatArabicRequestedSchedule(request.requestedDate, request.requestedStartTime, request.requestedEndTime)}</p><p className="mt-1 text-xs muted-copy">الحضور المتوقع: {request.attendeeCount === null ? "—" : formatArabicNumber(request.attendeeCount)}</p></div> : <div><p className="muted-copy">موجز الورشة</p><p className="mt-1 font-bold">{request.workshopTitle}</p></div>}
             {booking && request.status === "accepted" ? <div><p className="muted-copy">حالة الدفع</p><p className="mt-1 font-bold">{paymentLabels[request.paymentStatus]}</p></div> : null}
             {booking && request.offerPriceHalalas !== null ? <div><p className="muted-copy">العرض الحالي</p><p className="mt-1 font-bold">{formatEventPrice(request.offerPriceHalalas)}</p><p className="mt-1 text-xs muted-copy">حتى {request.offerExpiresAt ? formatArabicDateTime(request.offerExpiresAt) : "—"}</p></div> : null}
           </div>

@@ -51,7 +51,7 @@ export function EventDateTimePicker({ id, label, dateName, timeName, defaultDate
           <p className="text-xs font-extrabold tracking-[0.08em] text-[var(--brand-olive)]">الموعد</p>
           <h3 id={`${id}-label`} className="mt-1 text-xl font-black text-[var(--brand-forest)]">{label}</h3>
         </div>
-        <span className="date-time-timezone">بتوقيت مكة</span>
+        <span className="date-time-timezone">توقيت السعودية</span>
       </div>
 
       <label className="mt-5 grid gap-2 text-sm font-bold" htmlFor={`${id}-date`}>
