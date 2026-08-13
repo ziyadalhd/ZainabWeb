@@ -11,8 +11,8 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 
 ## Launch identity and contact
 
-- Which available `bayn` domain will be purchased?
-- What are the final public sender addresses after domain verification?
+- **Deferred by owner:** a custom `bayn` domain will be selected and purchased after the project grows. Until then, the project may use its Vercel address for development and limited sharing. It blocks Resend domain verification, official sender addresses, and the formal public-launch checklist.
+- What are the final public sender addresses after the future domain verification?
 - What is the final administrator email used for Auth, alerts, and account recovery?
 - What are the club's default venue name and address?
 - What legal entity or responsible-person details and contact channel should appear in the privacy policy and terms?
