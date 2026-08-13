@@ -20,9 +20,7 @@ const timeFormatter = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
   timeZone: "Asia/Riyadh",
 });
 
-const currencyFormatter = new Intl.NumberFormat("ar-SA", {
-  style: "currency",
-  currency: "SAR",
+const priceFormatter = new Intl.NumberFormat("ar-SA", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 2,
 });
@@ -90,7 +88,7 @@ export function formatArabicTime(value: string | Date): string {
 export function formatEventPrice(priceHalalas: number | null): string {
   if (priceHalalas === null) return "السعر غير محدد";
   if (priceHalalas === 0) return "مجانية";
-  return currencyFormatter.format(priceHalalas / 100);
+  return `${priceFormatter.format(priceHalalas / 100)} ريال`;
 }
 
 export function getRiyadhDateParts(value: string | Date): RiyadhDateParts {

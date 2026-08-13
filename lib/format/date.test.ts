@@ -56,6 +56,8 @@ describe("Arabic formatting", () => {
   it("formats event prices without inventing a missing value", () => {
     expect(formatEventPrice(0)).toBe("مجانية");
     expect(formatEventPrice(null)).toBe("السعر غير محدد");
-    expect(formatEventPrice(7550)).toContain("٧٥٫٥");
+    expect(formatEventPrice(1000)).toBe("١٠ ريال");
+    expect(formatEventPrice(7550)).toBe("٧٥٫٥ ريال");
+    expect(formatEventPrice(1000)).not.toContain(".");
   });
 });

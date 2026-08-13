@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const surveys = [
   { href: "/surveys/workshop-application", title: "طلب تقديم ورشة", status: "الحقول قيد الاعتماد" },
   { href: "/surveys/interested-contact", title: "تسجيل المهتمين", status: "الاسم والجوال السعودي والبريد الإلكتروني" },
-  { href: "/surveys/event-feedback", title: "تقييم الفعالية", status: "يصل برابط آمن من النادي" },
+  { href: "/surveys/event-feedback", title: "تقييم الفعالية", status: "يصلك من النادي بعد الفعالية" },
 ];
 
 export default function SurveysPage() {

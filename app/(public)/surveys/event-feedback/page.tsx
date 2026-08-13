@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function EventFeedbackPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="استبيانات" title="تقييم الفعالية" description="يُرسل النادي رابطًا آمنًا خاصًا بكل مشاركة بعد الفعالية." />
+      <PageHeader eyebrow="استبيانات" title="تقييم الفعالية" description="يُرسل النادي رابط التقييم لكل مشاركة بعد الفعالية." />
     </main>
   );
 }
