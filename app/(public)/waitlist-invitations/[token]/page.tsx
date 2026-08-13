@@ -5,7 +5,7 @@ import { formatArabicDateTime } from "@/lib/format/date";
 import { createRegistrationService } from "@/lib/supabase/registrations";
 import { acceptWaitlistInvitationAction } from "@/app/(public)/waitlist-invitations/[token]/actions";
 
-export const metadata: Metadata = { title: "دعوة قائمة الانتظار" };
+export const metadata: Metadata = { title: "دعوة قائمة الانتظار", robots: { index: false, follow: false }, alternates: null };
 export const dynamic = "force-dynamic";
 
 export default async function WaitlistInvitationPage({

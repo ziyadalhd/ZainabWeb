@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = { title: "سياسة الخصوصية" };
+export const metadata: Metadata = {
+  title: "سياسة الخصوصية",
+  description: "سياسة الخصوصية لموقع نادي بَيْن الثقافي.",
+};
 
 const items = [
   ["بيانات التواصل", "الاسم، رقم الجوال السعودي، والبريد الإلكتروني عند إدخاله."],

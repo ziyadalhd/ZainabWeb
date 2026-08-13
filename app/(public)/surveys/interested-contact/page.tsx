@@ -3,7 +3,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { submitInterestedContactAction } from "@/app/(public)/surveys/interested-contact/actions";
 import { TurnstileField } from "@/features/security/components/TurnstileField";
 
-export const metadata: Metadata = { title: "تسجيل المهتمين" };
+export const metadata: Metadata = {
+  title: "تسجيل المهتمين",
+  description: "تسجيل الاهتمام بمعلومات الفعاليات القادمة من نادي بَيْن الثقافي.",
+};
 
 const errorMessages: Record<string, string> = {
   contactName: "اكتبي الاسم من حرفين إلى ١٢٠ حرفًا.",

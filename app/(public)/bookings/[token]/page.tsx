@@ -9,7 +9,7 @@ import {
   confirmBookingAttendanceAction,
 } from "@/app/(public)/bookings/[token]/actions";
 
-export const metadata: Metadata = { title: "إدارة الحجز" };
+export const metadata: Metadata = { title: "إدارة الحجز", robots: { index: false, follow: false }, alternates: null };
 export const dynamic = "force-dynamic";
 
 export default async function BookingManagementPage({

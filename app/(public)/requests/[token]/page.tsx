@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { cancelServiceRequestAction, respondToServiceRequestOfferAction } from "@/app/(public)/requests/[token]/actions";
@@ -12,6 +13,8 @@ interface ServiceRequestManagementPageProps {
 
 const labels = { space_booking: "طلب حجز المساحة", celebration_booking: "طلب إقامة حفل", workshop_application: "طلب تقديم ورشة" };
 const statuses = { new: "جديد", under_review: "قيد المراجعة", accepted: "مقبول", rejected: "مرفوض", cancelled: "ملغى" };
+
+export const metadata: Metadata = { title: "متابعة الطلب", robots: { index: false, follow: false }, alternates: null };
 
 export default async function ServiceRequestManagementPage({ params }: ServiceRequestManagementPageProps) {
   const { token } = await params;

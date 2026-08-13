@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
-export const metadata: Metadata = { title: "التواصل" };
+export const metadata: Metadata = {
+  title: "التواصل",
+  description: "وسائل التواصل ومقر نادي بَيْن الثقافي في مكة.",
+};
 
 export default async function ContactPage() {
   const settings = await getPublicSiteSettings();

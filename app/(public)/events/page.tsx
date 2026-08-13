@@ -3,7 +3,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EventList } from "@/features/events/components/EventList";
 import { createEventCatalog } from "@/lib/supabase/events";
 
-export const metadata: Metadata = { title: "الفعاليات" };
+export const metadata: Metadata = {
+  title: "الفعاليات",
+  description: "الفعاليات القادمة في نادي بَيْن الثقافي بحسب الفئة العمرية.",
+};
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {

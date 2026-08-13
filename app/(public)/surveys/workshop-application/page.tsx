@@ -3,7 +3,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { submitServiceRequestAction } from "@/app/(public)/requests/actions";
 import { ServiceRequestForm } from "@/features/requests/components/ServiceRequestForm";
 
-export const metadata: Metadata = { title: "طلب تقديم ورشة" };
+export const metadata: Metadata = {
+  title: "طلب تقديم ورشة",
+  description: "إرسال طلب تقديم ورشة إلى نادي بَيْن الثقافي لمراجعته من الإدارة.",
+};
 
 export default function WorkshopApplicationPage() {
   return (
