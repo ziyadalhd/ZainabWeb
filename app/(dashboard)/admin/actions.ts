@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getAdminMfaDestination } from "@/lib/auth/mfa";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function loginAction(formData: FormData) {
@@ -31,7 +32,15 @@ export async function loginAction(formData: FormData) {
     redirect("/admin/login?error=unauthorized");
   }
 
-  redirect("/admin");
+  const { data: assurance, error: assuranceError } =
+    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+  if (assuranceError || !assurance.currentLevel || !assurance.nextLevel) {
+    await supabase.auth.signOut();
+    redirect("/admin/login?error=session");
+  }
+
+  redirect(getAdminMfaDestination(assurance.currentLevel, assurance.nextLevel));
 }
 
 export async function logoutAction() {

@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(19);
+select plan(23);
 
 insert into auth.users (
   instance_id,
@@ -85,6 +85,7 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
+select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
 
 select is(
   (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
@@ -108,6 +109,32 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
+select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
+
+select is(
+  (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
+  1,
+  'approved admin at aal1 sees only the public event'
+);
+
+select lives_ok(
+  $$update public.events set title = 'محاولة قبل التحقق' where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2'$$,
+  'an aal1 update is rejected without leaking an authorization error'
+);
+
+select is(
+  (select title from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2'),
+  null,
+  'approved admin at aal1 cannot read or change the draft event'
+);
+
+select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
+
+select is(
+  (select title from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2'),
+  'مسودة قادمة',
+  'the aal1 update did not change the protected draft event'
+);
 
 select is(
   (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),

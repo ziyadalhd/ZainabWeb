@@ -73,6 +73,7 @@ select throws_ok(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '94444444-4444-4444-8444-444444444444', true);
+select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select is(
@@ -91,6 +92,7 @@ select throws_ok(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '91111111-1111-4111-8111-111111111111', true);
+select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select lives_ok(
@@ -143,6 +145,7 @@ select ok(
 reset role;
 set local role anon;
 select set_config('request.jwt.claim.sub', '', true);
+select set_config('request.jwt.claims', '{}', true);
 select set_config('request.jwt.claim.role', 'anon', true);
 
 select is(

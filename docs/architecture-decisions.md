@@ -141,6 +141,18 @@ Record approved architectural decisions here only after explicit user approval. 
 - macOS repositories should live outside iCloud-synced `Desktop` and `Documents` folders. The current workspace demonstrated `dataless` source and dependency files that caused TypeScript, ESLint, Vitest, and pnpm to appear hung.
 - Context7 sources consulted for this stabilization: `/vercel/next.js` for Next.js 16 TypeScript/Node requirements and `/vitest-dev/vitest/v4.1.6` for toolchain compatibility. Official Supabase CLI and Branching documentation confirmed that the full local stack requires a Docker-compatible runtime and that hosted isolated environments are supported.
 
+## Administrator TOTP MFA enforcement: 2026-08-15
+
+- Status: implemented in application code and applied to the separate hosted development project; production rollout remains a coordinated pending step.
+- Factor: administrators use Supabase Auth TOTP MFA through a generic authenticator application. No SMS, WhatsApp, paid provider, or new dependency is introduced.
+- Login routing: after password authentication and allowlist verification, `getAuthenticatorAssuranceLevel()` routes an `aal1 → aal1` session to enrollment, an `aal1 → aal2` session to challenge verification, and only an `aal2` session to the dashboard.
+- Server boundary: every protected page, route, and Server Action continues to call `requireAdmin()`, which now fails closed unless the verified session is `aal2`.
+- Database boundary: forward migration `20260815082717_require_admin_mfa_aal2.sql` extends the existing fixed-search-path `private.is_admin()` helper to require the JWT `aal2` claim. This protects the existing RLS policies and privileged RPC checks from direct Data API access with a password-only administrator session.
+- Enrollment safety: unverified abandoned TOTP factors are removed before starting a fresh enrollment. Verified factors are never silently removed. The QR secret is displayed only to the signed-in administrator and is never logged or stored by application code.
+- Rollout: the application and migration must be released together. The migration must not reach production before the enrollment/challenge routes are available, because it would intentionally remove all administrator data access from `aal1` sessions.
+- Verification: application lint, TypeScript, 75 Vitest checks, and the Next.js production build passed. A transactionally isolated development-project check returned `false` for `aal1` and `true` for `aal2`; the security advisor reported only the pre-existing leaked-password-protection warning.
+- Documentation: Context7 `/supabase/supabase` and the current official Supabase TOTP MFA documentation were consulted for enrollment, challenge/verify, assurance-level routing, SSR handling, and AAL enforcement through RLS.
+
 ## Production registration rules implementation: 2026-08-09
 
 - Status: implemented and verified on the separate hosted development project; not applied to the Vercel-linked database.
