@@ -9,7 +9,7 @@ export function buildRegistrationReminderMessage({
   eventTitle,
   managementUrl,
 }: RegistrationReminderMessageInput): string {
-  return `السلام عليكم ${attendeeName}،\nحياكِ في فعالية ${eventTitle}.\nنأمل تأكيد حضورك أو الاعتذار من الرابط الآمن الخاص بك:\n${managementUrl}`;
+  return `السلام عليكم ${attendeeName}،\nحياكِ في فعالية ${eventTitle}.\nلا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن هناك مشاركات في قائمة الانتظار.\nيمكنك تأكيد الحضور أو الاعتذار من هنا:\n${managementUrl}`;
 }
 
 export function buildWhatsAppMessageUrl(phoneE164: string, message: string): string {

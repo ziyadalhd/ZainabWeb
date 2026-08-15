@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import type { SubmitEventFeedbackActionState } from "@/app/(public)/surveys/event-feedback/[token]/actions";
+import { TurnstileField } from "@/features/security/components/TurnstileField";
 
 const ratings = [5, 4, 3, 2, 1] as const;
 
@@ -10,6 +11,7 @@ const errors: Record<NonNullable<SubmitEventFeedbackActionState["error"]>, strin
   materialRating: "اختاري تقييم المادة من ١ إلى ٥.",
   identityVisible: "حددي ما إذا كنتِ ترغبين بإظهار اسمك للمسؤولة.",
   suggestions: "المقترحات طويلة جدًا؛ الحد الأقصى ٤٠٠٠ حرف.",
+  turnstile: "تعذر التحقق الأمني. أكملي التحقق ثم حاولي مرة أخرى.",
   save: "تعذر حفظ التقييم. ربما استُخدم الرابط أو انتهت صلاحيته؛ اطلبي رابطًا جديدًا من النادي.",
 };
 
@@ -56,6 +58,8 @@ export function EventFeedbackForm({
         {state.error === "identityVisible" ? <p role="alert" className="mt-3 font-bold text-[var(--color-error-text)]">{errors.identityVisible}</p> : null}
       </fieldset>
       {state.error === "save" ? <p role="alert" className="notice-error">{errors.save}</p> : null}
+      {state.error === "turnstile" ? <p role="alert" className="notice-error">{errors.turnstile}</p> : null}
+      <TurnstileField />
       <button type="submit" disabled={pending} className="button-primary px-6 py-3">{pending ? "جارٍ إرسال التقييم…" : "إرسال التقييم"}</button>
     </form>
   );

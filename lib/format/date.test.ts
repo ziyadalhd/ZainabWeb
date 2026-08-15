@@ -4,6 +4,7 @@ import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
   formatArabicNumber,
+  formatArabicRequestedSchedule,
   formatEventPrice,
   formatSeatCapacity,
   formatRiyadhDateInput,
@@ -35,6 +36,16 @@ describe("Arabic formatting", () => {
     expect(formatArabicEventTimeRange(startsAt, endsAt)).toContain("–");
   });
 
+  it("formats a requested local schedule without exposing database date or time syntax", () => {
+    const formatted = formatArabicRequestedSchedule("2026-08-13", "20:30:00", "21:45:00");
+    expect(formatted).toContain("الخميس");
+    expect(formatted).toContain("أغسطس");
+    expect(formatted).toContain("٨:٣٠");
+    expect(formatted).toContain("٩:٤٥");
+    expect(formatted).not.toContain("2026-08-13");
+    expect(formatArabicRequestedSchedule(null, null, null)).toBe("الموعد غير مكتمل");
+  });
+
   it("returns stable Riyadh parts independent of the server time zone", () => {
     expect(getRiyadhDateParts("2026-08-10T21:30:00.000Z")).toMatchObject({ year: 2026, month: 8, day: 11, hour: 0, minute: 30 });
     expect(formatRiyadhDateTimeLocal("2026-08-10T15:00:00.000Z")).toBe("2026-08-10T18:00");
@@ -45,6 +56,8 @@ describe("Arabic formatting", () => {
   it("formats event prices without inventing a missing value", () => {
     expect(formatEventPrice(0)).toBe("مجانية");
     expect(formatEventPrice(null)).toBe("السعر غير محدد");
-    expect(formatEventPrice(7550)).toContain("٧٥٫٥");
+    expect(formatEventPrice(1000)).toBe("١٠ ريال");
+    expect(formatEventPrice(7550)).toBe("٧٥٫٥ ريال");
+    expect(formatEventPrice(1000)).not.toContain(".");
   });
 });

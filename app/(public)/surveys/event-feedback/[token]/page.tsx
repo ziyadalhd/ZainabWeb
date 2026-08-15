@@ -5,7 +5,7 @@ import { submitEventFeedbackAction } from "@/app/(public)/surveys/event-feedback
 import { EventFeedbackForm } from "@/features/surveys/components/EventFeedbackForm";
 import { createEventFeedbackService } from "@/lib/supabase/event-feedback";
 
-export const metadata: Metadata = { title: "تقييم الفعالية" };
+export const metadata: Metadata = { title: "تقييم الفعالية", robots: { index: false, follow: false }, alternates: null };
 export const dynamic = "force-dynamic";
 
 export default async function EventFeedbackTokenPage({ params }: { params: Promise<{ token: string }> }) {

@@ -28,4 +28,5 @@ describe("EventRegistrationForm", () => {
     expect(screen.getByRole("heading", { name: "قائمة الانتظار" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "الانضمام إلى قائمة الانتظار" })).toBeInTheDocument();
   });
+
 });

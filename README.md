@@ -38,6 +38,8 @@ pnpm install --frozen-lockfile
 
 Copy `.env.example` to `.env.local` and provide the publishable credentials for the hosted Supabase development project. Never use production secrets or a Supabase secret/service-role key in browser-visible configuration.
 
+`SITE_URL` defines the canonical public origin used by metadata and the sitemap. Keep `SITE_INDEXING_ENABLED=false` until the explicit public-launch decision; Preview and Development deployments remain non-indexable even if that flag is changed locally.
+
 Start the application:
 
 ```bash

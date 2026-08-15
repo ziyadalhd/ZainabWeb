@@ -3,7 +3,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { submitServiceRequestAction } from "@/app/(public)/requests/actions";
 import { ServiceRequestForm } from "@/features/requests/components/ServiceRequestForm";
 
-export const metadata: Metadata = { title: "حجز المساحة" };
+export const metadata: Metadata = {
+  title: "حجز المساحة",
+  description: "إرسال طلب حجز مساحة نادي بَيْن الثقافي لمراجعته من الإدارة.",
+};
 
 export default function SpaceBookingPage() {
   return (

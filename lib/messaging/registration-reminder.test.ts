@@ -5,7 +5,7 @@ import {
 } from "@/lib/messaging/registration-reminder";
 
 describe("registration reminder message", () => {
-  it("uses the actual attendee, event, and person-specific secure link", () => {
+  it("uses natural guest-facing copy with the actual attendee, event, and link", () => {
     const message = buildRegistrationReminderMessage({
       attendeeName: "سارة",
       eventTitle: "أمسية الشعر",
@@ -14,7 +14,11 @@ describe("registration reminder message", () => {
 
     expect(message).toContain("السلام عليكم سارة");
     expect(message).toContain("حياكِ في فعالية أمسية الشعر");
+    expect(message).toContain("لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور");
+    expect(message).toContain("مشاركات في قائمة الانتظار");
     expect(message).toContain("https://example.test/bookings/person-specific-token");
+    expect(message).not.toContain("الرابط الآمن");
+    expect(message).not.toContain("الخاص بك");
   });
 
   it("targets the registered Saudi mobile without exposing it in the message link", () => {

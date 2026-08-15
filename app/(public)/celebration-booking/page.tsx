@@ -3,7 +3,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { submitServiceRequestAction } from "@/app/(public)/requests/actions";
 import { ServiceRequestForm } from "@/features/requests/components/ServiceRequestForm";
 
-export const metadata: Metadata = { title: "حجز إقامة حفلات" };
+export const metadata: Metadata = {
+  title: "حجز إقامة حفلات",
+  description: "إرسال طلب إقامة حفل في نادي بَيْن الثقافي لمراجعته من الإدارة.",
+};
 
 export default function CelebrationBookingPage() {
   return (

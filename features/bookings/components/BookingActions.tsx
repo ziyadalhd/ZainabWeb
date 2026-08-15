@@ -34,15 +34,20 @@ export function BookingActions({
   return (
     <div className="grid gap-4 border-t border-[var(--border)] pt-6">
       {status === "registered" && !attendanceConfirmed ? (
-        <form action={confirmFormAction}>
-          <button
-            type="submit"
-            disabled={confirming}
-            className="button-primary min-h-12 w-full px-5 py-3"
-          >
-            {confirming ? "جارٍ التأكيد…" : "تأكيد الحضور"}
-          </button>
-        </form>
+        <div className="grid gap-4">
+          <p className="notice-warning text-sm leading-7">
+            لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن هناك مشاركات في قائمة الانتظار.
+          </p>
+          <form action={confirmFormAction}>
+            <button
+              type="submit"
+              disabled={confirming}
+              className="button-primary min-h-12 w-full px-5 py-3"
+            >
+              {confirming ? "جارٍ التأكيد…" : "تأكيد الحضور"}
+            </button>
+          </form>
+        </div>
       ) : null}
 
       {attendanceConfirmed ? (

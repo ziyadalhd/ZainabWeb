@@ -175,6 +175,7 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
             defaultDate={event ? formatRiyadhDateInput(event.startsAt) : undefined}
             defaultTime={event ? formatRiyadhTimeInput(event.startsAt) : undefined}
             error={state.error === "startsAt" ? errorMessages.startsAt : undefined}
+            onValueChange={() => setDirty(true)}
           />
           <EventDateTimePicker
             id="event-end"
@@ -184,6 +185,7 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
             defaultDate={fallbackEnd ? formatRiyadhDateInput(fallbackEnd) : event ? formatRiyadhDateInput(event.startsAt) : undefined}
             defaultTime={fallbackEnd ? formatRiyadhTimeInput(fallbackEnd) : undefined}
             error={state.error === "endsAt" ? errorMessages.endsAt : undefined}
+            onValueChange={() => setDirty(true)}
           />
         </div>
       </fieldset>

@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { unsubscribeInterestedContactAction } from "@/app/(public)/surveys/interested-contact/actions";
 import { isSecureToken } from "@/lib/security/secure-token";
 
-export const metadata: Metadata = { title: "إلغاء الاشتراك" };
+export const metadata: Metadata = { title: "إلغاء الاشتراك", robots: { index: false, follow: false }, alternates: null };
 
 export default async function InterestedContactUnsubscribePage({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<{ success?: string; error?: string }> }) {
   const [{ token }, { success, error }] = await Promise.all([params, searchParams]);

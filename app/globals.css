@@ -345,9 +345,69 @@ body {
   min-width: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-surface);
-  border-inline-start: 0.35rem solid var(--brand-amber);
+  border-block-start: 0.3rem solid var(--brand-amber);
   background: var(--color-surface-muted);
   padding: clamp(1rem, 3vw, 1.35rem);
+}
+
+.date-time-timezone {
+  flex: none;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  padding: 0.35rem 0.55rem;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.date-time-date-input {
+  direction: ltr;
+  text-align: right;
+}
+
+.minute-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.minute-choice {
+  display: grid;
+  min-height: 3.25rem;
+  place-content: center;
+  gap: 0.08rem;
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius-control) - 0.2rem);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.1;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.minute-choice > span:first-child {
+  color: var(--brand-forest);
+  font-size: 0.88rem;
+}
+
+.minute-choice:hover {
+  border-color: var(--brand-olive);
+}
+
+.minute-choice:active {
+  transform: translateY(1px);
+}
+
+.minute-choice--selected {
+  border-color: var(--brand-forest);
+  background: var(--brand-forest);
+  color: var(--color-on-primary);
+}
+
+.minute-choice--selected > span:first-child {
+  color: var(--brand-amber);
 }
 
 .date-time-preview {

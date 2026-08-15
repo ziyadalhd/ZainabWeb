@@ -3,7 +3,10 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EventList } from "@/features/events/components/EventList";
 import { createEventCatalog } from "@/lib/supabase/events";
 
-export const metadata: Metadata = { title: "رحلات بَيْن" };
+export const metadata: Metadata = {
+  title: "رحلات بَيْن",
+  description: "الرحلات القادمة المنشورة من نادي بَيْن الثقافي.",
+};
 export const dynamic = "force-dynamic";
 
 export default async function BaynTripsPage() {

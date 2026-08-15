@@ -12,8 +12,10 @@ describe("EventForm", () => {
     expect(screen.getByLabelText("نوع الفعالية")).toBeInTheDocument();
     expect(screen.getByText("بداية الفعالية")).toBeInTheDocument();
     expect(screen.getByText("نهاية الفعالية")).toBeInTheDocument();
-    expect(screen.getAllByLabelText("التاريخ")).toHaveLength(2);
-    expect(screen.getAllByLabelText("الوقت")).toHaveLength(2);
+    expect(screen.getAllByLabelText("اليوم والتاريخ")).toHaveLength(2);
+    expect(screen.getAllByLabelText("الساعة")).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /تمام/ })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /وربع/ })).toHaveLength(2);
     expect(screen.getByLabelText("السعة")).toHaveAttribute("min", "1");
     expect(screen.getByLabelText("السعة")).toHaveAttribute("max", "50");
     expect(screen.getByLabelText("السعر بالريال السعودي")).toBeRequired();

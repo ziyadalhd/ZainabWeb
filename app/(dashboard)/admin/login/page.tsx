@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "دخول المسؤول" };
 const errorMessages: Record<string, string> = {
   invalid: "تعذر تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور.",
   unauthorized: "هذا الحساب غير معتمد لإدارة النادي.",
+  session: "تعذر التحقق من جلسة الدخول. سجلي الدخول مرة أخرى.",
 };
 
 const successMessages: Record<string, string> = {

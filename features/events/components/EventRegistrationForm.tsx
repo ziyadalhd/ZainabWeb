@@ -7,6 +7,7 @@ import type {
   RegistrationActionError,
   RegistrationActionState,
 } from "@/app/(public)/events/[id]/actions";
+import { TurnstileField } from "@/features/security/components/TurnstileField";
 
 interface EventRegistrationFormProps {
   action: (
@@ -26,6 +27,7 @@ const errorMessages: Record<RegistrationActionError, string> = {
   guardianConsent: "موافقة ولية الأمر مطلوبة لتسجيل القاصرات.",
   duplicate: "يوجد تسجيل سابق لهذه الفعالية بنفس الجوال أو البريد.",
   unavailable: "التسجيل غير متاح لهذه الفعالية حاليًا.",
+  turnstile: "تعذر التحقق الأمني. أكملي التحقق ثم حاولي مرة أخرى.",
   save: "تعذر إكمال التسجيل. حاول مرة أخرى بعد قليل.",
 };
 
@@ -59,9 +61,15 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
         <h2 className="text-xl font-extrabold">
           {registered ? "تم تسجيلك في الفعالية" : "تمت إضافتك إلى قائمة الانتظار"}
         </h2>
-        <p className="mt-3 text-sm">
-          احتفظ بالرقم المرجعي، وستتواصل إدارة النادي عبر WhatsApp عند الحاجة.
-        </p>
+        {registered ? (
+          <p className="mt-3 text-sm leading-7">
+            سنرسل لكِ عبر واتساب قبل الفعالية رابط تأكيد الحضور أو الاعتذار. لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن هناك مشاركات في قائمة الانتظار.
+          </p>
+        ) : (
+          <p className="mt-3 text-sm leading-7">
+            احتفظي بالرقم المرجعي، وسنتواصل معكِ عبر واتساب إذا توفر مقعد.
+          </p>
+        )}
         <p className="data-value mt-4 break-all border border-current/20 bg-white/70 px-3 py-2 text-sm font-extrabold" dir="ltr">
           {state.reference}
         </p>
@@ -74,7 +82,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
             إدارة الحجز أو إلغاؤه
           </Link>
         ) : null}
-        <p className="mt-3 text-xs">احفظ رابط إدارة الحجز؛ لا يحتوي الرابط على اسم أو رقم جوال.</p>
+        <p className="mt-3 text-xs">يمكنك حفظ هذه الصفحة للرجوع إلى تفاصيل تسجيلك لاحقًا.</p>
       </div>
     );
   }
@@ -105,7 +113,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
           {minorRegistration ? "جوال ولية الأمر" : "رقم الجوال"}
         </label>
         <input id="registration-phone" className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05xxxxxxxx" aria-describedby={`registration-phone-description${state.error === "phone" ? " registration-phone-error" : ""}`} aria-invalid={state.error === "phone"} required />
-        <span id="registration-phone-description" className="text-xs muted-copy">سيُستخدم للتواصل عبر WhatsApp بخصوص الحجز والتذكير.</span>
+        <span id="registration-phone-description" className="text-xs muted-copy">سيُستخدم للتواصل عبر واتساب بخصوص الحجز والتذكير.</span>
         {state.error === "phone" ? <span id="registration-phone-error" className="text-sm text-[var(--color-error-text)]">{errorMessages.phone}</span> : null}
       </div>
 
@@ -172,6 +180,8 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
       <p className="text-xs muted-copy">
         هذه الفعالية مخصصة للنساء. تُستخدم بيانات التواصل لإدارة هذا التسجيل فقط، وتُحذف تلقائيًا بعد 90 يومًا من انتهاء الفعالية.
       </p>
+
+      <TurnstileField />
 
       <button type="submit" disabled={pending} className="button-primary min-h-12 w-full px-5 py-3">
         {pending ? "جارٍ التسجيل…" : availability === "full" ? "الانضمام إلى قائمة الانتظار" : "تأكيد التسجيل"}

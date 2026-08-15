@@ -3,7 +3,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
-export const metadata: Metadata = { title: "الشريك الأدبي" };
+export const metadata: Metadata = {
+  title: "الشريك الأدبي",
+  description: "المحتوى المعتمد للشريك الأدبي في نادي بَيْن الثقافي.",
+};
 
 export default async function LiteraryPartnerPage() {
   const settings = await getPublicSiteSettings();

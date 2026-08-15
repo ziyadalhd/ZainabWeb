@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -14,7 +15,6 @@ import {
 import { createEventCatalog } from "@/lib/supabase/events";
 import { registerForEventAction } from "@/app/(public)/events/[id]/actions";
 
-export const metadata: Metadata = { title: "تفاصيل الفعالية" };
 export const dynamic = "force-dynamic";
 
 const audienceLabels: Record<EventAudience, string> = {
@@ -25,6 +25,44 @@ const audienceLabels: Record<EventAudience, string> = {
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+const getUpcomingEvent = cache(async (id: string) => {
+  if (!uuidPattern.test(id)) return null;
+  const catalog = await createEventCatalog();
+  return catalog.getUpcomingEvent(id);
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const event = await getUpcomingEvent(id);
+  if (!event) {
+    return {
+      title: "الفعالية غير متاحة",
+      robots: { index: false, follow: false },
+      alternates: null,
+    };
+  }
+
+  const description = `${event.eventTypeLabel} لفئة ${audienceLabels[event.audience]} في نادي بَيْن الثقافي.`;
+  return {
+    title: event.title,
+    description,
+    alternates: { canonical: `/events/${event.id}` },
+    openGraph: {
+      type: "website",
+      title: event.title,
+      description,
+      url: `/events/${event.id}`,
+      images: event.posterUrl ? [{ url: event.posterUrl, alt: `بوستر ${event.title}` }] : undefined,
+    },
+    twitter: {
+      card: event.posterUrl ? "summary_large_image" : "summary",
+      title: event.title,
+      description,
+      images: event.posterUrl ? [event.posterUrl] : undefined,
+    },
+  };
+}
+
 export default async function EventDetailsPage({
   params,
 }: {
@@ -32,9 +70,7 @@ export default async function EventDetailsPage({
 }) {
   const { id } = await params;
   if (!uuidPattern.test(id)) notFound();
-
-  const catalog = await createEventCatalog();
-  const event = await catalog.getUpcomingEvent(id);
+  const event = await getUpcomingEvent(id);
   if (!event) notFound();
 
   return (

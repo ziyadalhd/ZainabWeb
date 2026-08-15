@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "تم إلغاء الحجز" };
+export const metadata: Metadata = { title: "تم إلغاء الحجز", robots: { index: false, follow: false }, alternates: null };
 
 export default function BookingCancelledPage() {
   return (

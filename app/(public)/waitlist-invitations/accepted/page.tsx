@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "تم قبول الدعوة" };
+export const metadata: Metadata = { title: "تم قبول الدعوة", robots: { index: false, follow: false }, alternates: null };
 
 export default function WaitlistInvitationAcceptedPage() {
   return (
