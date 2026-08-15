@@ -14,8 +14,8 @@ export default async function BaynTripsPage() {
   const trips = await catalog.listUpcomingBaynTrips();
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="نادي بَيْن الثقافي" title="رحلات بَيْن" description="الرحلات القادمة المنشورة من نادي بَيْن الثقافي." />
-      <EventList events={trips} emptyTitle="لا توجد رحلات بَيْن قادمة حاليًا" emptyDescription="ستظهر هنا الرحلات القادمة بعد نشرها من إدارة النادي." />
+      <PageHeader eyebrow="نادي بَيْن الثقافي" title="رحلات بَيْن" description="تجارب خارج روتينك، نكتشف فيها أماكن وحكايات جديدة معًا." />
+      <EventList events={trips} emptyTitle="ما فيه رحلة معلنة الآن" emptyDescription="عودي قريب، وبنشاركك موعد رحلة بَيْن الجاية هنا." />
     </main>
   );
 }

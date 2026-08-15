@@ -8,15 +8,15 @@ export const metadata: Metadata = {
 };
 
 const surveys = [
-  { href: "/surveys/workshop-application", title: "طلب تقديم ورشة", status: "الحقول قيد الاعتماد" },
-  { href: "/surveys/interested-contact", title: "تسجيل المهتمين", status: "الاسم والجوال السعودي والبريد الإلكتروني" },
-  { href: "/surveys/event-feedback", title: "تقييم الفعالية", status: "يصلك من النادي بعد الفعالية" },
+  { href: "/surveys/workshop-application", title: "طلب تقديم ورشة", status: "عندك فكرة ورشة؟ شاركينا التفاصيل" },
+  { href: "/surveys/interested-contact", title: "خليكِ قريبة من بَيْن", status: "سجّلي اهتمامك عشان توصلك الفعاليات القادمة" },
+  { href: "/surveys/event-feedback", title: "تقييم الفعالية", status: "شاركينا رأيك بعد حضور الفعالية" },
 ];
 
 export default function SurveysPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="شاركنا رأيك" title="استبيانات" description="واجهات أولية للاستبيانات المعتمدة ضمن نطاق النادي." />
+      <PageHeader eyebrow="شاركي بَيْن" title="الطلبات والاستبيانات" description="قدّمي ورشتك، خليكِ على اطلاع، أو شاركينا رأيك في تجربة حضرتيها." />
       <div className="mt-10 border-t border-[var(--brand-olive)]">
         {surveys.map((survey) => (
           <Link key={survey.href} href={survey.href} className="group grid min-h-28 gap-2 border-b border-[var(--color-border)] py-5 transition-[background-color,padding] hover:bg-[var(--brand-cream)] hover:px-4 sm:grid-cols-[1fr_auto] sm:items-center">

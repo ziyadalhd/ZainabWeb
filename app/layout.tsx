@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { thmanyahSans } from "./fonts";
 import { getSiteUrl, isSiteIndexingEnabled } from "@/lib/site-url";
+import "@daypicker/react/style.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

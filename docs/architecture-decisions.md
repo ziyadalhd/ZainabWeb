@@ -221,3 +221,13 @@ Record approved architectural decisions here only after explicit user approval. 
 - Private routes: the administrator dashboard, booking-management links, request-management links, waitlist invitations, one-time feedback links, and consent-management links explicitly disable indexing and canonical inheritance. They are also excluded from `sitemap.xml` and disallowed after public crawling is enabled.
 - Page metadata: public routes use Arabic titles and descriptions; published event pages derive their metadata and optional social image only from the public event record.
 - Documentation source: Context7 ID `/vercel/next.js/v16.2.9` was queried for MetadataRoute-based `robots.ts` and `sitemap.ts`, `metadataBase`, relative canonical URLs, and nested metadata inheritance. No product behavior was sourced from technical documentation.
+
+## Public UX and scheduling refinement: 2026-08-15
+
+- Status: approved and in progress on `codex/public-ux-refinement`; Preview review is required before any production promotion.
+- Public experience: the home page leads with real upcoming events and presents the approved club copy through accessible Arabic tabs. Public event actions describe the actual registration, waitlist, or closed state in light Saudi Arabic.
+- Posters: one shared frame presents the complete original image without cropping or distortion and uses a decorative blurred copy only to fill surrounding space.
+- Scheduling: `@daypicker/react@10.0.1` is pinned for the accessible Gregorian RTL calendar. Shared application components keep the existing `YYYY-MM-DD` and `HH:mm` server contract, Riyadh interpretation, and quarter-hour choices. No calendar API or external scheduling service receives data.
+- Venue map: the owner approved the exact public Google Maps destination `https://maps.app.goo.gl/Seti5sBZvmhaHeNe8?g_st=ic`. A forward-only nullable `site_settings.default_venue_map_url` column keeps the link administrator-editable. The site opens the external map only after a visitor selects the venue card; no map is embedded and no new tracking provider is initialized.
+- Turnstile: the existing server verification is unchanged. The public widget uses Cloudflare's flexible width mode so it fits small mobile screens.
+- Documentation: Context7 IDs `/gpbl/react-day-picker` and `/supabase/supabase` were queried for v10 controlled selection, Arabic locale/RTL, accessible keyboard behavior, stylesheet setup, forward migrations, and environment separation. Current official Cloudflare Turnstile widget-configuration documentation was used for flexible sizing.

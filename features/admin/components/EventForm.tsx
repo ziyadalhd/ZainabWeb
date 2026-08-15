@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import type { Event } from "@/lib/domain/types";
-import { EventDateTimePicker } from "@/features/admin/components/EventDateTimePicker";
+import { EventSchedulePicker } from "@/features/scheduling/components/EventSchedulePicker";
 import { formatRiyadhDateInput, formatRiyadhTimeInput } from "@/lib/format/date";
 import type {
   EventFormActionError,
@@ -56,7 +56,6 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
   const [dirty, setDirty] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const fallbackEnd = event?.endsAt ?? null;
 
   useEffect(() => {
     if (!dirty) return;
@@ -166,28 +165,15 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
         <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">
           الموعد بتوقيت السعودية
         </legend>
-        <div className="grid gap-5 lg:grid-cols-2">
-          <EventDateTimePicker
-            id="event-start"
-            label="بداية الفعالية"
-            dateName="startDate"
-            timeName="startTime"
-            defaultDate={event ? formatRiyadhDateInput(event.startsAt) : undefined}
-            defaultTime={event ? formatRiyadhTimeInput(event.startsAt) : undefined}
-            error={state.error === "startsAt" ? errorMessages.startsAt : undefined}
-            onValueChange={() => setDirty(true)}
-          />
-          <EventDateTimePicker
-            id="event-end"
-            label="نهاية الفعالية"
-            dateName="endDate"
-            timeName="endTime"
-            defaultDate={fallbackEnd ? formatRiyadhDateInput(fallbackEnd) : event ? formatRiyadhDateInput(event.startsAt) : undefined}
-            defaultTime={fallbackEnd ? formatRiyadhTimeInput(fallbackEnd) : undefined}
-            error={state.error === "endsAt" ? errorMessages.endsAt : undefined}
-            onValueChange={() => setDirty(true)}
-          />
-        </div>
+        <EventSchedulePicker
+          defaultStartDate={event ? formatRiyadhDateInput(event.startsAt) : undefined}
+          defaultStartTime={event ? formatRiyadhTimeInput(event.startsAt) : undefined}
+          defaultEndDate={event?.endsAt ? formatRiyadhDateInput(event.endsAt) : undefined}
+          defaultEndTime={event?.endsAt ? formatRiyadhTimeInput(event.endsAt) : undefined}
+          startError={state.error === "startsAt" ? errorMessages.startsAt : undefined}
+          endError={state.error === "endsAt" ? errorMessages.endsAt : undefined}
+          onValueChange={() => setDirty(true)}
+        />
       </fieldset>
 
       <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">

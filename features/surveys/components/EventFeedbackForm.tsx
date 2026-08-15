@@ -11,7 +11,7 @@ const errors: Record<NonNullable<SubmitEventFeedbackActionState["error"]>, strin
   materialRating: "اختاري تقييم المادة من ١ إلى ٥.",
   identityVisible: "حددي ما إذا كنتِ ترغبين بإظهار اسمك للمسؤولة.",
   suggestions: "المقترحات طويلة جدًا؛ الحد الأقصى ٤٠٠٠ حرف.",
-  turnstile: "تعذر التحقق الأمني. أكملي التحقق ثم حاولي مرة أخرى.",
+  turnstile: "ما قدرنا نكمل التحقق. جرّبي مرة ثانية",
   save: "تعذر حفظ التقييم. ربما استُخدم الرابط أو انتهت صلاحيته؛ اطلبي رابطًا جديدًا من النادي.",
 };
 

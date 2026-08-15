@@ -52,7 +52,6 @@ Until these questions are answered, the approved launch behavior is a structured
 - Online payment provider and the legal/accounting requirements for accepting funds under the owner's business setup.
 - Public user accounts.
 - QR or ticket generation.
-- Google Maps integration.
 - External CRM.
 - Automatic waitlist replacement.
 

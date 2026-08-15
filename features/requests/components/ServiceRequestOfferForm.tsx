@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import type { ServiceRequestOfferActionState } from "@/app/(dashboard)/admin/(protected)/requests/actions";
 import { formatRiyadhDateTimeLocal } from "@/lib/format/date";
+import { OptionalDateTimePicker } from "@/features/scheduling/components/OptionalDateTimePicker";
 
 interface ServiceRequestOfferFormProps {
   action: (state: ServiceRequestOfferActionState, formData: FormData) => Promise<ServiceRequestOfferActionState>;
@@ -36,7 +37,7 @@ export function ServiceRequestOfferForm({ action, priceHalalas, terms, expiresAt
     <form action={formAction} className="grid gap-4 border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4" noValidate>
       <div>
         <h3 className="font-extrabold text-[var(--brand-green-deep)]">صياغة عرض للطلب</h3>
-        <p className="mt-1 text-xs muted-copy">سيظهر العرض لصاحبة الطلب عبر رابط المتابعة الآمن. لا يتم تحصيل أي مبلغ من الموقع.</p>
+        <p className="mt-1 text-xs muted-copy">سيظهر العرض لصاحبة الطلب في صفحة متابعة طلبها. لا يتم تحصيل أي مبلغ من الموقع.</p>
       </div>
       {errorMessage ? <p role="alert" className="notice-error text-sm">{errorMessage}</p> : null}
       {state.saved ? <p role="status" className="notice-success text-sm">تم حفظ العرض. سيظهر الآن من رابط متابعة الطلب.</p> : null}
@@ -45,17 +46,17 @@ export function ServiceRequestOfferForm({ action, priceHalalas, terms, expiresAt
           السعر بالريال السعودي
           <input id="offer-price" className={inputClassName} name="priceSar" inputMode="decimal" dir="ltr" defaultValue={formatPrice(priceHalalas)} placeholder="0" required />
         </label>
-        <label className="grid gap-2 text-sm font-bold" htmlFor="offer-expiry">
+        <div className="grid gap-2 text-sm font-bold">
           صالح حتى (بتوقيت السعودية)
-          <input id="offer-expiry" className={inputClassName} name="expiresAt" type="datetime-local" defaultValue={expiresAt ? formatRiyadhDateTimeLocal(expiresAt) : undefined} />
+          <OptionalDateTimePicker name="expiresAt" defaultValue={expiresAt ? formatRiyadhDateTimeLocal(expiresAt) : undefined} />
           <span className="text-xs font-normal muted-copy">اتركيه فارغًا لصلاحية 48 ساعة.</span>
-        </label>
+        </div>
       </div>
       <label className="grid gap-2 text-sm font-bold" htmlFor="offer-terms">
         شروط العرض
         <textarea id="offer-terms" className={inputClassName} name="terms" rows={4} maxLength={4000} defaultValue={terms ?? ""} required />
       </label>
-      <button type="submit" disabled={pending} className="button-primary w-fit px-4 py-2 text-sm">{pending ? "جارٍ حفظ العرض…" : priceHalalas === null ? "إرسال العرض للرابط الآمن" : "تحديث العرض"}</button>
+      <button type="submit" disabled={pending} className="button-primary w-fit px-4 py-2 text-sm">{pending ? "جارٍ حفظ العرض…" : priceHalalas === null ? "حفظ العرض وإتاحته لصاحبة الطلب" : "تحديث العرض"}</button>
     </form>
   );
 }

@@ -30,7 +30,7 @@ export default async function ServiceRequestManagementPage({ params }: ServiceRe
     && new Date(request.offerExpiresAt) > new Date();
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="متابعة الطلب" title={labels[request.kind]} description="هذا الرابط مخصص لمتابعة طلبك فقط." />
+      <PageHeader eyebrow="متابعة الطلب" title={labels[request.kind]} description="هنا تلقين حالة طلبك وأي تحديث يخصه." />
       <section className="card-surface mt-8 max-w-3xl p-6 sm:p-8">
         <p className="border-r-4 border-[var(--brand-amber)] bg-[var(--surface-soft)] px-4 py-3 text-sm font-extrabold">الحالة: {statuses[request.status]}</p>
         <h2 className="mt-6 text-xl font-extrabold">بيانات الطلب</h2>

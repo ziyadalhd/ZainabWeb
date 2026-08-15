@@ -4,6 +4,7 @@ const shortTextFields = new Set([
   "contactPhone",
   "defaultVenueName",
   "defaultVenueAddress",
+  "defaultVenueMapUrl",
   "literaryPartnerTitle",
   "instagramUrl",
   "tiktokUrl",
@@ -16,7 +17,7 @@ const longTextFields = new Set([
   "literaryPartnerBody",
 ]);
 
-export type SiteSettingsInputError = "phone" | "socialUrl" | "text";
+export type SiteSettingsInputError = "phone" | "url" | "text";
 export type SiteSettingsInputResult =
   | { ok: true; value: SiteSettingsInput }
   | { ok: false; error: SiteSettingsInputError };
@@ -38,12 +39,13 @@ function isWebUrl(value: string): boolean {
 export function validateSiteSettingsInput(formData: FormData): SiteSettingsInputResult {
   const values = Object.fromEntries([...shortTextFields, ...longTextFields].map((key) => [key, normalized(formData, key)])) as Record<string, string | null>;
   if (values.contactPhone !== null && !/^05\d{8}$/.test(values.contactPhone)) return { ok: false, error: "phone" };
-  if ([values.instagramUrl, values.tiktokUrl].some((value) => value !== null && !isWebUrl(value))) return { ok: false, error: "socialUrl" };
+  if ([values.defaultVenueMapUrl, values.instagramUrl, values.tiktokUrl].some((value) => value !== null && !isWebUrl(value))) return { ok: false, error: "url" };
   if (
     [...longTextFields].some((key) => (values[key]?.length ?? 0) > 4000)
     || (values.defaultVenueName?.length ?? 0) > 250
     || (values.defaultVenueAddress?.length ?? 0) > 500
     || (values.literaryPartnerTitle?.length ?? 0) > 250
+    || (values.defaultVenueMapUrl?.length ?? 0) > 2048
   ) return { ok: false, error: "text" };
 
   return {
@@ -55,6 +57,7 @@ export function validateSiteSettingsInput(formData: FormData): SiteSettingsInput
       contactPhone: values.contactPhone,
       defaultVenueName: values.defaultVenueName,
       defaultVenueAddress: values.defaultVenueAddress,
+      defaultVenueMapUrl: values.defaultVenueMapUrl,
       instagramUrl: values.instagramUrl,
       tiktokUrl: values.tiktokUrl,
       literaryPartnerTitle: values.literaryPartnerTitle,

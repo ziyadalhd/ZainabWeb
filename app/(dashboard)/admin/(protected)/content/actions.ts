@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { validateSiteSettingsInput } from "@/lib/domain/site-settings-input";
 import { createAdminSiteSettingsRepository } from "@/lib/supabase/site-settings";
 
-export type SiteSettingsActionState = { saved?: true; error?: "phone" | "socialUrl" | "text" | "save" };
+export type SiteSettingsActionState = { saved?: true; error?: "phone" | "url" | "text" | "save" };
 
 export async function updateSiteSettingsAction(
   _previousState: SiteSettingsActionState,

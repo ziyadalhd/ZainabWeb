@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function CelebrationBookingPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="طلبات النادي" title="حجز إقامة حفلات" description="أرسلي طلبك لمراجعته من الإدارة. لا يُعد الطلب حجزًا مؤكدًا." />
+      <PageHeader eyebrow="مناسبتك في بَيْن" title="حجز إقامة حفلات" description="شاركي معنا تفاصيل مناسبتك والموعد اللي يناسبك، وبنراجع الطلب ونتواصل معك قبل التأكيد." />
       <section className="mt-7 max-w-3xl">
         <ServiceRequestForm kind="celebration_booking" action={submitServiceRequestAction.bind(null, "celebration_booking")} />
       </section>

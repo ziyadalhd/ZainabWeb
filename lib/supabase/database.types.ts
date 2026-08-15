@@ -401,6 +401,7 @@ export type Database = {
           club_introduction: string | null
           contact_phone: string | null
           default_venue_address: string | null
+          default_venue_map_url: string | null
           default_venue_name: string | null
           id: boolean
           instagram_url: string | null
@@ -415,6 +416,7 @@ export type Database = {
           club_introduction?: string | null
           contact_phone?: string | null
           default_venue_address?: string | null
+          default_venue_map_url?: string | null
           default_venue_name?: string | null
           id?: boolean
           instagram_url?: string | null
@@ -429,6 +431,7 @@ export type Database = {
           club_introduction?: string | null
           contact_phone?: string | null
           default_venue_address?: string | null
+          default_venue_map_url?: string | null
           default_venue_name?: string | null
           id?: boolean
           instagram_url?: string | null

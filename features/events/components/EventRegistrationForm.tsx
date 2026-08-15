@@ -19,16 +19,16 @@ interface EventRegistrationFormProps {
 }
 
 const errorMessages: Record<RegistrationActionError, string> = {
-  attendeeName: "أدخل الاسم كاملًا.",
-  phone: "أدخل رقم جوال سعودي صحيحًا يبدأ بـ05.",
-  email: "تحقق من كتابة البريد الإلكتروني.",
-  participantAge: "أدخل عمر المشاركة ضمن الفئة العمرية المحددة.",
-  guardianName: "أدخل اسم ولية الأمر كاملًا.",
+  attendeeName: "أدخلي الاسم كاملًا.",
+  phone: "أدخلي رقم جوال سعودي صحيحًا يبدأ بـ05.",
+  email: "تأكدي من كتابة البريد الإلكتروني.",
+  participantAge: "أدخلي عمر المشاركة ضمن الفئة العمرية المحددة.",
+  guardianName: "أدخلي اسم ولية الأمر كاملًا.",
   guardianConsent: "موافقة ولية الأمر مطلوبة لتسجيل القاصرات.",
   duplicate: "يوجد تسجيل سابق لهذه الفعالية بنفس الجوال أو البريد.",
   unavailable: "التسجيل غير متاح لهذه الفعالية حاليًا.",
-  turnstile: "تعذر التحقق الأمني. أكملي التحقق ثم حاولي مرة أخرى.",
-  save: "تعذر إكمال التسجيل. حاول مرة أخرى بعد قليل.",
+  turnstile: "ما قدرنا نكمل التحقق. جرّبي مرة ثانية",
+  save: "ما قدرنا نكمل التسجيل الآن. جرّبي مرة ثانية بعد قليل.",
 };
 
 const errorField: Partial<Record<RegistrationActionError, string>> = {
@@ -173,7 +173,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
       ) : null}
 
       <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true">
-        <label htmlFor="registration-website">اترك هذا الحقل فارغًا</label>
+        <label htmlFor="registration-website">اتركي هذا الحقل فارغًا</label>
         <input id="registration-website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
 

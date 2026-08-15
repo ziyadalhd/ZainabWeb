@@ -8,7 +8,7 @@ const inputClassName = "field-control bg-white";
 
 const errors: Record<NonNullable<SiteSettingsActionState["error"]>, string> = {
   phone: "رقم التواصل يجب أن يكون رقم جوال سعوديًا من ١٠ أرقام ويبدأ بـ ٠٥.",
-  socialUrl: "أدخل رابطًا صحيحًا يبدأ بـ http:// أو https://، أو اترك الحقل فارغًا لإخفائه.",
+  url: "أدخل رابطًا صحيحًا يبدأ بـ http:// أو https://، أو اترك الحقل فارغًا لإخفائه.",
   text: "أحد الحقول أطول من الحد المسموح؛ اختصري النص ثم حاولي مرة أخرى.",
   save: "تعذر حفظ الإعدادات الآن. لم تُفقد البيانات؛ حاولي مرة أخرى.",
 };
@@ -38,6 +38,7 @@ export function SiteSettingsForm({
           <label className="grid gap-2 font-bold">اسم المقر الافتراضي<input name="defaultVenueName" defaultValue={settings.defaultVenueName ?? ""} maxLength={250} className={inputClassName} /></label>
         </div>
         <label className="grid gap-2 font-bold">عنوان المقر<textarea name="defaultVenueAddress" defaultValue={settings.defaultVenueAddress ?? ""} maxLength={500} rows={3} className={inputClassName} /></label>
+        <label className="grid gap-2 font-bold">رابط المقر في الخرائط<input name="defaultVenueMapUrl" type="url" dir="ltr" defaultValue={settings.defaultVenueMapUrl ?? ""} maxLength={2048} className={inputClassName} /></label>
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="grid gap-2 font-bold">رابط Instagram<input name="instagramUrl" type="url" dir="ltr" defaultValue={settings.instagramUrl ?? ""} className={inputClassName} /></label>
           <label className="grid gap-2 font-bold">رابط TikTok<input name="tiktokUrl" type="url" dir="ltr" defaultValue={settings.tiktokUrl ?? ""} className={inputClassName} /></label>

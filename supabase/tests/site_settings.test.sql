@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(5);
+select plan(7);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -33,6 +33,12 @@ select is(
   (select contact_phone from public.site_settings where id),
   '0537918640',
   'public visitors can read the approved contact setting'
+);
+
+select is(
+  (select default_venue_map_url from public.site_settings where id),
+  'https://maps.app.goo.gl/Seti5sBZvmhaHeNe8?g_st=ic',
+  'the approved public venue map link is seeded'
 );
 
 select throws_ok(
@@ -68,6 +74,13 @@ select set_config('request.jwt.claim.role', 'authenticated', true);
 select lives_ok(
   $$update public.site_settings set default_venue_name = 'مقر اختبار' where id$$,
   'approved admin can update site settings'
+);
+
+select throws_ok(
+  $$update public.site_settings set default_venue_map_url = 'javascript:alert(1)' where id$$,
+  '23514',
+  null,
+  'venue map link must be a web URL'
 );
 
 select * from finish();

@@ -171,6 +171,7 @@ export interface SiteSettings {
   contactPhone: string | null;
   defaultVenueName: string | null;
   defaultVenueAddress: string | null;
+  defaultVenueMapUrl: string | null;
   instagramUrl: string | null;
   tiktokUrl: string | null;
   literaryPartnerTitle: string | null;

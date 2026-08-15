@@ -216,6 +216,88 @@ body {
   background: var(--color-surface);
 }
 
+.poster-frame {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-surface-muted);
+}
+
+.poster-frame__backdrop,
+.poster-frame__image,
+.poster-frame__veil {
+  position: absolute;
+  inset: 0;
+}
+
+.poster-frame__backdrop {
+  z-index: -3;
+  scale: 1.12;
+  object-fit: cover;
+  filter: blur(1.25rem) saturate(0.82);
+  opacity: 0.52;
+}
+
+.poster-frame__veil {
+  z-index: -2;
+  background: linear-gradient(180deg, rgb(255 254 248 / 0.28), rgb(32 79 40 / 0.18));
+}
+
+.poster-frame__image {
+  z-index: -1;
+  object-fit: contain;
+}
+
+.club-story {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.club-story__tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block-end: 1px solid var(--color-border);
+}
+
+.club-story__tab {
+  position: relative;
+  min-height: 4.75rem;
+  border: 0;
+  background: transparent;
+  padding: 0.85rem 1rem 1.15rem;
+  color: var(--color-text-muted);
+  font-weight: 900;
+  text-align: center;
+}
+
+.club-story__tab[aria-selected="true"] {
+  color: var(--brand-forest);
+}
+
+.club-story__mark {
+  position: absolute;
+  inset: auto 12% -0.18rem;
+  height: 0.35rem;
+  scale: 0 1;
+  background: linear-gradient(90deg, var(--brand-amber) 0 30%, transparent 30% 34%, var(--brand-amber) 34% 66%, transparent 66% 70%, var(--brand-amber) 70%);
+  transform-origin: center;
+  transition: scale 180ms ease;
+}
+
+.club-story__tab[aria-selected="true"] .club-story__mark {
+  scale: 1 1;
+}
+
+.club-story__panel {
+  min-height: 18rem;
+  animation: club-story-in 220ms ease both;
+}
+
+@keyframes club-story-in {
+  from { opacity: 0; transform: translateY(0.4rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .form-surface {
   border: 1px solid var(--color-border);
   border-block-start: 0.35rem solid var(--brand-amber);
@@ -419,6 +501,55 @@ body {
   font-weight: 800;
 }
 
+.bayn-calendar {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  padding: 0.75rem;
+}
+
+.bayn-calendar .rdp-root {
+  --rdp-accent-color: var(--brand-forest);
+  --rdp-accent-background-color: var(--brand-cream);
+  --rdp-day_button-border-radius: 0.55rem;
+  --rdp-day_button-width: 2.6rem;
+  --rdp-day_button-height: 2.6rem;
+  margin: 0 auto;
+  color: var(--color-text);
+}
+
+.bayn-calendar .rdp-month_caption {
+  color: var(--brand-forest);
+  font-weight: 900;
+}
+
+.bayn-calendar .rdp-weekday {
+  color: var(--brand-olive);
+  font-weight: 800;
+}
+
+.bayn-calendar .rdp-selected .rdp-day_button {
+  background: var(--brand-forest);
+  color: var(--color-on-primary);
+}
+
+.time-choice {
+  min-width: 0;
+}
+
+.turnstile-field {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+}
+
+.turnstile-field > div {
+  width: 100%;
+  min-width: 0;
+}
+
 .notice-success,
 .notice-warning,
 .notice-error,
@@ -542,6 +673,42 @@ body {
   .button-quiet,
   .button-danger {
     min-height: 2.875rem;
+  }
+
+  .club-story__tabs {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    border: 0;
+  }
+
+  .club-story__tab {
+    min-height: 3.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    padding: 0.7rem 1rem;
+    background: var(--color-surface);
+    text-align: start;
+  }
+
+  .club-story__tab[aria-selected="true"] {
+    border-color: var(--brand-forest);
+    background: var(--brand-cream);
+  }
+
+  .club-story__mark {
+    inset: 0.6rem auto 0.6rem 0.6rem;
+    width: 0.3rem;
+    height: auto;
+    scale: 1 0;
+    background: var(--brand-amber);
+  }
+
+  .club-story__tab[aria-selected="true"] .club-story__mark {
+    scale: 1 1;
+  }
+
+  .club-story__panel {
+    min-height: 0;
   }
 }
 

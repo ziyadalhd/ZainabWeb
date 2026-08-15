@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { BrandIntersection } from "@/components/brand/BrandIntersection";
+import { ClubStoryTabs } from "@/features/home/components/ClubStoryTabs";
+import { HomeUpcomingEvents, selectHomeEvents } from "@/features/home/components/HomeUpcomingEvents";
+import { createEventCatalog } from "@/lib/supabase/events";
 import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
 const destinations = [
@@ -12,11 +15,17 @@ const destinations = [
 ];
 
 export default async function HomePage() {
-  const settings = await getPublicSiteSettings().catch(() => null);
+  const [settings, events] = await Promise.all([
+    getPublicSiteSettings().catch(() => null),
+    createEventCatalog()
+      .then((catalog) => catalog.listUpcomingEvents())
+      .then(selectHomeEvents)
+      .catch(() => []),
+  ]);
   const sections = [
-    { title: "عن النادي", body: settings?.clubIntroduction ?? "محتوى هذه الصفحة قيد الإعداد." },
-    { title: "فكرة اسم بَيْن", body: settings?.nameStory ?? "محتوى هذه الصفحة قيد الإعداد." },
-    { title: "أهداف النادي", body: settings?.objectives ?? "محتوى هذه الصفحة قيد الإعداد." },
+    { title: "عن النادي", body: settings?.clubIntroduction ?? "نتعرّف أكثر على النادي قريبًا." },
+    { title: "فكرة اسم بَيْن", body: settings?.nameStory ?? "حكاية اسم بَيْن بنشاركها هنا قريبًا." },
+    { title: "أهداف النادي", body: settings?.objectives ?? "أهداف النادي بنشاركها هنا قريبًا." },
   ];
   return (
     <main>
@@ -36,18 +45,14 @@ export default async function HomePage() {
 
       <section className="border-y border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className="page-shell section-space">
-          <div className="grid border-y border-[var(--brand-olive)] md:grid-cols-3">
-            {sections.map((section, index) => (
-              <article key={section.title} className={`min-w-0 py-8 md:px-8 ${index > 0 ? "border-t border-[var(--color-border)] md:border-r md:border-t-0" : ""}`}>
-                <h2 className="text-2xl font-black text-[var(--brand-forest)]">{section.title}</h2>
-                <p className="mt-4 whitespace-pre-wrap leading-8 muted-copy">{section.body}</p>
-              </article>
-            ))}
-          </div>
+          <ClubStoryTabs sections={sections} />
         </div>
       </section>
 
-      <section className="page-shell section-space">
+      <HomeUpcomingEvents events={events} />
+
+      <section className="border-t border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="page-shell section-space">
         <p className="eyebrow">الأقسام</p>
         <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">ابدأ من هنا</h2>
         <div className="mt-8 border-t border-[var(--brand-olive)]">
@@ -58,6 +63,7 @@ export default async function HomePage() {
               <span aria-hidden="true" className="text-2xl transition-transform group-hover:-translate-x-1">←</span>
             </Link>
           ))}
+        </div>
         </div>
       </section>
     </main>

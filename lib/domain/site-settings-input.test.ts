@@ -23,6 +23,7 @@ describe("validateSiteSettingsInput", () => {
 
   it("rejects an invalid public phone or social link", () => {
     expect(validateSiteSettingsInput(form({ contactPhone: "123" }))).toEqual({ ok: false, error: "phone" });
-    expect(validateSiteSettingsInput(form({ instagramUrl: "instagram.com/bayn" }))).toEqual({ ok: false, error: "socialUrl" });
+    expect(validateSiteSettingsInput(form({ instagramUrl: "instagram.com/bayn" }))).toEqual({ ok: false, error: "url" });
+    expect(validateSiteSettingsInput(form({ defaultVenueMapUrl: "javascript:alert(1)" }))).toEqual({ ok: false, error: "url" });
   });
 });

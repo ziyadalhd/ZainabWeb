@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { PosterFrame } from "@/components/ui/PosterFrame";
 import { EventRegistrationForm } from "@/features/events/components/EventRegistrationForm";
+import { eventAvailabilityPresentation } from "@/features/events/event-presentation";
 import type { EventAudience } from "@/lib/domain/types";
 import {
   formatArabicEventDate,
@@ -72,6 +72,7 @@ export default async function EventDetailsPage({
   if (!uuidPattern.test(id)) notFound();
   const event = await getUpcomingEvent(id);
   if (!event) notFound();
+  const availability = eventAvailabilityPresentation[event.availability];
 
   return (
     <main className="page-shell section-space">
@@ -85,14 +86,12 @@ export default async function EventDetailsPage({
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start">
         <article className="overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
           {event.posterUrl ? (
-            <div className="relative aspect-[4/3] w-full border-b border-[var(--color-border)] bg-[var(--color-surface-muted)] sm:aspect-video">
-              <Image src={event.posterUrl} alt={`بوستر ${event.title}`} fill sizes="(min-width: 1024px) 66vw, 100vw" className="object-contain" priority />
-            </div>
+            <PosterFrame src={event.posterUrl} alt={`بوستر ${event.title}`} sizes="(min-width: 1024px) 66vw, 100vw" className="aspect-[4/5] w-full border-b border-[var(--color-border)] sm:aspect-[16/10]" priority />
           ) : null}
           <div className="p-5 sm:p-9">
             <div className="flex flex-wrap items-center gap-3">
               <span className="border-r-4 border-[var(--brand-amber)] pr-3 text-sm font-extrabold text-[var(--brand-forest)]">{audienceLabels[event.audience]}</span>
-              <StatusBadge status={event.availability} />
+              <span className="text-sm font-extrabold text-[var(--brand-olive)]">{availability.status}</span>
             </div>
             <p className="eyebrow mt-8">{event.eventTypeLabel}</p>
             <h1 className="page-title mt-3">{event.title}</h1>

@@ -10,10 +10,11 @@ describe("EventForm", () => {
     expect(screen.getByRole("option", { name: "رحلة بَيْن" })).toBeInTheDocument();
     expect(screen.getByLabelText("الفئة")).toBeInTheDocument();
     expect(screen.getByLabelText("نوع الفعالية")).toBeInTheDocument();
-    expect(screen.getByText("بداية الفعالية")).toBeInTheDocument();
-    expect(screen.getByText("نهاية الفعالية")).toBeInTheDocument();
-    expect(screen.getAllByLabelText("اليوم والتاريخ")).toHaveLength(2);
-    expect(screen.getAllByLabelText("الساعة")).toHaveLength(2);
+    expect(screen.getByText("موعد الفعالية")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /اليوم والتاريخ/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("تبدأ الساعة — الدقائق")).toBeInTheDocument();
+    expect(screen.getByLabelText("تنتهي الساعة — الدقائق")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "تنتهي في يوم مختلف" })).not.toBeChecked();
     expect(screen.getAllByRole("button", { name: /تمام/ })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: /وربع/ })).toHaveLength(2);
     expect(screen.getByLabelText("السعة")).toHaveAttribute("min", "1");
