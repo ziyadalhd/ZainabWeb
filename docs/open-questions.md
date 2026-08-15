@@ -1,6 +1,6 @@
 # Open Questions
 
-Last updated: `2026-08-12`
+Last updated: `2026-08-15`
 
 This file contains only unresolved decisions and launch inputs. Approved behavior belongs in `AGENTS.md`, `PLAN.md`, and `docs/architecture-decisions.md`.
 
@@ -13,10 +13,10 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 
 - **Deferred by owner:** a custom `bayn` domain will be selected and purchased after the project grows. Until then, the project may use its Vercel address for development and limited sharing. It blocks Resend domain verification, official sender addresses, and the formal public-launch checklist.
 - What are the final public sender addresses after the future domain verification?
-- What is the final administrator email used for Auth, alerts, and account recovery?
-- What are the club's default venue name and address?
-- What legal entity or responsible-person details and contact channel should appear in the privacy policy and terms?
-- The owner confirmed they have a Saudi freelance-work document. Before public launch, what is the exact provider name shown on it, what activity does it cover, and what dedicated business contact channel should receive privacy and customer requests? The document number, national ID, and document image must not be published. See `docs/legal-launch-inputs.md`.
+- Makkah is confirmed as the city. What are the club's default venue name and full public address?
+- `bayn.collective@gmail.com` is approved as the public privacy and customer-contact email. Is a more formal sender address required after the future domain is verified?
+- The owner does not approve publishing their personal legal name. Before public launch, confirm whether the distinctive club name plus a suitable public verification record satisfies the applicable disclosure requirement, or whether another registered operating form is required.
+- The owner supplied the current freelance-work activity privately, but it does not clearly establish coverage for every service offered through the site. A qualified activity-match review or an appropriately matching activity remains required. Do not record private document details in Git. See `docs/legal-launch-inputs.md`.
 - What are the real Instagram and TikTok URLs? Keep the controls hidden or disabled until supplied.
 - The current `0537918640` number is personal and temporary. What future WhatsApp Business number will replace it?
 
@@ -29,6 +29,8 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 ## Paid service decisions
 
 The providers are approved, but no paid tier is automatically authorized. Before provisioning or upgrading, present current pricing and expected usage for:
+
+- **Deferred by owner for the current low-traffic period:** Sentry setup and custom enforced rate limiting. Vercel Runtime Logs, Turnstile, Supabase Auth limits, and automatic Vercel DDoS protection remain the temporary baseline.
 
 - Vercel plan and production region.
 - Supabase production and development environments, including backups and Branching if used.

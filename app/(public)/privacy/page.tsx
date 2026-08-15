@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { publicContactEmail } from "@/lib/public-contact";
 
 export const metadata: Metadata = {
   title: "سياسة الخصوصية",
@@ -16,13 +17,13 @@ const items = [
 export default function PrivacyPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="قبل الإطلاق" title="سياسة الخصوصية" description="مسودة تأسيسية تُستكمل ببيانات مقدّم الخدمة ووسيلة التواصل قبل الإطلاق العام." />
+      <PageHeader eyebrow="قبل الإطلاق" title="سياسة الخصوصية" description="مسودة تأسيسية تُستكمل بالصفة النظامية والعنوان النهائي قبل الإطلاق العام." />
       <article className="card-surface mt-8 max-w-4xl p-6 sm:p-10">
-        <p className="notice-warning text-sm"><strong>حالة هذه الصفحة:</strong> مسودة تشغيلية وليست استشارة قانونية. لا يُزال تنبيه المسودة ولا يُطلق الموقع للعامة قبل تعبئة الاسم ووسيلة التواصل ومراجعتها قانونيًا.</p>
+        <p className="notice-warning text-sm"><strong>حالة هذه الصفحة:</strong> مسودة تشغيلية وليست استشارة قانونية. لا يُزال تنبيه المسودة ولا يُطلق الموقع للعامة قبل استكمال بيانات الجهة والعنوان ومراجعتها قانونيًا.</p>
 
         <section className="mt-8">
           <h2 className="text-2xl font-black text-[var(--brand-green-deep)]">من يعالج بياناتك</h2>
-          <p className="mt-3 leading-8 muted-copy">يُشغّل الموقع مقدّم/ة خدمة يحمل/تحمل وثيقة عمل حر صادرة عبر منصة العمل الحر التابعة لوزارة الموارد البشرية والتنمية الاجتماعية. قبل الإطلاق، يُضاف هنا الاسم كما يظهر في الوثيقة ووسيلة اتصال مخصصة لطلبات الخصوصية. لا يُنشر رقم الهوية أو رقم وثيقة العمل الحر في الموقع.</p>
+          <p className="mt-3 leading-8 muted-copy">يدير نادي بَيْن الثقافي هذا الموقع من مكة. يمكن التواصل بشأن الخصوصية عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>. ما زال تحديد الصفة النظامية وطريقة الإفصاح المناسبة عنها قيد المراجعة قبل الإطلاق العام. لا ننشر رقم الهوية الوطنية أو صورة وثيقة العمل الحر في الموقع.</p>
         </section>
 
         <section className="mt-8">
@@ -49,7 +50,7 @@ export default function PrivacyPage() {
 
         <section className="mt-8">
           <h2 className="text-2xl font-black text-[var(--brand-green-deep)]">حقوقك وطلباتها</h2>
-          <p className="mt-3 leading-8 muted-copy">يمكنك طلب العلم ببياناتك، أو الوصول إليها، أو تصحيحها، أو إتلاف ما انتهت الحاجة إليه، أو الرجوع عن الموافقة عندما تكون هي أساس المعالجة. ستضاف هنا قبل الإطلاق وسيلة اتصال مخصصة لتلقي هذه الطلبات وكيفية التحقق من هوية صاحبة الطلب.</p>
+          <p className="mt-3 leading-8 muted-copy">يمكنك طلب العلم ببياناتك، أو الوصول إليها، أو تصحيحها، أو إتلاف ما انتهت الحاجة إليه، أو الرجوع عن الموافقة عندما تكون هي أساس المعالجة. تُستقبل الطلبات عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>، وقد نطلب الحد الأدنى اللازم للتحقق من هوية صاحبة الطلب وحماية بياناتها.</p>
         </section>
 
         <section className="mt-8 border-t border-[var(--color-border)] pt-6 text-sm muted-copy">
