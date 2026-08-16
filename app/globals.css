@@ -642,6 +642,105 @@ body {
   background: rgb(255 182 35 / 0.1);
 }
 
+.admin-confirm-action {
+  max-width: 22rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-warning-bg);
+  padding: 0.75rem;
+  color: var(--color-warning-text);
+}
+
+@media (max-width: 1023px) {
+  .responsive-table-shell {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .responsive-admin-table {
+    display: block;
+    min-width: 0 !important;
+  }
+
+  .responsive-admin-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .responsive-admin-table tbody {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .responsive-admin-table tbody tr,
+  .responsive-admin-table tbody tr:nth-child(even),
+  .responsive-admin-table tbody tr:hover {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-block-start: 0.3rem solid var(--brand-amber);
+    border-radius: var(--radius-surface);
+    background: var(--color-surface);
+  }
+
+  .responsive-admin-table tbody td {
+    display: grid;
+    min-width: 0;
+    max-width: none;
+    grid-template-columns: minmax(6.25rem, 36%) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    border-block-end: 1px solid var(--color-border);
+    padding: 0.8rem 1rem;
+    white-space: normal;
+  }
+
+  .responsive-admin-table tbody td::before {
+    color: var(--brand-olive);
+    content: attr(data-label);
+    direction: rtl;
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-align: start;
+  }
+
+  .responsive-admin-table tbody td[dir="ltr"] {
+    direction: rtl;
+  }
+
+  .responsive-admin-table tbody td[dir="ltr"] > a,
+  .responsive-admin-table tbody td[dir="ltr"] > span {
+    direction: ltr;
+    justify-self: end;
+    text-align: start;
+  }
+
+  .responsive-admin-table tbody td[data-label="الإجراءات"] {
+    display: block;
+    border-block-end: 0;
+    background: var(--color-surface-muted);
+  }
+
+  .responsive-admin-table tbody td[data-label="الإجراءات"]::before {
+    display: block;
+    margin-block-end: 0.75rem;
+  }
+
+  .responsive-admin-table tbody td[data-label="الإجراءات"] .button-primary,
+  .responsive-admin-table tbody td[data-label="الإجراءات"] .button-secondary,
+  .responsive-admin-table tbody td[data-label="الإجراءات"] .button-quiet,
+  .responsive-admin-table tbody td[data-label="الإجراءات"] .button-danger {
+    flex: 1 1 9rem;
+  }
+}
+
 .brand-intersection {
   position: relative;
   display: grid;

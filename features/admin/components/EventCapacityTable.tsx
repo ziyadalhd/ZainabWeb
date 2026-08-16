@@ -4,17 +4,17 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatArabicEventDate, formatArabicEventTimeRange, formatArabicNumber, formatEventPrice } from "@/lib/format/date";
 import { changeEventStatusAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
+import { ConfirmActionForm } from "@/features/admin/components/ConfirmActionForm";
 
 export function EventCapacityTable({ events, compact = false }: { events: readonly Event[]; compact?: boolean }) {
   if (events.length === 0) {
-    return <EmptyState title="لا توجد فعاليات بعد" description="ابدأ بإنشاء فعالية جديدة؛ ستُحفظ أولًا كمسودة." />;
+    return <EmptyState title="لا توجد فعاليات بعد" description="ابدئي بإنشاء فعالية جديدة؛ ستُحفظ أولًا كمسودة حتى تراجعيها." />;
   }
 
   return (
     <div>
-      <p className="mb-2 text-xs font-bold muted-copy md:hidden">مرري الجدول أفقيًا لعرض جميع التفاصيل.</p>
-      <div className="table-scroll" tabIndex={0} role="region" aria-label="جدول الفعاليات؛ يمكن تمريره أفقيًا">
-      <table className="operational-table w-full min-w-[960px] border-collapse text-right text-sm">
+      <div className="table-scroll responsive-table-shell" tabIndex={0} role="region" aria-label="جدول الفعاليات">
+      <table className="operational-table responsive-admin-table w-full min-w-[960px] border-collapse text-right text-sm">
         <caption className="sr-only">الفعاليات والسعة وحالة النشر</caption>
         <thead>
           <tr>
@@ -31,15 +31,15 @@ export function EventCapacityTable({ events, compact = false }: { events: readon
         <tbody>
           {events.map((event) => (
             <tr key={event.id} className="border-t border-[var(--color-border)] align-top">
-              <td className="px-5 py-4"><span className="block font-bold">{event.title}</span><span className="text-xs muted-copy">{event.eventTypeLabel}</span></td>
-              <td className="px-5 py-4 whitespace-nowrap"><span className="block font-bold">{formatArabicEventDate(event.startsAt)}</span><span className="text-xs muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</span></td>
-              <td className="data-value px-5 py-4">{formatArabicNumber(event.activeReservationCount)} / {formatArabicNumber(event.capacity)}</td>
-              <td className="px-5 py-4 whitespace-nowrap">{formatEventPrice(event.priceHalalas)}</td>
-              <td className="px-5 py-4"><StatusBadge status={event.availability} /></td>
-              <td className="px-5 py-4"><StatusBadge status={event.registrationStatus} /></td>
-              <td className="px-5 py-4"><StatusBadge status={event.publicationStatus} /></td>
+              <td data-label="الفعالية" className="px-5 py-4"><span className="block font-bold">{event.title}</span><span className="text-xs muted-copy">{event.eventTypeLabel}</span></td>
+              <td data-label="التاريخ والوقت" className="px-5 py-4 whitespace-nowrap"><span className="block font-bold">{formatArabicEventDate(event.startsAt)}</span><span className="text-xs muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</span></td>
+              <td data-label="السعة" className="data-value px-5 py-4">{formatArabicNumber(event.activeReservationCount)} / {formatArabicNumber(event.capacity)}</td>
+              <td data-label="السعر" className="px-5 py-4 whitespace-nowrap">{formatEventPrice(event.priceHalalas)}</td>
+              <td data-label="الحجوزات" className="px-5 py-4"><StatusBadge status={event.availability} /></td>
+              <td data-label="التسجيل" className="px-5 py-4"><StatusBadge status={event.registrationStatus} /></td>
+              <td data-label="النشر" className="px-5 py-4"><StatusBadge status={event.publicationStatus} /></td>
               {!compact ? (
-                <td className="px-5 py-4">
+                <td data-label="الإجراءات" className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
                     <Link href={`/admin/events/${event.id}/edit`} className="button-quiet min-h-9 px-3 py-1.5 text-sm">تعديل</Link>
                     {event.publicationStatus === "draft" && event.endsAt !== null && event.priceHalalas !== null ? (
@@ -52,7 +52,12 @@ export function EventCapacityTable({ events, compact = false }: { events: readon
                       <span className="notice-warning inline-flex px-3 py-1.5 text-xs">بيانات النشر ناقصة</span>
                     ) : null}
                     {event.publicationStatus !== "archived" ? (
-                      <form action={changeEventStatusAction.bind(null, event.id, "archived")}><button className="button-quiet min-h-9 px-3 py-1.5 text-sm" type="submit">أرشفة</button></form>
+                      <ConfirmActionForm
+                        action={changeEventStatusAction.bind(null, event.id, "archived")}
+                        label="أرشفة"
+                        confirmation={`هل تريدين أرشفة «${event.title}»؟ ستختفي من الموقع العام.`}
+                        tone="quiet"
+                      />
                     ) : (
                       <form action={changeEventStatusAction.bind(null, event.id, "draft")}><button className="button-secondary min-h-9 px-3 py-1.5 text-sm" type="submit">إعادة إلى مسودة</button></form>
                     )}

@@ -3,6 +3,7 @@ import {
   formatArabicDateTime,
   formatArabicEventDate,
   formatArabicEventTimeRange,
+  formatArabicTimeInput,
   formatArabicNumber,
   formatArabicRequestedSchedule,
   formatEventPrice,
@@ -46,6 +47,11 @@ describe("Arabic formatting", () => {
     expect(formatted).toContain("٩:٤٥");
     expect(formatted).not.toContain("2026-08-13");
     expect(formatArabicRequestedSchedule(null, null, null)).toBe("الموعد غير مكتمل");
+  });
+
+  it("formats a local time choice in conversational Arabic", () => {
+    expect(formatArabicTimeInput("18:45")).toBe("٦:٤٥ مساءً");
+    expect(formatArabicTimeInput("08:00")).toBe("٨ صباحًا");
   });
 
   it("returns stable Riyadh parts independent of the server time zone", () => {

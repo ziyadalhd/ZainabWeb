@@ -65,6 +65,15 @@ export function formatArabicEventTimeRange(startsAt: string | Date, endsAt?: str
     : `من ${startClock} ${startPeriod} إلى ${endClock} ${endPeriod}`;
 }
 
+export function formatArabicTimeInput(value: string): string {
+  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return value;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return value;
+  return `${formatArabicClock({ hour, minute })} ${periodLabel(hour)}`;
+}
+
 function formatArabicClock({ hour, minute }: Pick<RiyadhDateParts, "hour" | "minute">): string {
   const hour12 = hour % 12 || 12;
   if (minute === 0) return formatArabicNumber(hour12);

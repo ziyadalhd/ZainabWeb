@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import type { ServiceRequestOfferActionState } from "@/app/(dashboard)/admin/(protected)/requests/actions";
 import { formatRiyadhDateTimeLocal } from "@/lib/format/date";
 import { OptionalDateTimePicker } from "@/features/scheduling/components/OptionalDateTimePicker";
@@ -22,9 +22,12 @@ function formatPrice(priceHalalas: number | null): string {
 }
 
 export function ServiceRequestOfferForm({ action, priceHalalas, terms, expiresAt }: ServiceRequestOfferFormProps) {
+  const fieldId = useId();
+  const priceId = `offer-price-${fieldId}`;
+  const termsId = `offer-terms-${fieldId}`;
   const [state, formAction, pending] = useActionState(action, {});
   const errorMessage = state.error === "price"
-    ? "أدخلي سعرًا صحيحًا بالريال، ويمكن إدخال 0."
+    ? "أدخلي سعرًا صحيحًا بالريال، ويمكن إدخال ٠."
     : state.error === "terms"
       ? "أدخلي شروط العرض."
       : state.error === "expiresAt"
@@ -42,19 +45,18 @@ export function ServiceRequestOfferForm({ action, priceHalalas, terms, expiresAt
       {errorMessage ? <p role="alert" className="notice-error text-sm">{errorMessage}</p> : null}
       {state.saved ? <p role="status" className="notice-success text-sm">تم حفظ العرض. سيظهر الآن من رابط متابعة الطلب.</p> : null}
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="grid gap-2 text-sm font-bold" htmlFor="offer-price">
+        <label className="grid gap-2 text-sm font-bold" htmlFor={priceId}>
           السعر بالريال السعودي
-          <input id="offer-price" className={inputClassName} name="priceSar" inputMode="decimal" dir="ltr" defaultValue={formatPrice(priceHalalas)} placeholder="0" required />
+          <input id={priceId} className={inputClassName} name="priceSar" inputMode="decimal" dir="ltr" autoComplete="off" defaultValue={formatPrice(priceHalalas)} placeholder="مثال: ٠…" required />
         </label>
         <div className="grid gap-2 text-sm font-bold">
-          صالح حتى (بتوقيت السعودية)
+          مدة صلاحية العرض
           <OptionalDateTimePicker name="expiresAt" defaultValue={expiresAt ? formatRiyadhDateTimeLocal(expiresAt) : undefined} />
-          <span className="text-xs font-normal muted-copy">اتركيه فارغًا لصلاحية 48 ساعة.</span>
         </div>
       </div>
-      <label className="grid gap-2 text-sm font-bold" htmlFor="offer-terms">
+      <label className="grid gap-2 text-sm font-bold" htmlFor={termsId}>
         شروط العرض
-        <textarea id="offer-terms" className={inputClassName} name="terms" rows={4} maxLength={4000} defaultValue={terms ?? ""} required />
+        <textarea id={termsId} className={inputClassName} name="terms" rows={4} maxLength={4000} autoComplete="off" defaultValue={terms ?? ""} required />
       </label>
       <button type="submit" disabled={pending} className="button-primary w-fit px-4 py-2 text-sm">{pending ? "جارٍ حفظ العرض…" : priceHalalas === null ? "حفظ العرض وإتاحته لصاحبة الطلب" : "تحديث العرض"}</button>
     </form>

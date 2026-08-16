@@ -15,7 +15,7 @@ export function RegistrationPaymentStatusForm({ action, currentStatus, registrat
       <label className="sr-only" htmlFor={`registration-payment-${registrationId}`}>حالة الدفع</label>
       <select id={`registration-payment-${registrationId}`} name="paymentStatus" defaultValue={currentStatus} className="field-control min-h-11 px-3 py-2 text-sm">
         <option value="unpaid">غير مدفوع</option>
-        <option value="deposit_paid">دُفعت العربون</option>
+        <option value="deposit_paid">دُفع العربون</option>
         <option value="paid_in_full">مدفوع بالكامل</option>
       </select>
       <button type="submit" disabled={pending} className="button-secondary min-h-11 px-3 py-2 text-sm">{pending ? "جارٍ الحفظ…" : "حفظ الدفع"}</button>

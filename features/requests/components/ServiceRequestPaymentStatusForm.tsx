@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import type { ServiceRequestPaymentActionState } from "@/app/(dashboard)/admin/(protected)/requests/actions";
 import type { ServiceRequestPaymentStatus } from "@/lib/domain/types";
 
@@ -10,13 +10,14 @@ interface ServiceRequestPaymentStatusFormProps {
 }
 export function ServiceRequestPaymentStatusForm({ action, currentStatus }: ServiceRequestPaymentStatusFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
+  const paymentStatusId = useId();
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3 border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4">
-      <label className="grid gap-2 text-sm font-bold" htmlFor="request-payment-status">
+      <label className="grid gap-2 text-sm font-bold" htmlFor={paymentStatusId}>
         حالة الدفع (تسجيل يدوي)
-        <select id="request-payment-status" name="paymentStatus" className="field-control min-h-11 px-3 py-2" defaultValue={currentStatus}>
+        <select id={paymentStatusId} name="paymentStatus" className="field-control min-h-11 px-3 py-2" defaultValue={currentStatus}>
           <option value="unpaid">غير مدفوع</option>
-          <option value="deposit_paid">دُفعت العربون</option>
+          <option value="deposit_paid">دُفع العربون</option>
           <option value="paid_in_full">مدفوع بالكامل</option>
         </select>
       </label>

@@ -17,7 +17,7 @@ const attendanceStatusLabels = {
 
 const paymentStatusLabels = {
   unpaid: "غير مدفوع",
-  deposit_paid: "دُفعت العربون",
+  deposit_paid: "دُفع العربون",
   paid_in_full: "مدفوع بالكامل",
 } as const;
 

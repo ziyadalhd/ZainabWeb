@@ -11,7 +11,7 @@ import { createAdminServiceRequestRepository } from "@/lib/supabase/service-requ
 
 const kindLabels = { space_booking: "حجز مساحة", celebration_booking: "إقامة حفل", workshop_application: "طلب ورشة" };
 const statusLabels = { new: "جديد", under_review: "قيد المراجعة", accepted: "مقبول", rejected: "مرفوض", cancelled: "ملغى" };
-const paymentLabels = { unpaid: "غير مدفوع", deposit_paid: "دُفعت العربون", paid_in_full: "مدفوع بالكامل" };
+const paymentLabels = { unpaid: "غير مدفوع", deposit_paid: "دُفع العربون", paid_in_full: "مدفوع بالكامل" };
 
 export default async function AdminRequestsPage() {
   const repository = await createAdminServiceRequestRepository();
@@ -19,7 +19,7 @@ export default async function AdminRequestsPage() {
   const conflicts = await Promise.all(requests.map(async (request) => request.kind === "workshop_application" ? [] : repository.getConflicts(request.id)));
   return (
     <main className="admin-page">
-      <PageHeader eyebrow="إدارة الطلبات" title="طلبات الحجز والورش" description="راجعي الطلب، ثم أعدّي عرضًا صالحًا عبر الرابط الآمن. تعارض المواعيد تحذير فقط ولا يقرر القبول تلقائيًا." />
+      <PageHeader eyebrow="إدارة الطلبات" title="طلبات الحجز والورش" description="راجعي كل طلب، وتأكدي من الموعد، ثم جهّزي العرض المناسب لصاحبته." />
       {requests.length === 0 ? <section className="card-surface mt-8 p-8 text-center muted-copy">لا توجد طلبات حاليًا.</section> : <section className="mt-8 grid gap-5">{requests.map((request, index) => {
         const booking = request.kind !== "workshop_application";
         const requestConflicts = conflicts[index] ?? [];

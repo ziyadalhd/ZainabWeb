@@ -20,7 +20,7 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
   const events = await repository.list();
   return (
     <main className="admin-page">
-      <div className="flex flex-wrap items-end justify-between gap-5"><PageHeader eyebrow="لوحة الإدارة" title="الفعاليات" description="أنشئ المسودات وعدّل التوفر ثم انشر أو أرشف بإجراء مستقل." /><Link href="/admin/events/new" className="button-primary">فعالية جديدة</Link></div>
+      <div className="flex flex-wrap items-end justify-between gap-5"><PageHeader eyebrow="لوحة الإدارة" title="الفعاليات" description="أضيفي فعالية، راجعي تفاصيلها، ثم انشريها عندما تصبح جاهزة." /><Link href="/admin/events/new" className="button-primary">فعالية جديدة</Link></div>
       {success && successMessages[success] ? <p role="status" className="notice-success mt-6">{successMessages[success]}</p> : null}
       {error && errorMessages[error] ? <p role="alert" className="notice-error mt-6">{errorMessages[error]}</p> : null}
       <div className="mt-8"><EventCapacityTable events={events} /></div>
