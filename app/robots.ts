@@ -1,14 +1,8 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl, isSiteIndexingEnabled } from "@/lib/site-url";
+import { getSiteUrl } from "@/lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
   const siteUrl = getSiteUrl();
-
-  if (!isSiteIndexingEnabled()) {
-    return {
-      rules: { userAgent: "*", disallow: "/" },
-    };
-  }
 
   return {
     rules: {

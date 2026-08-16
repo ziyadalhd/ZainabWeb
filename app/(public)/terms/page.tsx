@@ -11,13 +11,11 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="قبل الإطلاق" title="الشروط والأحكام" description="مسودة تشغيلية تعكس الخدمات الموجودة في الموقع فقط، وتحتاج اعتمادًا قانونيًا واستكمال العنوان والصفة النظامية قبل النشر العام." />
+      <PageHeader eyebrow="نادي بَيْن الثقافي" title="الشروط والأحكام" description="شروط وأحكام استخدام موقع وخدمات نادي بَيْن الثقافي." />
       <article className="card-surface mt-8 max-w-4xl p-6 sm:p-10">
-        <p className="notice-warning text-sm"><strong>حالة هذه الصفحة:</strong> مسودة تأسيسية وليست استشارة قانونية. أضيفت وسيلة التواصل العامة، وما زال العنوان والصفة النظامية وطريقة الإفصاح عنها تحتاج مراجعة قبل الإطلاق.</p>
-
-        <section className="mt-8">
+        <section className="mt-2">
           <h2 className="text-2xl font-black text-[var(--brand-green-deep)]">نطاق الموقع</h2>
-          <p className="mt-3 leading-8 muted-copy">يقدم موقع نادي بَيْن الثقافي من مكة معلومات عن النادي والفعاليات، ونماذج لتسجيل الزائرات وطلبات حجز المساحة أو إقامة الحفلات أو تقديم الورش. يمكن التواصل عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>. ما زال التحقق من ملاءمة النشاط والصفة النظامية وطريقة الإفصاح عنها قيد المراجعة قبل الإطلاق العام.</p>
+          <p className="mt-3 leading-8 muted-copy">يقدم موقع نادي بَيْن الثقافي من مكة المكرمة معلومات عن النادي والفعاليات، ونماذج لتسجيل الزائرات وطلبات حجز المساحة أو إقامة الحفلات أو تقديم الورش. يمكن التواصل عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>.</p>
         </section>
 
         <section className="mt-8">
@@ -43,7 +41,7 @@ export default function TermsPage() {
 
         <section className="mt-8">
           <h2 className="text-2xl font-black text-[var(--brand-green-deep)]">التعديلات والتواصل</h2>
-          <p className="mt-3 leading-8 muted-copy">تُستقبل الاستفسارات والشكاوى عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>. يضاف قبل الإطلاق تاريخ النفاذ وسجل التعديلات والعنوان النهائي. لا تعتمد هذه المسودة حتى تُراجع مع طبيعة النشاط الفعلية والصفة النظامية.</p>
+          <p className="mt-3 leading-8 muted-copy">تُستقبل الاستفسارات والملاحظات عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>. يحتفظ النادي بحق تحديث هذه الشروط والأحكام متى دعت الحاجة، وتسري أي تعديلات من تاريخ نشرها على هذه الصفحة.</p>
         </section>
 
         <Link href="/privacy" className="button-secondary mt-8">عرض سياسة الخصوصية</Link>

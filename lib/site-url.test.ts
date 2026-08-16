@@ -2,16 +2,13 @@ import { afterEach, describe, expect, it } from "vitest";
 import { getSiteUrl, isSiteIndexingEnabled } from "@/lib/site-url";
 
 const originalSiteUrl = process.env.SITE_URL;
-const originalVercelEnvironment = process.env.VERCEL_ENV;
-const originalIndexingFlag = process.env.SITE_INDEXING_ENABLED;
+const originalDisabledFlag = process.env.SITE_INDEXING_DISABLED;
 
 afterEach(() => {
   if (originalSiteUrl === undefined) delete process.env.SITE_URL;
   else process.env.SITE_URL = originalSiteUrl;
-  if (originalVercelEnvironment === undefined) delete process.env.VERCEL_ENV;
-  else process.env.VERCEL_ENV = originalVercelEnvironment;
-  if (originalIndexingFlag === undefined) delete process.env.SITE_INDEXING_ENABLED;
-  else process.env.SITE_INDEXING_ENABLED = originalIndexingFlag;
+  if (originalDisabledFlag === undefined) delete process.env.SITE_INDEXING_DISABLED;
+  else process.env.SITE_INDEXING_DISABLED = originalDisabledFlag;
 });
 
 describe("site URL and indexing", () => {
@@ -25,11 +22,10 @@ describe("site URL and indexing", () => {
     expect(getSiteUrl().toString()).toBe("https://example.test/");
   });
 
-  it("requires both production and an explicit launch flag before indexing", () => {
-    process.env.SITE_INDEXING_ENABLED = "true";
-    process.env.VERCEL_ENV = "preview";
-    expect(isSiteIndexingEnabled()).toBe(false);
-    process.env.VERCEL_ENV = "production";
+  it("enables site indexing by default and allows explicit disabling", () => {
+    delete process.env.SITE_INDEXING_DISABLED;
     expect(isSiteIndexingEnabled()).toBe(true);
+    process.env.SITE_INDEXING_DISABLED = "true";
+    expect(isSiteIndexingEnabled()).toBe(false);
   });
 });

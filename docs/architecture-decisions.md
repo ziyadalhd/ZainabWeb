@@ -212,13 +212,13 @@ Record approved architectural decisions here only after explicit user approval. 
 - Privacy and authorization: reminder rows store no message body, phone, name, or plaintext token. RLS permits metadata reads only to allowlisted administrators. Issuance and sent marking use public `security invoker` wrappers around private fixed-search-path helpers that enforce `private.is_admin()`.
 - Documentation sources: Context7 ID `/vercel/next.js/v16.2.9` was queried for Server Actions passed to Client Components and `useActionState`. Current official Supabase RLS, role/grant, and database-function guidance was consulted. No product behavior was sourced from technical documentation.
 
-## Search metadata and controlled indexing: 2026-08-13
+## Search metadata and controlled indexing: 2026-08-13 (Updated for Production Release: 2026-08-16)
 
-- Status: implemented on `codex/launch-readiness`; indexing remains disabled pending the explicit public-launch decision.
+- Status: enabled for production release; Terms and Privacy Policy established as official versions and `robots.ts` configured for public search engine indexing (`allow: /`) with private/admin route exclusions.
 - Canonical origin: server-side metadata reads `SITE_URL`, which currently defaults to the approved temporary origin `https://bayn-cultural-club.vercel.app`. A later custom domain requires only an environment change, not a routing rewrite.
-- Launch gate: pages become indexable only when both `VERCEL_ENV=production` and `SITE_INDEXING_ENABLED=true`. Preview and Development deployments emit a global `noindex` directive and a `robots.txt` rule that disallows all crawling.
+- Search indexing: public pages allow full search engine indexing (`User-agent: *`, `Allow: /`), while administrative and token-bearing routes maintain explicit `robots: { index: false, follow: false }` directives and `Disallow` rules in `robots.ts`.
 - Public sitemap: `sitemap.xml` contains only approved public routes and upcoming published events returned by the public event catalog. A catalog failure leaves the static public routes available instead of exposing an internal error.
-- Private routes: the administrator dashboard, booking-management links, request-management links, waitlist invitations, one-time feedback links, and consent-management links explicitly disable indexing and canonical inheritance. They are also excluded from `sitemap.xml` and disallowed after public crawling is enabled.
+- Private routes: the administrator dashboard, booking-management links, request-management links, waitlist invitations, one-time feedback links, and consent-management links explicitly disable indexing and canonical inheritance. They are also excluded from `sitemap.xml` and disallowed in `robots.ts`.
 - Page metadata: public routes use Arabic titles and descriptions; published event pages derive their metadata and optional social image only from the public event record.
 - Documentation source: Context7 ID `/vercel/next.js/v16.2.9` was queried for MetadataRoute-based `robots.ts` and `sitemap.ts`, `metadataBase`, relative canonical URLs, and nested metadata inheritance. No product behavior was sourced from technical documentation.
 

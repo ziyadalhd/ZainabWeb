@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { thmanyahSans } from "./fonts";
-import { getSiteUrl, isSiteIndexingEnabled } from "@/lib/site-url";
+import { getSiteUrl } from "@/lib/site-url";
 import "@daypicker/react/style.css";
 import "./globals.css";
 
@@ -26,9 +26,10 @@ export const metadata: Metadata = {
     title: "نادي بَيْن الثقافي",
     description: "الموقع العربي لنادي بَيْن الثقافي في مكة.",
   },
-  robots: isSiteIndexingEnabled()
-    ? { index: true, follow: true }
-    : { index: false, follow: false, noarchive: true },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {

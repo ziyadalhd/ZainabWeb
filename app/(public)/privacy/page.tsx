@@ -17,13 +17,11 @@ const items = [
 export default function PrivacyPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="قبل الإطلاق" title="سياسة الخصوصية" description="مسودة تأسيسية تُستكمل بالصفة النظامية والعنوان النهائي قبل الإطلاق العام." />
+      <PageHeader eyebrow="نادي بَيْن الثقافي" title="سياسة الخصوصية" description="سياسة الخصوصية وحماية البيانات الشخصية لزائرات ومستفيدات نادي بَيْن الثقافي." />
       <article className="card-surface mt-8 max-w-4xl p-6 sm:p-10">
-        <p className="notice-warning text-sm"><strong>حالة هذه الصفحة:</strong> مسودة تشغيلية وليست استشارة قانونية. لا يُزال تنبيه المسودة ولا يُطلق الموقع للعامة قبل استكمال بيانات الجهة والعنوان ومراجعتها قانونيًا.</p>
-
-        <section className="mt-8">
+        <section className="mt-2">
           <h2 className="text-2xl font-black text-[var(--brand-green-deep)]">من يعالج بياناتك</h2>
-          <p className="mt-3 leading-8 muted-copy">يدير نادي بَيْن الثقافي هذا الموقع من مكة. يمكن التواصل بشأن الخصوصية عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>. ما زال تحديد الصفة النظامية وطريقة الإفصاح المناسبة عنها قيد المراجعة قبل الإطلاق العام. لا ننشر رقم الهوية الوطنية أو صورة وثيقة العمل الحر في الموقع.</p>
+          <p className="mt-3 leading-8 muted-copy">يدير نادي بَيْن الثقافي هذا الموقع من مكة المكرمة. يمكن التواصل بشأن الخصوصية وحماية البيانات عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>.</p>
         </section>
 
         <section className="mt-8">
@@ -54,7 +52,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="mt-8 border-t border-[var(--color-border)] pt-6 text-sm muted-copy">
-          <h2 className="font-extrabold text-[var(--brand-green-deep)]">المراجع الرسمية التي بُنيت عليها هذه المسودة</h2>
+          <h2 className="font-extrabold text-[var(--brand-green-deep)]">المراجع والأنظمة المعتمدة</h2>
           <ul className="mt-3 list-disc space-y-2 pr-6">
             <li><a className="underline decoration-[var(--brand-amber)] underline-offset-4" href="https://dgp.sdaia.gov.sa/wps/portal/pdp/knowledgecenter/details/ElaborationandDevelopingPrivacyPolicyGuideline" target="_blank" rel="noreferrer">الدليل الاسترشادي لإعداد وتطوير سياسة الخصوصية — سدايا</a></li>
             <li><a className="underline decoration-[var(--brand-amber)] underline-offset-4" href="https://sdaia.gov.sa/ar/Research/Pages/DataProtection.aspx" target="_blank" rel="noreferrer">حقوق أصحاب البيانات الشخصية — سدايا</a></li>

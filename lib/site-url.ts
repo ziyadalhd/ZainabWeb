@@ -14,5 +14,5 @@ export function getSiteUrl(): URL {
 }
 
 export function isSiteIndexingEnabled(): boolean {
-  return process.env.VERCEL_ENV === "production" && process.env.SITE_INDEXING_ENABLED === "true";
+  return process.env.SITE_INDEXING_DISABLED !== "true";
 }

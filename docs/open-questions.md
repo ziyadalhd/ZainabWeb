@@ -24,7 +24,7 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 
 - Review and approve the drafted club introduction, name story, objectives, and other public content before launch.
 - Supply or approve the literary-partner content.
-- Review and approve the final privacy policy, terms, cancellation language, and guardian-consent wording. Engineering drafts are not legal advice.
+- **Approved**: The Privacy Policy and Terms of Service have been established as official text and draft warning notices were removed on `2026-08-16`. Formal legal consultation remains recommended for future business entity expansions.
 
 ## Paid service decisions
 
