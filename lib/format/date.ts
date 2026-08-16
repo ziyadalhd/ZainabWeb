@@ -109,6 +109,21 @@ export function formatSeatCapacity(value: number): string {
   return `${formatArabicNumber(value)} مقعدًا`;
 }
 
+export function formatEventCount(value: number): string {
+  if (value === 1) return "فعالية واحدة";
+  if (value === 2) return "فعاليتان";
+  if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} فعاليات`;
+  return `${formatArabicNumber(value)} فعالية`;
+}
+
+export function formatRegistrationCount(value: number): string {
+  if (value === 0) return "لا توجد مسجلات";
+  if (value === 1) return "مسجلة واحدة";
+  if (value === 2) return "مسجلتان";
+  if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} مسجلات`;
+  return `${formatArabicNumber(value)} مسجلة`;
+}
+
 export function formatArabicTime(value: string | Date): string {
   return timeFormatter.format(typeof value === "string" ? new Date(value) : value);
 }

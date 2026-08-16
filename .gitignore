@@ -30,3 +30,5 @@ pnpm-debug.log*
 
 # deployment
 .vercel
+.agents/
+.claude/

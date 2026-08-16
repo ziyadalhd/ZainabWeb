@@ -41,6 +41,16 @@ export function isQuarterHourTime(value: string): boolean {
   return timeInputPattern.test(value);
 }
 
+export function roundTimeToNearestQuarter(value: string): string {
+  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+  if (!match) return value;
+
+  const minutes = Number(match[1]) * 60 + Number(match[2]);
+  const rounded = Math.round(minutes / 15) * 15;
+  const normalized = rounded % (24 * 60);
+  return `${String(Math.floor(normalized / 60)).padStart(2, "0")}:${String(normalized % 60).padStart(2, "0")}`;
+}
+
 export function dateTimeLocalValue(date: string, time: string): string {
   return date && time ? `${date}T${time}` : "";
 }

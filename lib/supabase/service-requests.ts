@@ -35,7 +35,7 @@ function isServiceRequestPaymentStatus(value: string): value is ServiceRequestPa
   return value === "unpaid" || value === "deposit_paid" || value === "paid_in_full";
 }
 
-function mapRow(row: ServiceRequestRow): AdminServiceRequest {
+export function mapServiceRequestRow(row: ServiceRequestRow): AdminServiceRequest {
   if (!isServiceRequestKind(row.request_kind) || !isServiceRequestStatus(row.status) || !isServiceRequestPaymentStatus(row.payment_status)) {
     throw new Error("Invalid service request row returned by the data source.");
   }
@@ -53,6 +53,12 @@ function mapRow(row: ServiceRequestRow): AdminServiceRequest {
     attendeeCount: row.attendee_count,
     useOrOccasionType: row.use_or_occasion_type,
     workshopTitle: row.workshop_title,
+    workshopDescription: row.workshop_description,
+    workshopTargetAudience: row.workshop_target_audience,
+    workshopDuration: row.workshop_duration,
+    workshopExpectedAttendance: row.workshop_expected_attendance,
+    workshopRequirements: row.workshop_requirements,
+    workshopPortfolioUrl: row.workshop_portfolio_url,
     notes: row.notes,
     offerPriceHalalas: row.offer_price_halalas,
     offerTerms: row.offer_terms,
@@ -104,7 +110,7 @@ implements ServiceRequestService, AdminServiceRequestRepository {
       .select("*")
       .order("created_at", { ascending: false });
     if (error || !data) throw new ServiceRequestFailure("save");
-    return data.map(mapRow);
+    return data.map(mapServiceRequestRow);
   }
 
   async getByToken(token: string): Promise<ServiceRequestDetails | null> {

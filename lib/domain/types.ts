@@ -245,6 +245,12 @@ export interface AdminServiceRequest {
   attendeeCount: number | null;
   useOrOccasionType: string | null;
   workshopTitle: string | null;
+  workshopDescription: string | null;
+  workshopTargetAudience: string | null;
+  workshopDuration: string | null;
+  workshopExpectedAttendance: number | null;
+  workshopRequirements: string | null;
+  workshopPortfolioUrl: string | null;
   notes: string | null;
   offerPriceHalalas: number | null;
   offerTerms: string | null;

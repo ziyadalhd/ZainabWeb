@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addMinutesToSchedule, dateTimeLocalValue, formatDateInput, isQuarterHourTime, parseDateInput } from "@/lib/scheduling";
+import { addMinutesToSchedule, dateTimeLocalValue, formatDateInput, isQuarterHourTime, parseDateInput, roundTimeToNearestQuarter } from "@/lib/scheduling";
 
 describe("scheduling helpers", () => {
   it("parses and formats Gregorian form dates without UTC shifting", () => {
@@ -15,6 +15,9 @@ describe("scheduling helpers", () => {
   it("accepts quarter-hour values and preserves the server field format", () => {
     expect(isQuarterHourTime("17:45")).toBe(true);
     expect(isQuarterHourTime("17:42")).toBe(false);
+    expect(roundTimeToNearestQuarter("11:32")).toBe("11:30");
+    expect(roundTimeToNearestQuarter("11:53")).toBe("12:00");
+    expect(roundTimeToNearestQuarter("23:58")).toBe("00:00");
     expect(dateTimeLocalValue("2026-08-13", "17:45")).toBe("2026-08-13T17:45");
   });
 });

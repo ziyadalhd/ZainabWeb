@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Event } from "@/lib/domain/types";
-import { formatArabicEventDate, formatArabicNumber, getRiyadhDateParts } from "@/lib/format/date";
+import { formatArabicEventDate, formatArabicNumber, formatEventCount, formatRegistrationCount, formatSeatCapacity, getRiyadhDateParts } from "@/lib/format/date";
 
 const weekDays = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
@@ -37,7 +37,7 @@ export function CalendarMonthGrid({ events, month = new Date() }: { events: read
     <section aria-labelledby="calendar-title" className="border border-t-4 border-[var(--color-border)] border-t-[var(--brand-amber)] bg-[var(--color-surface)] p-4 sm:p-6">
       <div className="flex items-center justify-between gap-4 border-b border-[var(--brand-olive)] pb-4">
         <h2 id="calendar-title" className="text-2xl font-black text-[var(--brand-forest)]">{monthFormatter.format(month)}</h2>
-        <span className="text-sm font-bold muted-copy">{formatArabicNumber(events.length)} فعالية</span>
+        <span className="text-sm font-bold muted-copy">{formatEventCount(events.length)}</span>
       </div>
       <div className="mt-5 md:hidden">
         {scheduledDays.length === 0 ? <p className="py-8 text-center muted-copy">لا توجد فعاليات في هذا الشهر.</p> : (
@@ -49,7 +49,7 @@ export function CalendarMonthGrid({ events, month = new Date() }: { events: read
                   {dayEvents.map((event) => (
                     <Link key={event.id} href={`/admin/events/${event.id}/edit`} className="block border border-[var(--color-border)] bg-[var(--color-surface)] p-3 hover:border-[var(--brand-olive)]" aria-label={`تعديل ${event.title}`}>
                       <span className="block break-words font-extrabold">{event.title}</span>
-                      <span className="data-value mt-1 block text-sm muted-copy">{timeFormatter.format(new Date(event.startsAt))} · {formatArabicNumber(event.activeReservationCount)} من {formatArabicNumber(event.capacity)} مسجلة</span>
+                      <span className="data-value mt-1 block text-sm muted-copy">{timeFormatter.format(new Date(event.startsAt))} · {formatRegistrationCount(event.activeReservationCount)} · السعة {formatSeatCapacity(event.capacity)}</span>
                     </Link>
                   ))}
                 </div>
@@ -74,7 +74,7 @@ export function CalendarMonthGrid({ events, month = new Date() }: { events: read
                     <Link key={event.id} href={`/admin/events/${event.id}/edit`} className="min-w-0 border-r-2 border-[var(--brand-amber)] bg-[var(--color-success-bg)] px-2 py-1 text-[0.68rem] font-bold text-[var(--brand-forest)] hover:bg-[var(--color-warning-bg)]" aria-label={`تعديل ${event.title}`}>
                       <span className="block truncate">{event.title}</span>
                       <span className="data-value block text-[0.62rem] font-normal">{timeFormatter.format(new Date(event.startsAt))}</span>
-                      <span className="data-value mt-1 block text-[0.62rem] font-normal">{formatArabicNumber(event.activeReservationCount)} / {formatArabicNumber(event.capacity)} مسجلة</span>
+                      <span className="data-value mt-1 block text-[0.62rem] font-normal">{formatRegistrationCount(event.activeReservationCount)} · {formatSeatCapacity(event.capacity)}</span>
                     </Link>
                   ))}
                 </div>
