@@ -33,7 +33,9 @@ describe("Arabic formatting", () => {
     const endsAt = "2026-08-11T17:30:00.000Z";
     expect(formatArabicEventDate(startsAt)).toContain("الثلاثاء");
     expect(formatArabicEventDate(startsAt)).toContain("أغسطس");
-    expect(formatArabicEventTimeRange(startsAt, endsAt)).toContain("–");
+    expect(formatArabicEventTimeRange(startsAt, endsAt)).toBe("من ٦ إلى ٨:٣٠ مساءً");
+    expect(formatArabicEventTimeRange("2026-08-11T07:30:00.000Z", "2026-08-11T10:00:00.000Z"))
+      .toBe("من ١٠:٣٠ صباحًا إلى ١ مساءً");
   });
 
   it("formats a requested local schedule without exposing database date or time syntax", () => {

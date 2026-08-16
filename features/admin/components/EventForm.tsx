@@ -25,8 +25,8 @@ const errorMessages: Record<EventFormActionError, string> = {
   eventTypeLabel: "أدخل نوع الفعالية.",
   startsAt: "أدخل تاريخ البداية ووقتها بتوقيت السعودية.",
   endsAt: "يجب أن تكون نهاية الفعالية بعد بدايتها.",
-  capacity: "أدخل سعة صحيحة من 1 إلى 50 مقعدًا.",
-  priceHalalas: "أدخل سعرًا صحيحًا بالريال، أو 0 للفعالية المجانية.",
+  capacity: "أدخل سعة صحيحة من ١ إلى ٥٠ مقعدًا.",
+  priceHalalas: "أدخل سعرًا صحيحًا بالريال، أو ٠ للفعالية المجانية.",
   registrationStatus: "تعذر تحديد حالة التسجيل.",
   save: "تعذر حفظ الفعالية. لم تُفقد البيانات؛ حاول مرة أخرى.",
 };
@@ -163,7 +163,7 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
 
       <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">
         <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">
-          الموعد بتوقيت السعودية
+          موعد الفعالية
         </legend>
         <EventSchedulePicker
           defaultStartDate={event ? formatRiyadhDateInput(event.startsAt) : undefined}
@@ -197,7 +197,7 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
               aria-invalid={state.error === "capacity"}
               required
             />
-            <span id="event-capacity-description" className="text-xs muted-copy">من 1 إلى 50 مقعدًا.</span>
+            <span id="event-capacity-description" className="text-xs muted-copy">من ١ إلى ٥٠ مقعدًا.</span>
             {state.error === "capacity" ? <span id="event-capacity-error" className="text-sm font-bold text-[var(--color-error-text)]">{errorMessages.capacity}</span> : null}
           </div>
           <div className="grid gap-2">
@@ -211,12 +211,12 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
               dir="ltr"
               autoComplete="off"
               defaultValue={formatPriceInput(event?.priceHalalas)}
-              placeholder="مثال: 0 للفعالية المجانية…"
+              placeholder="مثال: ٠ للفعالية المجانية…"
               aria-describedby={`event-price-description${state.error === "priceHalalas" ? " event-price-error" : ""}`}
               aria-invalid={state.error === "priceHalalas"}
               required
             />
-            <span id="event-price-description" className="text-xs muted-copy">اكتب 0 إذا كانت الفعالية مجانية.</span>
+            <span id="event-price-description" className="text-xs muted-copy">اكتب ٠ إذا كانت الفعالية مجانية.</span>
             {state.error === "priceHalalas" ? <span id="event-price-error" className="text-sm font-bold text-[var(--color-error-text)]">{errorMessages.priceHalalas}</span> : null}
           </div>
           <div className="grid gap-2">

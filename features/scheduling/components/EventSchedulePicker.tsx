@@ -59,8 +59,8 @@ export function EventSchedulePicker({ defaultStartDate = "", defaultStartTime = 
     <section className="date-time-choice grid gap-6" aria-labelledby="event-schedule-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-extrabold tracking-[0.08em] text-[var(--brand-olive)]">الموعد</p>
-          <h3 id="event-schedule-title" className="mt-1 text-xl font-black text-[var(--brand-forest)]">موعد الفعالية</h3>
+          <h3 id="event-schedule-title" className="text-xl font-black text-[var(--brand-forest)]">اختاري اليوم والوقت</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-7 muted-copy">بعد اختيار البداية نقترح نهاية بعد ساعتين، وتقدرين تعدلينها مباشرة.</p>
         </div>
         <span className="date-time-timezone">توقيت السعودية</span>
       </div>
@@ -83,7 +83,7 @@ export function EventSchedulePicker({ defaultStartDate = "", defaultStartTime = 
       {differentDay ? <ArabicDatePicker id="event-end-date" label="تاريخ النهاية" value={endDate} onChange={(value) => { setEndDate(value); setEndTouched(true); onValueChange?.(); }} /> : null}
       <input name="endDate" type="hidden" value={differentDay ? endDate : startDate} required readOnly />
 
-      <p className="date-time-preview data-value" aria-live="polite">
+      <p className="date-time-preview" aria-live="polite">
         {start && end ? <>{formatArabicEventDate(start)} · {formatArabicEventTimeRange(start, end)}</> : "اختاري اليوم لعرض الموعد كاملًا هنا."}
       </p>
       {startError ? <p className="text-sm font-bold text-[var(--color-error-text)]">{startError}</p> : null}

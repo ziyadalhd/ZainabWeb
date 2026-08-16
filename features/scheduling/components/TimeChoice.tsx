@@ -1,5 +1,7 @@
 "use client";
 
+import { formatArabicNumber } from "@/lib/format/date";
+
 const minuteChoices = [
   { value: "00", label: "تمام" },
   { value: "15", label: "وربع" },
@@ -46,7 +48,7 @@ export function TimeChoice({ id, label, name, value, onChange, required = false 
         <label className="grid gap-1 text-xs font-bold" htmlFor={`${id}-hour`}>
           الساعة
           <select id={`${id}-hour`} className="field-control min-h-11 bg-white data-value" value={time.hour12} onChange={(event) => update({ hour12: Number(event.target.value) })}>
-            {Array.from({ length: 12 }, (_, index) => index + 1).map((hour) => <option key={hour} value={hour}>{hour}</option>)}
+            {Array.from({ length: 12 }, (_, index) => index + 1).map((hour) => <option key={hour} value={hour}>{formatArabicNumber(hour)}</option>)}
           </select>
         </label>
         <label className="grid gap-1 text-xs font-bold" htmlFor={`${id}-period`}>
@@ -66,7 +68,7 @@ export function TimeChoice({ id, label, name, value, onChange, required = false 
             aria-pressed={time.minute === choice.value}
             onClick={() => update({ minute: choice.value })}
           >
-            <span className="data-value">{choice.value}</span>
+            <span className="data-value">{choice.value === "00" ? "٠٠" : formatArabicNumber(Number(choice.value))}</span>
             <span>{choice.label}</span>
           </button>
         ))}

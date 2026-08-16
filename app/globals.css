@@ -503,7 +503,7 @@ body {
 
 .bayn-calendar {
   max-width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-surface);
   background: var(--color-surface);
@@ -517,7 +517,19 @@ body {
   --rdp-day_button-width: 2.6rem;
   --rdp-day_button-height: 2.6rem;
   margin: 0 auto;
+  width: 100%;
   color: var(--color-text);
+}
+
+.bayn-calendar .rdp-months,
+.bayn-calendar .rdp-month,
+.bayn-calendar .rdp-month_grid {
+  width: 100%;
+  max-width: 100%;
+}
+
+.bayn-calendar .rdp-month_grid {
+  table-layout: fixed;
 }
 
 .bayn-calendar .rdp-month_caption {
@@ -533,6 +545,24 @@ body {
 .bayn-calendar .rdp-selected .rdp-day_button {
   background: var(--brand-forest);
   color: var(--color-on-primary);
+}
+
+@media (max-width: 480px) {
+  .bayn-calendar {
+    padding: 0.5rem;
+  }
+
+  .bayn-calendar .rdp-root {
+    --rdp-day-width: 2.1rem;
+    --rdp-day-height: 2.45rem;
+    --rdp-day_button-width: 2rem;
+    --rdp-day_button-height: 2.25rem;
+    --rdp-nav_button-width: 2rem;
+  }
+
+  .bayn-calendar .rdp-weekday {
+    font-size: 0.72rem;
+  }
 }
 
 .time-choice {

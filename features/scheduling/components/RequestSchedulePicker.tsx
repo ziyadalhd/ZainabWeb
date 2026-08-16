@@ -35,7 +35,7 @@ export function RequestSchedulePicker() {
         }} required />
         <TimeChoice id="request-end" label="إلى الساعة" name="requestedEndTime" value={endTime} onChange={(value) => { setEndTime(value); setEndTouched(true); }} required />
       </div>
-      <p className="date-time-preview data-value" aria-live="polite">
+      <p className="date-time-preview" aria-live="polite">
         {start && end ? <>{formatArabicEventDate(start)} · {formatArabicEventTimeRange(start, end)}</> : "بعد اختيار اليوم يظهر لك الموعد كاملًا هنا."}
       </p>
     </fieldset>

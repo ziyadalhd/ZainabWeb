@@ -52,8 +52,27 @@ export function formatArabicEventDate(value: string | Date): string {
 }
 
 export function formatArabicEventTimeRange(startsAt: string | Date, endsAt?: string | Date | null): string {
-  const start = formatArabicTime(startsAt);
-  return endsAt ? `${start} – ${formatArabicTime(endsAt)}` : start;
+  const start = getRiyadhDateParts(startsAt);
+  const startClock = formatArabicClock(start);
+  const startPeriod = periodLabel(start.hour);
+  if (!endsAt) return `${startClock} ${startPeriod}`;
+
+  const end = getRiyadhDateParts(endsAt);
+  const endClock = formatArabicClock(end);
+  const endPeriod = periodLabel(end.hour);
+  return startPeriod === endPeriod
+    ? `من ${startClock} إلى ${endClock} ${endPeriod}`
+    : `من ${startClock} ${startPeriod} إلى ${endClock} ${endPeriod}`;
+}
+
+function formatArabicClock({ hour, minute }: Pick<RiyadhDateParts, "hour" | "minute">): string {
+  const hour12 = hour % 12 || 12;
+  if (minute === 0) return formatArabicNumber(hour12);
+  return `${formatArabicNumber(hour12)}:${formatArabicNumber(minute).padStart(2, "٠")}`;
+}
+
+function periodLabel(hour: number): "صباحًا" | "مساءً" {
+  return hour < 12 ? "صباحًا" : "مساءً";
 }
 
 function localRiyadhDateTime(date: string, time: string): Date | null {
