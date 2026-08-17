@@ -60,7 +60,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
 
   return (
     <form action={formAction} className="request-form" noValidate>
-      {state.error ? <p role="alert" className="notice-error text-sm">{errorMessages[state.error] ?? errorMessages.save}</p> : null}
+      {state.error ? <p role="alert" className="notice-error text-sm">{errorMessages[state.error] ?? state.error}</p> : null}
 
       <fieldset className="request-group">
         <legend className="request-group__title">بيانات التواصل</legend>

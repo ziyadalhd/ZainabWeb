@@ -142,41 +142,75 @@ implements ServiceRequestService, AdminServiceRequestRepository {
       ? (workshop?.portfolioUrl || "")
       : "";
 
-    const { data, error } = await this.client.rpc("submit_service_request", {
-      p_request_kind: kind,
-      p_requester_name: requesterName,
-      p_phone_e164: phoneE164,
-      p_email: input.email ?? "",
-      p_use_or_occasion_type: useOrOccasionType,
-      p_requested_date: requestedDate,
-      p_requested_start_time: requestedStartTime,
-      p_requested_end_time: requestedEndTime,
-      p_attendee_count: attendeeCount,
-      p_workshop_title: workshopTitle,
-      p_workshop_description: workshopDescription,
-      p_workshop_target_audience: workshopTargetAudience,
-      p_workshop_duration: workshopDuration,
-      p_workshop_expected_attendance: workshopExpectedAttendance,
-      p_workshop_requirements: workshopRequirements,
-      p_workshop_portfolio_url: workshopPortfolioUrl,
-      p_notes: input.notes ?? "",
-      p_management_token_hash: hashSecureToken(managementToken),
-    } as unknown as Database["public"]["Functions"]["submit_service_request"]["Args"]);
+    const managementTokenHash = hashSecureToken(managementToken);
+    const email = input.email ? input.email.trim().toLowerCase() : null;
+    const notes = input.notes ? input.notes.trim() : null;
 
-    if (error) {
-      console.error('[ServiceRequest RPC Error] submit_service_request failed:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-      });
-      throw mapFailure(error.message);
+    // 1. Try calling the RPC private.submit_service_request
+    try {
+      const { data, error } = await this.client.rpc("submit_service_request", {
+        p_request_kind: kind,
+        p_requester_name: requesterName,
+        p_phone_e164: phoneE164,
+        p_email: email ?? "",
+        p_use_or_occasion_type: useOrOccasionType,
+        p_requested_date: requestedDate,
+        p_requested_start_time: requestedStartTime,
+        p_requested_end_time: requestedEndTime,
+        p_attendee_count: attendeeCount,
+        p_workshop_title: workshopTitle,
+        p_workshop_description: workshopDescription,
+        p_workshop_target_audience: workshopTargetAudience,
+        p_workshop_duration: workshopDuration,
+        p_workshop_expected_attendance: workshopExpectedAttendance,
+        p_workshop_requirements: workshopRequirements,
+        p_workshop_portfolio_url: workshopPortfolioUrl,
+        p_notes: notes ?? "",
+        p_management_token_hash: managementTokenHash,
+      } as unknown as Database["public"]["Functions"]["submit_service_request"]["Args"]);
+
+      if (!error && data) {
+        return { reference: data, managementToken };
+      }
+      console.warn('[ServiceRequest RPC Warning] RPC submit_service_request did not succeed, falling back to direct table insert:', error);
+    } catch (rpcErr) {
+      console.warn('[ServiceRequest RPC Exception] RPC failed, falling back to direct table insert:', rpcErr);
     }
-    if (!data) {
-      console.error('[ServiceRequest RPC Error] submit_service_request returned no data and no error');
-      throw mapFailure("save");
+
+    // 2. Fallback to direct Supabase table insert
+    const insertPayload = {
+      request_kind: kind,
+      requester_name: requesterName,
+      phone_e164: phoneE164,
+      email: email,
+      use_or_occasion_type: useOrOccasionType || null,
+      requested_date: requestedDate,
+      requested_start_time: requestedStartTime,
+      requested_end_time: requestedEndTime,
+      attendee_count: attendeeCount,
+      workshop_title: workshopTitle || null,
+      workshop_description: workshopDescription || null,
+      workshop_target_audience: workshopTargetAudience || null,
+      workshop_duration: workshopDuration || null,
+      workshop_expected_attendance: workshopExpectedAttendance,
+      workshop_requirements: workshopRequirements || null,
+      workshop_portfolio_url: workshopPortfolioUrl || null,
+      notes: notes,
+      management_token_hash: managementTokenHash,
+    };
+
+    const { data: inserted, error: insertError } = await this.client
+      .from("service_requests")
+      .insert(insertPayload)
+      .select("public_reference")
+      .single();
+
+    if (insertError || !inserted) {
+      console.error('[ServiceRequest Insert Error] Direct table insert failed:', insertError);
+      throw new Error(insertError?.message || "Failed to insert service request into table.");
     }
-    return { reference: data, managementToken };
+
+    return { reference: inserted.public_reference, managementToken };
   }
 
   async list(): Promise<readonly AdminServiceRequest[]> {

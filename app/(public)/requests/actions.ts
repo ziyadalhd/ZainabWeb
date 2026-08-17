@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { ServiceRequestKind } from "@/lib/domain/types";
 import { validateServiceRequestInput } from "@/lib/domain/service-request-input";
-import { createServiceRequestService, ServiceRequestFailure } from "@/lib/supabase/service-requests";
+import { createServiceRequestService } from "@/lib/supabase/service-requests";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 
 export type ServiceRequestActionState = {
@@ -41,8 +41,9 @@ export async function submitServiceRequestAction(
       reference: receipt.reference,
       managementPath: `/requests/${receipt.managementToken}`,
     };
-  } catch (error) {
-    console.error('[ServiceRequest Action Error] Failed to submit service request:', error);
-    return { error: error instanceof ServiceRequestFailure && error.code === "invalid" ? "invalid" : "save" };
+  } catch (error: unknown) {
+    console.error('[ServiceRequest Action Error] Full error object:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    return { error: message || "save" };
   }
 }
