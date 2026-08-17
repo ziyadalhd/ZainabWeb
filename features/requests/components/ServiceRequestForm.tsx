@@ -116,7 +116,10 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
           </Field>
         </div>
       </fieldset>
-      <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true"><label htmlFor="request-website">اتركي هذا الحقل فارغًا</label><input id="request-website" name="website" tabIndex={-1} autoComplete="off" /></div>
+      <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true">
+        <label htmlFor="request-website">اتركي هذا الحقل فارغًا</label>
+        <input id="request-website" name="website" type="text" tabIndex={-1} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" data-form-type="other" />
+      </div>
       <div className="request-form__footer">
         <p className="text-xs muted-copy">هذا طلب مراجعة وليس حجزًا فوريًا. تُحذف بيانات الطلب تلقائيًا بعد 90 يومًا من إغلاقه.</p>
         <TurnstileField />

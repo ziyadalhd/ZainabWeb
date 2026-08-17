@@ -49,4 +49,33 @@ describe("validateServiceRequestInput", () => {
     }), "workshop_application");
     expect(result).toMatchObject({ ok: true, value: { workshop: { title: "فن الحكي" } } });
   });
+
+  it("normalizes Arabic-Indic numerals and time with single digit hour", () => {
+    const result = validateServiceRequestInput(form({
+      requesterName: "سارة أحمد",
+      phone: "٩٦٦٥٥١٢٣٤٥٦٧",
+      useOrOccasionType: "لقاء ثقافي",
+      requestedDate: "2026-10-01",
+      requestedStartTime: "9:00",
+      requestedEndTime: "12:00",
+      attendeeCount: "٢٥",
+    }), "space_booking");
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        requesterName: "سارة أحمد",
+        phoneE164: "+966551234567",
+        email: null,
+        notes: null,
+        booking: {
+          useOrOccasionType: "لقاء ثقافي",
+          requestedDate: "2026-10-01",
+          requestedStartTime: "09:00",
+          requestedEndTime: "12:00",
+          attendeeCount: 25,
+        },
+        workshop: null,
+      },
+    });
+  });
 });

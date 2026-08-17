@@ -13,14 +13,14 @@ export type RegistrationInputResult =
   | { ok: true; value: RegistrationInput }
   | { ok: false; error: RegistrationInputErrorCode };
 
-function normalizeDigits(value: string): string {
+export function normalizeDigits(value: string): string {
   return value
     .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
     .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
 }
 
 export function normalizeSaudiMobile(value: string): string | null {
-  const compact = normalizeDigits(value).replace(/[\s()-]/g, "");
+  const compact = normalizeDigits(value).replace(/[\s().-]/g, "");
   const local = /^05\d{8}$/.test(compact)
     ? compact.slice(1)
     : /^5\d{8}$/.test(compact)
@@ -29,7 +29,9 @@ export function normalizeSaudiMobile(value: string): string | null {
         ? compact.slice(4)
         : /^009665\d{8}$/.test(compact)
           ? compact.slice(5)
-          : null;
+          : /^9665\d{8}$/.test(compact)
+            ? compact.slice(3)
+            : null;
 
   return local ? `+966${local}` : null;
 }

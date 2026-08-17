@@ -174,7 +174,7 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
 
       <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true">
         <label htmlFor="registration-website">اتركي هذا الحقل فارغًا</label>
-        <input id="registration-website" name="website" tabIndex={-1} autoComplete="off" />
+        <input id="registration-website" name="website" type="text" tabIndex={-1} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" data-form-type="other" />
       </div>
 
       <p className="text-xs muted-copy">

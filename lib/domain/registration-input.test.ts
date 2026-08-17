@@ -19,6 +19,8 @@ describe("registration input", () => {
     expect(normalizeSaudiMobile("0501234567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("+966 50 123 4567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("00966501234567")).toBe("+966501234567");
+    expect(normalizeSaudiMobile("966501234567")).toBe("+966501234567");
+    expect(normalizeSaudiMobile("05.01.23.45.67")).toBe("+966501234567");
     expect(normalizeSaudiMobile("05123")).toBeNull();
   });
 

@@ -1,4 +1,4 @@
-import { normalizeSaudiMobile } from "@/lib/domain/registration-input";
+import { normalizeDigits, normalizeSaudiMobile } from "@/lib/domain/registration-input";
 import type { ServiceRequestInput, ServiceRequestKind } from "@/lib/domain/types";
 
 export type ServiceRequestInputError =
@@ -32,9 +32,26 @@ function optionalText(formData: FormData, name: string): string | null {
 }
 
 function positiveInteger(value: string): number | null {
-  if (!/^\d+$/.test(value)) return null;
-  const parsed = Number(value);
+  const normalized = normalizeDigits(value).trim();
+  if (!/^\d+$/.test(normalized)) return null;
+  const parsed = Number(normalized);
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizeTime(value: string): string | null {
+  const normalized = normalizeDigits(value).trim();
+  const match = /^(\d{1,2}):(\d{2})$/.exec(normalized);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function normalizeDate(value: string): string | null {
+  const normalized = normalizeDigits(value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return null;
+  return normalized;
 }
 
 function validEmail(value: string | null): boolean {
@@ -102,13 +119,13 @@ export function validateServiceRequestInput(
   }
 
   const useOrOccasionType = text(formData, "useOrOccasionType");
-  const requestedDate = text(formData, "requestedDate");
-  const requestedStartTime = text(formData, "requestedStartTime");
-  const requestedEndTime = text(formData, "requestedEndTime");
+  const requestedDate = normalizeDate(text(formData, "requestedDate"));
+  const requestedStartTime = normalizeTime(text(formData, "requestedStartTime"));
+  const requestedEndTime = normalizeTime(text(formData, "requestedEndTime"));
   const attendeeCount = positiveInteger(text(formData, "attendeeCount"));
   if (useOrOccasionType.length < 2 || useOrOccasionType.length > 160) return { ok: false, error: "useOrOccasionType" };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) return { ok: false, error: "requestedDate" };
-  if (!/^\d{2}:\d{2}$/.test(requestedStartTime) || !/^\d{2}:\d{2}$/.test(requestedEndTime) || requestedStartTime >= requestedEndTime) {
+  if (!requestedDate) return { ok: false, error: "requestedDate" };
+  if (!requestedStartTime || !requestedEndTime || requestedStartTime >= requestedEndTime) {
     return { ok: false, error: "requestedTime" };
   }
   if (attendeeCount === null) return { ok: false, error: "attendeeCount" };
