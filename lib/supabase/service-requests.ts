@@ -100,7 +100,20 @@ implements ServiceRequestService, AdminServiceRequestRepository {
       p_notes: input.notes ?? "",
       p_management_token_hash: hashSecureToken(managementToken),
     } as unknown as Database["public"]["Functions"]["submit_service_request"]["Args"]);
-    if (error || !data) throw mapFailure(error?.message ?? "save");
+
+    if (error) {
+      console.error('[ServiceRequest RPC Error] submit_service_request failed:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
+      throw mapFailure(error.message);
+    }
+    if (!data) {
+      console.error('[ServiceRequest RPC Error] submit_service_request returned no data and no error');
+      throw mapFailure("save");
+    }
     return { reference: data, managementToken };
   }
 

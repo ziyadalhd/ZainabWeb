@@ -78,4 +78,31 @@ describe("validateServiceRequestInput", () => {
       },
     });
   });
+
+  it("rejects honeypot submission", () => {
+    const result = validateServiceRequestInput(form({
+      requesterName: "سارة أحمد",
+      phone: "0551234567",
+      useOrOccasionType: "لقاء ثقافي",
+      requestedDate: "2026-10-01",
+      requestedStartTime: "17:00",
+      requestedEndTime: "20:00",
+      attendeeCount: "25",
+      website: "https://spam.example",
+    }), "space_booking");
+    expect(result).toEqual({ ok: false, error: "invalid" });
+  });
+
+  it("handles various Saudi phone formats via parseServiceRequestInput", () => {
+    const result = validateServiceRequestInput(form({
+      requesterName: "سارة أحمد",
+      phone: "+966-055-123-4567",
+      useOrOccasionType: "لقاء ثقافي",
+      requestedDate: "2026-10-01",
+      requestedStartTime: "17:00",
+      requestedEndTime: "20:00",
+      attendeeCount: "25",
+    }), "space_booking");
+    expect(result).toMatchObject({ ok: true, value: { phoneE164: "+966551234567" } });
+  });
 });

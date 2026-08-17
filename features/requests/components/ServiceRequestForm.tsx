@@ -116,9 +116,24 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
           </Field>
         </div>
       </fieldset>
-      <div className="absolute -z-10 size-px overflow-hidden opacity-0" aria-hidden="true">
-        <label htmlFor="request-website">اتركي هذا الحقل فارغًا</label>
-        <input id="request-website" name="website" type="text" tabIndex={-1} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" data-form-type="other" />
+      <div
+        className="sr-only absolute -z-10 size-px overflow-hidden opacity-0 pointer-events-none"
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0, pointerEvents: "none" }}
+      >
+        <label htmlFor="request-website" aria-hidden="true">اتركي هذا الحقل فارغًا</label>
+        <input
+          id="request-website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-form-type="other"
+          style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0, pointerEvents: "none" }}
+        />
       </div>
       <div className="request-form__footer">
         <p className="text-xs muted-copy">هذا طلب مراجعة وليس حجزًا فوريًا. تُحذف بيانات الطلب تلقائيًا بعد 90 يومًا من إغلاقه.</p>

@@ -19,6 +19,10 @@ export async function verifyTurnstile(formData: FormData): Promise<TurnstileVeri
   const secret = process.env.TURNSTILE_SECRET_KEY;
   const token = formData.get(responseField);
   if (!secret || typeof token !== "string" || token.length === 0 || token.length > 2048) {
+    console.error('[Turnstile] Verification failed: missing secret or invalid token length', {
+      hasSecret: Boolean(secret),
+      tokenLength: typeof token === "string" ? token.length : 0,
+    });
     return { ok: false, reason: "unavailable" };
   }
 
@@ -33,10 +37,15 @@ export async function verifyTurnstile(formData: FormData): Promise<TurnstileVeri
       signal: AbortSignal.timeout(5_000),
       cache: "no-store",
     });
-    if (!response.ok) return { ok: false, reason: "unavailable" };
+    if (!response.ok) {
+      console.error('[Turnstile] Verification HTTP error:', response.status);
+      return { ok: false, reason: "unavailable" };
+    }
     const result = await response.json() as SiteverifyResponse;
+    console.error('[Turnstile] Verification response payload:', result);
     return result.success ? { ok: true } : { ok: false, reason: "failed" };
-  } catch {
+  } catch (error) {
+    console.error('[Turnstile] Verification fetch exception:', error);
     return { ok: false, reason: "unavailable" };
   }
 }

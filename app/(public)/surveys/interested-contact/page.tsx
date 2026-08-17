@@ -38,7 +38,18 @@ export default async function InterestedContactPage({ searchParams }: { searchPa
             <label htmlFor="contact-email" className="font-extrabold text-[var(--brand-green-deep)]">البريد الإلكتروني</label>
             <input id="contact-email" name="email" required type="email" inputMode="email" autoComplete="email" spellCheck={false} dir="ltr" className="field-control text-right" />
           </div>
-          <input name="website" type="text" tabIndex={-1} autoComplete="new-password" data-lpignore="true" data-1p-ignore="true" data-form-type="other" className="sr-only" aria-hidden="true" />
+          <input
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-form-type="other"
+            className="sr-only"
+            style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0, pointerEvents: "none" }}
+          />
           <label className="flex items-start gap-3 border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm leading-7">
             <input name="upcomingEventsConsent" type="checkbox" className="mt-1 size-5 accent-[var(--brand-green)]" />
             <span>أوافق على أن يستخدم النادي بياناتي لإرسال معلومات الفعاليات القادمة. هذه الموافقة اختيارية وليست محددة مسبقًا، ويمكنني إلغاؤها لاحقًا.</span>

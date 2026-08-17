@@ -18,10 +18,16 @@ describe("registration input", () => {
   it("normalizes supported Saudi mobile formats", () => {
     expect(normalizeSaudiMobile("0501234567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("+966 50 123 4567")).toBe("+966501234567");
+    expect(normalizeSaudiMobile("+966-050-123-4567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("00966501234567")).toBe("+966501234567");
+    expect(normalizeSaudiMobile("009660501234567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("966501234567")).toBe("+966501234567");
+    expect(normalizeSaudiMobile("9660501234567")).toBe("+966501234567");
+    expect(normalizeSaudiMobile("501234567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("05.01.23.45.67")).toBe("+966501234567");
+    expect(normalizeSaudiMobile("\u200E+966 50 123 4567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("05123")).toBeNull();
+    expect(normalizeSaudiMobile("0123456789")).toBeNull();
   });
 
   it("recognizes only the approved check-in outcomes", () => {

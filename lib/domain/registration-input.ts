@@ -20,20 +20,18 @@ export function normalizeDigits(value: string): string {
 }
 
 export function normalizeSaudiMobile(value: string): string | null {
-  const compact = normalizeDigits(value).replace(/[\s().-]/g, "");
-  const local = /^05\d{8}$/.test(compact)
-    ? compact.slice(1)
-    : /^5\d{8}$/.test(compact)
-      ? compact
-      : /^\+9665\d{8}$/.test(compact)
-        ? compact.slice(4)
-        : /^009665\d{8}$/.test(compact)
-          ? compact.slice(5)
-          : /^9665\d{8}$/.test(compact)
-            ? compact.slice(3)
-            : null;
+  if (!value) return null;
+  const converted = normalizeDigits(value);
+  const digits = converted.replace(/\D/g, "");
 
-  return local ? `+966${local}` : null;
+  if (/^0096605\d{8}$/.test(digits)) return `+966${digits.slice(6)}`;
+  if (/^009665\d{8}$/.test(digits)) return `+966${digits.slice(5)}`;
+  if (/^96605\d{8}$/.test(digits)) return `+966${digits.slice(4)}`;
+  if (/^9665\d{8}$/.test(digits)) return `+966${digits.slice(3)}`;
+  if (/^05\d{8}$/.test(digits)) return `+966${digits.slice(1)}`;
+  if (/^5\d{8}$/.test(digits)) return `+966${digits}`;
+
+  return null;
 }
 
 export function isRegistrationStatus(value: string): value is "registered" | "waitlisted" | "invited" | "cancelled" {
