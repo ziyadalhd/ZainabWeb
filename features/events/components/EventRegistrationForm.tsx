@@ -172,26 +172,6 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
         </label>
       ) : null}
 
-      <div
-        className="sr-only absolute -z-10 size-px overflow-hidden opacity-0 pointer-events-none"
-        aria-hidden="true"
-        style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0, pointerEvents: "none" }}
-      >
-        <label htmlFor="registration-website" aria-hidden="true">اتركي هذا الحقل فارغًا</label>
-        <input
-          id="registration-website"
-          name="website"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          data-lpignore="true"
-          data-1p-ignore="true"
-          data-form-type="other"
-          style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0, pointerEvents: "none" }}
-        />
-      </div>
-
       <p className="text-xs muted-copy">
         هذه الفعالية مخصصة للنساء. تُستخدم بيانات التواصل لإدارة هذا التسجيل فقط، وتُحذف تلقائيًا بعد 90 يومًا من انتهاء الفعالية.
       </p>

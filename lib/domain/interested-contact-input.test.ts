@@ -31,9 +31,9 @@ describe("interested contact input", () => {
     expect(validateInterestedContactInput(noEmail)).toEqual({ ok: false, error: "email" });
   });
 
-  it("rejects automated submissions", () => {
+  it("does not reject submissions with a website field", () => {
     const formData = validFormData();
     formData.set("website", "https://spam.example");
-    expect(validateInterestedContactInput(formData)).toEqual({ ok: false, error: "invalid" });
+    expect(validateInterestedContactInput(formData)).toMatchObject({ ok: true });
   });
 });

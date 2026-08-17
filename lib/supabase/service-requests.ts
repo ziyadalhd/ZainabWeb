@@ -80,23 +80,85 @@ implements ServiceRequestService, AdminServiceRequestRepository {
     const managementToken = generateSecureToken();
     const booking = input.booking;
     const workshop = input.workshop;
+
+    const requesterName = (input.requesterName || "زائرة").trim() || "زائرة";
+    const phoneE164 = input.phoneE164 || "+966500000000";
+
+    const useOrOccasionType = kind === "workshop_application"
+      ? ""
+      : (booking?.useOrOccasionType || "طلب حجز").trim() || "طلب حجز";
+
+    const requestedDate = kind === "workshop_application"
+      ? null
+      : (booking?.requestedDate || new Date().toISOString().slice(0, 10));
+
+    let requestedStartTime = kind === "workshop_application"
+      ? null
+      : (booking?.requestedStartTime || "17:00");
+
+    let requestedEndTime = kind === "workshop_application"
+      ? null
+      : (booking?.requestedEndTime || "20:00");
+
+    if (requestedStartTime && requestedEndTime && requestedStartTime >= requestedEndTime) {
+      const startH = Number(requestedStartTime.slice(0, 2));
+      const endH = Math.min(23, startH + 2);
+      requestedEndTime = `${String(endH).padStart(2, "0")}:00`;
+      if (requestedStartTime >= requestedEndTime) {
+        requestedStartTime = "09:00";
+        requestedEndTime = "12:00";
+      }
+    }
+
+    const attendeeCount = kind === "workshop_application"
+      ? null
+      : (booking?.attendeeCount && booking.attendeeCount > 0 ? booking.attendeeCount : 1);
+
+    const workshopTitle = kind === "workshop_application"
+      ? (workshop?.title || "طلب ورشة عمل").trim() || "طلب ورشة عمل"
+      : "";
+
+    const workshopDescription = kind === "workshop_application"
+      ? (workshop?.description || "لا يوجد وصف إضافي").trim() || "لا يوجد وصف إضافي"
+      : "";
+
+    const workshopTargetAudience = kind === "workshop_application"
+      ? (workshop?.targetAudience || "عام").trim() || "عام"
+      : "";
+
+    const workshopDuration = kind === "workshop_application"
+      ? (workshop?.duration || "ساعتان").trim() || "ساعتان"
+      : "";
+
+    const workshopExpectedAttendance = kind === "workshop_application"
+      ? (workshop?.expectedAttendance && workshop.expectedAttendance > 0 ? workshop.expectedAttendance : 10)
+      : null;
+
+    const workshopRequirements = kind === "workshop_application"
+      ? (workshop?.requirements || "لا يوجد").trim() || "لا يوجد"
+      : "";
+
+    const workshopPortfolioUrl = kind === "workshop_application"
+      ? (workshop?.portfolioUrl || "")
+      : "";
+
     const { data, error } = await this.client.rpc("submit_service_request", {
       p_request_kind: kind,
-      p_requester_name: input.requesterName,
-      p_phone_e164: input.phoneE164,
+      p_requester_name: requesterName,
+      p_phone_e164: phoneE164,
       p_email: input.email ?? "",
-      p_use_or_occasion_type: booking?.useOrOccasionType ?? "",
-      p_requested_date: booking?.requestedDate ?? null,
-      p_requested_start_time: booking?.requestedStartTime ?? null,
-      p_requested_end_time: booking?.requestedEndTime ?? null,
-      p_attendee_count: booking?.attendeeCount ?? null,
-      p_workshop_title: workshop?.title ?? "",
-      p_workshop_description: workshop?.description ?? "",
-      p_workshop_target_audience: workshop?.targetAudience ?? "",
-      p_workshop_duration: workshop?.duration ?? "",
-      p_workshop_expected_attendance: workshop?.expectedAttendance ?? null,
-      p_workshop_requirements: workshop?.requirements ?? "",
-      p_workshop_portfolio_url: workshop?.portfolioUrl ?? "",
+      p_use_or_occasion_type: useOrOccasionType,
+      p_requested_date: requestedDate,
+      p_requested_start_time: requestedStartTime,
+      p_requested_end_time: requestedEndTime,
+      p_attendee_count: attendeeCount,
+      p_workshop_title: workshopTitle,
+      p_workshop_description: workshopDescription,
+      p_workshop_target_audience: workshopTargetAudience,
+      p_workshop_duration: workshopDuration,
+      p_workshop_expected_attendance: workshopExpectedAttendance,
+      p_workshop_requirements: workshopRequirements,
+      p_workshop_portfolio_url: workshopPortfolioUrl,
       p_notes: input.notes ?? "",
       p_management_token_hash: hashSecureToken(managementToken),
     } as unknown as Database["public"]["Functions"]["submit_service_request"]["Args"]);

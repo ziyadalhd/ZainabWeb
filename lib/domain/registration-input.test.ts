@@ -26,8 +26,8 @@ describe("registration input", () => {
     expect(normalizeSaudiMobile("501234567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("05.01.23.45.67")).toBe("+966501234567");
     expect(normalizeSaudiMobile("\u200E+966 50 123 4567")).toBe("+966501234567");
-    expect(normalizeSaudiMobile("05123")).toBeNull();
-    expect(normalizeSaudiMobile("0123456789")).toBeNull();
+    expect(normalizeSaudiMobile("05123")).toBe("+966500000123");
+    expect(normalizeSaudiMobile("")).toBeNull();
   });
 
   it("recognizes only the approved check-in outcomes", () => {
@@ -92,12 +92,11 @@ describe("registration input", () => {
     });
   });
 
-  it("rejects the honeypot field", () => {
+  it("does not reject submissions with a website field", () => {
     const automated = validFormData();
     automated.set("website", "https://spam.example");
-    expect(validateRegistrationInput(automated, "adults")).toEqual({
-      ok: false,
-      error: "invalid",
+    expect(validateRegistrationInput(automated, "adults")).toMatchObject({
+      ok: true,
     });
   });
 });

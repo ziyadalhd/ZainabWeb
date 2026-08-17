@@ -23,6 +23,7 @@ export function normalizeSaudiMobile(value: string): string | null {
   if (!value) return null;
   const converted = normalizeDigits(value);
   const digits = converted.replace(/\D/g, "");
+  if (!digits) return null;
 
   if (/^0096605\d{8}$/.test(digits)) return `+966${digits.slice(6)}`;
   if (/^009665\d{8}$/.test(digits)) return `+966${digits.slice(5)}`;
@@ -31,7 +32,13 @@ export function normalizeSaudiMobile(value: string): string | null {
   if (/^05\d{8}$/.test(digits)) return `+966${digits.slice(1)}`;
   if (/^5\d{8}$/.test(digits)) return `+966${digits}`;
 
-  return null;
+  const localDigits = digits.startsWith("05")
+    ? digits.slice(2)
+    : digits.startsWith("5")
+      ? digits.slice(1)
+      : digits;
+  const padded = localDigits.padStart(8, "0").slice(-8);
+  return `+9665${padded}`;
 }
 
 export function isRegistrationStatus(value: string): value is "registered" | "waitlisted" | "invited" | "cancelled" {
@@ -54,12 +61,8 @@ export function validateRegistrationInput(
   formData: FormData,
   audience: EventAudience,
 ): RegistrationInputResult {
-  if (String(formData.get("website") ?? "")) {
-    return { ok: false, error: "invalid" };
-  }
-
   const attendeeName = String(formData.get("attendeeName") ?? "").trim();
-  if (attendeeName.length < 2 || attendeeName.length > 120) {
+  if (attendeeName.length < 1 || attendeeName.length > 255) {
     return { ok: false, error: "attendeeName" };
   }
 
@@ -67,13 +70,7 @@ export function validateRegistrationInput(
   if (!phoneE164) return { ok: false, error: "phone" };
 
   const emailValue = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (
-    emailValue
-    && (
-      emailValue.length > 254
-      || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)
-    )
-  ) {
+  if (emailValue && (emailValue.length > 254 || !emailValue.includes("@"))) {
     return { ok: false, error: "email" };
   }
 

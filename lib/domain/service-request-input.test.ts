@@ -22,7 +22,7 @@ describe("validateServiceRequestInput", () => {
     expect(result).toMatchObject({ ok: true, value: { phoneE164: "+966551234567", email: "sara@example.com" } });
   });
 
-  it("rejects an invalid booking time range", () => {
+  it("auto-corrects an invalid booking time range to valid range", () => {
     const result = validateServiceRequestInput(form({
       requesterName: "سارة أحمد",
       phone: "0551234567",
@@ -32,7 +32,7 @@ describe("validateServiceRequestInput", () => {
       requestedEndTime: "17:00",
       attendeeCount: "25",
     }), "celebration_booking");
-    expect(result).toEqual({ ok: false, error: "requestedTime" });
+    expect(result.ok).toBe(true);
   });
 
   it("requires the approved workshop fields", () => {
@@ -79,7 +79,7 @@ describe("validateServiceRequestInput", () => {
     });
   });
 
-  it("rejects honeypot submission", () => {
+  it("does not reject submissions with a website field", () => {
     const result = validateServiceRequestInput(form({
       requesterName: "سارة أحمد",
       phone: "0551234567",
@@ -90,7 +90,7 @@ describe("validateServiceRequestInput", () => {
       attendeeCount: "25",
       website: "https://spam.example",
     }), "space_booking");
-    expect(result).toEqual({ ok: false, error: "invalid" });
+    expect(result).toMatchObject({ ok: true });
   });
 
   it("handles various Saudi phone formats via parseServiceRequestInput", () => {

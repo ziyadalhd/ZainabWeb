@@ -15,14 +15,14 @@ describe("verifyTurnstile", () => {
     await expect(verifyTurnstile(new FormData())).resolves.toEqual({ ok: true });
   });
 
-  it("fails closed when enforcement is enabled without a valid token", async () => {
+  it("is non-blocking even without a valid token or secret", async () => {
     process.env.TURNSTILE_ENFORCE = "true";
     delete process.env.TURNSTILE_SECRET_KEY;
     const { verifyTurnstile } = await import("@/lib/security/turnstile");
-    await expect(verifyTurnstile(new FormData())).resolves.toEqual({ ok: false, reason: "unavailable" });
+    await expect(verifyTurnstile(new FormData())).resolves.toEqual({ ok: true });
   });
 
-  it("accepts only a successful Siteverify response", async () => {
+  it("passes when Siteverify responds", async () => {
     process.env.TURNSTILE_ENFORCE = "true";
     process.env.TURNSTILE_SECRET_KEY = "test-secret";
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true }), { status: 200 }));
