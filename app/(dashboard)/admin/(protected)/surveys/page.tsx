@@ -6,6 +6,7 @@ import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEven
 
 export const metadata: Metadata = { title: "الاستبيانات" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminSurveysPage() {
   await requireAdmin();

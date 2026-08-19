@@ -8,6 +8,7 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 
 export const metadata: Metadata = { title: "التقويم" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const monthPattern = /^(\d{4})-(\d{2})$/;
 

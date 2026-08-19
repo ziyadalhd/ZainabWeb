@@ -7,6 +7,7 @@ import { createAdminRegistrationRepository } from "@/lib/supabase/registrations"
 
 export const metadata: Metadata = { title: "قائمة الانتظار" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const successMessages: Record<string, string> = {
   revoke: "تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار.",

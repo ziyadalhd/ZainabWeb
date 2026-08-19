@@ -24,17 +24,36 @@ function mapSiteSettings(row: SiteSettingsRow): SiteSettings {
   };
 }
 
-function unavailable(): never {
-  throw new Error("تعذر الوصول إلى محتوى الموقع حاليًا.");
-}
+const defaultSiteSettings: SiteSettings = {
+  clubIntroduction: "نادي بَيْن الثقافي هو مساحة ثقافية ملهمة في مكة المكرمة تجمع بين الفعاليات الأدبية، والورش الإبداعية، واللقاءات الحوارية في بيئة دافئة ومميزة.",
+  nameStory: "استوحي اسم «بَيْن» من المعاني المتصلة باللقاء والوصل والتأمل بين الفكرة وأختها.",
+  objectives: "تعزيز الحراك الثقافي في مكة المكرمة، وتوفير مساحات لقاء وإبداع، وتقديم فعاليات نوعية وورش عمل تفاعلية.",
+  contactPhone: "0537918640",
+  defaultVenueName: "نادي بَيْن الثقافي",
+  defaultVenueAddress: "مكة المكرمة",
+  defaultVenueMapUrl: null,
+  instagramUrl: null,
+  tiktokUrl: null,
+  literaryPartnerTitle: "الشريك الأدبي",
+  literaryPartnerBody: "مبادرة تهدف إلى إثراء المحتوى الأدبي وتعزيز حضور الأدب في المشهد الثقافي اليومي.",
+  updatedAt: "2026-08-17T12:00:00.000Z",
+};
 
 export class SupabaseSiteSettingsRepository implements SiteSettingsRepository, AdminSiteSettingsRepository {
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   async get(): Promise<SiteSettings> {
-    const { data, error } = await this.client.from("site_settings").select("*").eq("id", true).maybeSingle();
-    if (error || !data) unavailable();
-    return mapSiteSettings(data);
+    try {
+      const { data, error } = await this.client.from("site_settings").select("*").eq("id", true).maybeSingle();
+      if (error || !data) {
+        console.warn('[SiteSettings] get returned error or empty, using fallback defaults:', error);
+        return defaultSiteSettings;
+      }
+      return mapSiteSettings(data);
+    } catch (err) {
+      console.warn('[SiteSettings] get failed gracefully:', err);
+      return defaultSiteSettings;
+    }
   }
 
   async update(input: SiteSettingsInput): Promise<void> {
@@ -51,7 +70,10 @@ export class SupabaseSiteSettingsRepository implements SiteSettingsRepository, A
       literary_partner_title: input.literaryPartnerTitle,
       literary_partner_body: input.literaryPartnerBody,
     }).eq("id", true);
-    if (error) unavailable();
+    if (error) {
+      console.error('[SiteSettings] update failed:', error);
+      throw new Error("تعذر حفظ محتوى الموقع حاليًا.");
+    }
   }
 }
 

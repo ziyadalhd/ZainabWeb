@@ -13,6 +13,9 @@ const kindLabels = { space_booking: "حجز مساحة", celebration_booking: "�
 const statusLabels = { new: "جديد", under_review: "قيد المراجعة", accepted: "مقبول", rejected: "مرفوض", cancelled: "ملغى" };
 const paymentLabels = { unpaid: "غير مدفوع", deposit_paid: "دُفع العربون", paid_in_full: "مدفوع بالكامل" };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminRequestsPage() {
   const repository = await createAdminServiceRequestRepository();
   const requests = await repository.list();

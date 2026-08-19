@@ -7,6 +7,7 @@ import { createAdminRegistrationRepository } from "@/lib/supabase/registrations"
 
 export const metadata: Metadata = { title: "المسجلات الحاليات" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const successMessages: Record<string, string> = {
   cancel: "تم إلغاء التسجيل، ويمكن الآن اختيار بديل من قائمة الانتظار.",

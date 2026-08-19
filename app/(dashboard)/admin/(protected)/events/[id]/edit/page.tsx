@@ -8,6 +8,8 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 import { updateEventAction, uploadEventPosterAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
 
 export const metadata: Metadata = { title: "تعديل الفعالية" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();

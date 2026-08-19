@@ -3,6 +3,9 @@ import { AdminHeader } from "@/components/layout/AdminHeader";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { requireAdmin } from "@/lib/auth/require-admin";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ProtectedAdminLayout({ children }: Readonly<{ children: ReactNode }>) {
   await requireAdmin();
 

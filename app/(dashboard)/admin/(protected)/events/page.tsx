@@ -7,6 +7,7 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 
 export const metadata: Metadata = { title: "الفعاليات" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const successMessages: Record<string, string> = { created: "تم حفظ الفعالية كمسودة.", updated: "تم حفظ تعديلات الفعالية.", status: "تم تحديث حالة النشر." };
 const errorMessages: Record<string, string> = {

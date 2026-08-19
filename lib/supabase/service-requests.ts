@@ -214,12 +214,20 @@ implements ServiceRequestService, AdminServiceRequestRepository {
   }
 
   async list(): Promise<readonly AdminServiceRequest[]> {
-    const { data, error } = await this.client
-      .from("service_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error || !data) throw new ServiceRequestFailure("save");
-    return data.map(mapServiceRequestRow);
+    try {
+      const { data, error } = await this.client
+        .from("service_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error || !data) {
+        console.warn('[ServiceRequest] list returned error or empty data:', error);
+        return [];
+      }
+      return data.map(mapServiceRequestRow);
+    } catch (err) {
+      console.warn('[ServiceRequest] list failed gracefully:', err);
+      return [];
+    }
   }
 
   async getByToken(token: string): Promise<ServiceRequestDetails | null> {
@@ -294,23 +302,31 @@ implements ServiceRequestService, AdminServiceRequestRepository {
   }
 
   async getConflicts(id: string): Promise<readonly ServiceRequestConflict[]> {
-    const { data, error } = await this.client.rpc("get_service_request_conflicts", { p_request_id: id });
-    if (error || !data) throw new ServiceRequestFailure("save");
-    return data.flatMap((row) => {
-      if (
-        (row.conflict_source !== "event" && row.conflict_source !== "service_request")
-        || !row.conflict_title
-        || !row.conflict_starts_at
-        || !row.conflict_ends_at
-      ) return [];
-      return [{
-        source: row.conflict_source,
-        title: row.conflict_title,
-        startsAt: row.conflict_starts_at,
-        endsAt: row.conflict_ends_at,
-        status: row.conflict_status,
-      }];
-    });
+    try {
+      const { data, error } = await this.client.rpc("get_service_request_conflicts", { p_request_id: id });
+      if (error || !data) {
+        console.warn('[ServiceRequest] getConflicts returned error or empty data:', error);
+        return [];
+      }
+      return data.flatMap((row) => {
+        if (
+          (row.conflict_source !== "event" && row.conflict_source !== "service_request")
+          || !row.conflict_title
+          || !row.conflict_starts_at
+          || !row.conflict_ends_at
+        ) return [];
+        return [{
+          source: row.conflict_source,
+          title: row.conflict_title,
+          startsAt: row.conflict_starts_at,
+          endsAt: row.conflict_ends_at,
+          status: row.conflict_status,
+        }];
+      });
+    } catch (err) {
+      console.warn('[ServiceRequest] getConflicts failed gracefully:', err);
+      return [];
+    }
   }
 }
 

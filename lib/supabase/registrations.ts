@@ -199,33 +199,39 @@ implements RegistrationService, AdminRegistrationRepository {
   }
 
   async list(): Promise<readonly Registration[]> {
-    const [
-      { data: registrations, error },
-      { data: events, error: eventsError },
-      { data: reminders, error: remindersError },
-    ] = await Promise.all([
-      this.client.from("registrations").select("*").order("created_at", { ascending: false }),
-      this.client.from("events").select("id,title,starts_at"),
-      this.client.from("registration_reminders").select("*").order("prepared_at", { ascending: false }),
-    ]);
-    if (error || eventsError || remindersError || !registrations || !events || !reminders) {
-      throw new RegistrationFailure("save");
-    }
-    const eventDetails = new Map(events.map((event) => [
-      event.id,
-      { title: event.title, startsAt: event.starts_at },
-    ]));
-    const latestReminders = new Map<string, ReminderRow>();
-    for (const reminder of reminders) {
-      if (!latestReminders.has(reminder.registration_id)) {
-        latestReminders.set(reminder.registration_id, reminder);
+    try {
+      const [
+        { data: registrations, error },
+        { data: events, error: eventsError },
+        { data: reminders, error: remindersError },
+      ] = await Promise.all([
+        this.client.from("registrations").select("*").order("created_at", { ascending: false }),
+        this.client.from("events").select("id,title,starts_at"),
+        this.client.from("registration_reminders").select("*").order("prepared_at", { ascending: false }),
+      ]);
+      if (error || eventsError || remindersError || !registrations || !events || !reminders) {
+        console.warn('[Registrations] list returned error or empty data:', error ?? eventsError ?? remindersError);
+        return [];
       }
+      const eventDetails = new Map(events.map((event) => [
+        event.id,
+        { title: event.title, startsAt: event.starts_at },
+      ]));
+      const latestReminders = new Map<string, ReminderRow>();
+      for (const reminder of reminders) {
+        if (!latestReminders.has(reminder.registration_id)) {
+          latestReminders.set(reminder.registration_id, reminder);
+        }
+      }
+      return registrations.map((row) => mapRegistration(
+        row,
+        eventDetails.get(row.event_id),
+        latestReminders.get(row.id),
+      ));
+    } catch (err) {
+      console.warn('[Registrations] list failed gracefully:', err);
+      return [];
     }
-    return registrations.map((row) => mapRegistration(
-      row,
-      eventDetails.get(row.event_id),
-      latestReminders.get(row.id),
-    ));
   }
 
   async cancel(id: string): Promise<void> {

@@ -7,6 +7,7 @@ import { updateSiteSettingsAction } from "@/app/(dashboard)/admin/(protected)/co
 
 export const metadata: Metadata = { title: "محتوى الموقع" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function ContentPage() {
   await requireAdmin();

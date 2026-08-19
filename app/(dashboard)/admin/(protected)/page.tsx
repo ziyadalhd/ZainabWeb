@@ -8,6 +8,7 @@ import { getCurrentTimestamp } from "@/lib/time/clock";
 
 export const metadata: Metadata = { title: "نظرة عامة" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminOverviewPage() {
   await requireAdmin();

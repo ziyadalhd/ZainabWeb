@@ -7,6 +7,7 @@ import { createAdminRegistrationRepository } from "@/lib/supabase/registrations"
 
 export const metadata: Metadata = { title: "التسجيلات السابقة" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function PreviousRegistrationsPage() {
   await requireAdmin();

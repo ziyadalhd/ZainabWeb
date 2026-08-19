@@ -4,6 +4,8 @@ import { ClubLogo } from "@/components/brand/ClubLogo";
 import { LoginForm } from "@/features/admin/components/LoginForm";
 
 export const metadata: Metadata = { title: "دخول المسؤول" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const errorMessages: Record<string, string> = {
   invalid: "تعذر تسجيل الدخول. تحقق من البريد الإلكتروني وكلمة المرور.",

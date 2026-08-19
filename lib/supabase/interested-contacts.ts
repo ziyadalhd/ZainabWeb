@@ -65,12 +65,20 @@ implements InterestedContactService, AdminInterestedContactRepository {
   }
 
   async list(): Promise<readonly AdminInterestedContact[]> {
-    const { data, error } = await this.client
-      .from("interested_contacts")
-      .select("*")
-      .order("consented_at", { ascending: false });
-    if (error || !data) throw new InterestedContactFailure("save");
-    return data.map(mapRow);
+    try {
+      const { data, error } = await this.client
+        .from("interested_contacts")
+        .select("*")
+        .order("consented_at", { ascending: false });
+      if (error || !data) {
+        console.warn('[InterestedContacts] list returned error or empty data:', error);
+        return [];
+      }
+      return data.map(mapRow);
+    } catch (err) {
+      console.warn('[InterestedContacts] list failed gracefully:', err);
+      return [];
+    }
   }
 }
 

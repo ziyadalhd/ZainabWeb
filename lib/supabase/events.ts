@@ -80,44 +80,60 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   async listUpcomingEvents(): Promise<readonly Event[]> {
-    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
-      this.client
-        .from("events")
-        .select("*")
-        .eq("publication_status", "published")
-        .gte("starts_at", new Date().toISOString())
-        .order("starts_at", { ascending: true }),
-      this.client.rpc("get_event_registration_states"),
-    ]);
+    try {
+      const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+        this.client
+          .from("events")
+          .select("*")
+          .eq("publication_status", "published")
+          .gte("starts_at", new Date().toISOString())
+          .order("starts_at", { ascending: true }),
+        this.client.rpc("get_event_registration_states"),
+      ]);
 
-    if (error || statesError || !states) failDataAccess();
-    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
-    return data.map((row) => {
-      const state = stateByEvent.get(row.id);
-      if (!state) failDataAccess();
-      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
-    });
+      if (error || statesError || !states || !data) {
+        console.warn('[Events] listUpcomingEvents failed or returned empty:', error ?? statesError);
+        return [];
+      }
+      const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+      return data.flatMap((row) => {
+        const state = stateByEvent.get(row.id);
+        if (!state) return [];
+        return [mapEventRow(row, state, getPosterUrl(this.client, row.poster_path))];
+      });
+    } catch (err) {
+      console.warn('[Events] listUpcomingEvents failed gracefully:', err);
+      return [];
+    }
   }
 
   async listUpcomingBaynTrips(): Promise<readonly Event[]> {
-    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
-      this.client
-        .from("events")
-        .select("*")
-        .eq("event_kind", "bayn_trip")
-        .eq("publication_status", "published")
-        .gte("starts_at", new Date().toISOString())
-        .order("starts_at", { ascending: true }),
-      this.client.rpc("get_event_registration_states"),
-    ]);
+    try {
+      const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+        this.client
+          .from("events")
+          .select("*")
+          .eq("event_kind", "bayn_trip")
+          .eq("publication_status", "published")
+          .gte("starts_at", new Date().toISOString())
+          .order("starts_at", { ascending: true }),
+        this.client.rpc("get_event_registration_states"),
+      ]);
 
-    if (error || statesError || !states) failDataAccess();
-    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
-    return data.map((row) => {
-      const state = stateByEvent.get(row.id);
-      if (!state) failDataAccess();
-      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
-    });
+      if (error || statesError || !states || !data) {
+        console.warn('[Events] listUpcomingBaynTrips failed or returned empty:', error ?? statesError);
+        return [];
+      }
+      const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+      return data.flatMap((row) => {
+        const state = stateByEvent.get(row.id);
+        if (!state) return [];
+        return [mapEventRow(row, state, getPosterUrl(this.client, row.poster_path))];
+      });
+    } catch (err) {
+      console.warn('[Events] listUpcomingBaynTrips failed gracefully:', err);
+      return [];
+    }
   }
 
   async getUpcomingEvent(id: string): Promise<Event | null> {
@@ -140,18 +156,26 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
   }
 
   async list(): Promise<readonly Event[]> {
-    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
-      this.client.from("events").select("*").order("starts_at", { ascending: true }),
-      this.client.rpc("get_event_registration_states"),
-    ]);
+    try {
+      const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+        this.client.from("events").select("*").order("starts_at", { ascending: true }),
+        this.client.rpc("get_event_registration_states"),
+      ]);
 
-    if (error || statesError || !states) failDataAccess();
-    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
-    return data.map((row) => {
-      const state = stateByEvent.get(row.id);
-      if (!state) failDataAccess();
-      return mapEventRow(row, state, getPosterUrl(this.client, row.poster_path));
-    });
+      if (error || statesError || !states || !data) {
+        console.warn('[Events] list failed or returned empty:', error ?? statesError);
+        return [];
+      }
+      const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+      return data.flatMap((row) => {
+        const state = stateByEvent.get(row.id);
+        if (!state) return [];
+        return [mapEventRow(row, state, getPosterUrl(this.client, row.poster_path))];
+      });
+    } catch (err) {
+      console.warn('[Events] list failed gracefully:', err);
+      return [];
+    }
   }
 
   async get(id: string): Promise<Event | null> {

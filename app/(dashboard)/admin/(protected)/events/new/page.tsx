@@ -5,6 +5,8 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { createEventAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
 
 export const metadata: Metadata = { title: "فعالية جديدة" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function NewEventPage() {
   await requireAdmin();

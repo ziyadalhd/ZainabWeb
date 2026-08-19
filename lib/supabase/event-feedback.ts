@@ -46,34 +46,42 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
   }
 
   async listSubmitted(): Promise<readonly AdminEventFeedbackResponse[]> {
-    const [
-      { data: feedback, error: feedbackError },
-      { data: events, error: eventsError },
-      { data: registrations, error: registrationsError },
-    ] = await Promise.all([
-      this.client.from("event_feedback_links").select("*").not("submitted_at", "is", null).order("submitted_at", { ascending: false }),
-      this.client.from("events").select("id,title"),
-      this.client.from("registrations").select("id,attendee_name"),
-    ]);
-    if (feedbackError || eventsError || registrationsError || !feedback || !events || !registrations) unavailable();
+    try {
+      const [
+        { data: feedback, error: feedbackError },
+        { data: events, error: eventsError },
+        { data: registrations, error: registrationsError },
+      ] = await Promise.all([
+        this.client.from("event_feedback_links").select("*").not("submitted_at", "is", null).order("submitted_at", { ascending: false }),
+        this.client.from("events").select("id,title"),
+        this.client.from("registrations").select("id,attendee_name"),
+      ]);
+      if (feedbackError || eventsError || registrationsError || !feedback || !events || !registrations) {
+        console.warn('[EventFeedback] listSubmitted returned error or empty data:', feedbackError ?? eventsError ?? registrationsError);
+        return [];
+      }
 
-    const eventTitles = new Map(events.map((event) => [event.id, event.title]));
-    const attendeeNames = new Map(registrations.map((registration) => [registration.id, registration.attendee_name]));
+      const eventTitles = new Map(events.map((event) => [event.id, event.title]));
+      const attendeeNames = new Map(registrations.map((registration) => [registration.id, registration.attendee_name]));
 
-    return feedback.flatMap((row: FeedbackRow) => {
-      if (!row.submitted_at || !isRating(row.hospitality_rating) || !isRating(row.material_rating)) return [];
-      const eventTitle = eventTitles.get(row.event_id);
-      if (!eventTitle) return [];
-      return [{
-        id: row.id,
-        eventTitle,
-        attendeeName: row.identity_visible && row.registration_id ? attendeeNames.get(row.registration_id) ?? null : null,
-        hospitalityRating: row.hospitality_rating,
-        materialRating: row.material_rating,
-        suggestions: row.suggestions,
-        submittedAt: row.submitted_at,
-      }];
-    });
+      return feedback.flatMap((row: FeedbackRow) => {
+        if (!row.submitted_at || !isRating(row.hospitality_rating) || !isRating(row.material_rating)) return [];
+        const eventTitle = eventTitles.get(row.event_id);
+        if (!eventTitle) return [];
+        return [{
+          id: row.id,
+          eventTitle,
+          attendeeName: row.identity_visible && row.registration_id ? attendeeNames.get(row.registration_id) ?? null : null,
+          hospitalityRating: row.hospitality_rating,
+          materialRating: row.material_rating,
+          suggestions: row.suggestions,
+          submittedAt: row.submitted_at,
+        }];
+      });
+    } catch (err) {
+      console.warn('[EventFeedback] listSubmitted failed gracefully:', err);
+      return [];
+    }
   }
 }
 

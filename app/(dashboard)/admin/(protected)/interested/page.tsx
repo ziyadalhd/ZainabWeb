@@ -6,6 +6,7 @@ import { createAdminInterestedContactRepository } from "@/lib/supabase/intereste
 
 export const metadata: Metadata = { title: "المهتمات" };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function InterestedPage() {
   await requireAdmin();
