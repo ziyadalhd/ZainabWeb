@@ -33,7 +33,11 @@ export function MfaSetupForm() {
         return;
       }
 
-      if (factors.data.totp.length > 0) {
+      const verifiedFactors = factors.data.totp.filter(
+        (factor) => factor.status === "verified",
+      );
+
+      if (verifiedFactors.length > 0) {
         window.location.replace("/admin/mfa/verify");
         return;
       }

@@ -6,18 +6,6 @@ import { getSupabaseConfig, getSupabaseServerKey } from "@/lib/supabase/config";
 
 export async function createSupabaseServerClient() {
   const { url, publishableKey } = getSupabaseConfig();
-  const serverKey = getSupabaseServerKey();
-
-  const isSecretKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY);
-
-  if (isSecretKey) {
-    return createClient<Database>(url, serverKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-  }
 
   let cookieStore: Awaited<ReturnType<typeof cookies>> | null = null;
   try {
@@ -41,6 +29,17 @@ export async function createSupabaseServerClient() {
           // Server Components cannot write cookies. Proxy handles refresh writes.
         }
       },
+    },
+  });
+}
+
+export function createSupabaseServiceClient() {
+  const { url } = getSupabaseConfig();
+  const serverKey = getSupabaseServerKey();
+  return createClient<Database>(url, serverKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
     },
   });
 }

@@ -23,9 +23,9 @@ export function MfaVerifyForm() {
     setErrorMessage(undefined);
     const supabase = createSupabaseBrowserClient();
     const factors = await supabase.auth.mfa.listFactors();
-    const factor = factors.data?.totp[0];
+    const factor = factors.data?.totp?.find((f) => f.status === "verified") ?? factors.data?.totp?.[0];
 
-    if (factors.error || !factor) {
+    if (factors.error || !factor || factor.status !== "verified") {
       window.location.replace("/admin/mfa/setup");
       return;
     }
