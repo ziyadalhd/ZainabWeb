@@ -21,6 +21,7 @@ describe("EventForm", () => {
     expect(screen.getByLabelText("السعة")).toHaveAttribute("max", "50");
     expect(screen.getByLabelText("السعر بالريال السعودي")).toBeRequired();
     expect(screen.getByLabelText("استقبال التسجيلات")).toBeInTheDocument();
+    expect(screen.getByLabelText(/إضافة بوستر/)).toBeInTheDocument();
     expect(screen.getByText(/الامتلاء يُحسب تلقائيًا/)).toBeInTheDocument();
     expect(screen.getByText("الحفظ لا ينشر الفعالية تلقائيًا.")).toBeInTheDocument();
   });

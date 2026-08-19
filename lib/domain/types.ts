@@ -198,7 +198,7 @@ export interface ServiceRequestInput {
     description: string;
     targetAudience: string;
     duration: string;
-    expectedAttendance: number;
+    expectedAttendance?: number | null;
     requirements: string;
     portfolioUrl: string | null;
   } | null;

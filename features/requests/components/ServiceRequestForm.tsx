@@ -87,11 +87,18 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
           <div className="grid gap-5 pt-2">
             <Field><label className="font-bold" htmlFor="workshop-title">عنوان الورشة</label><input id="workshop-title" className={inputClassName} name="workshopTitle" maxLength={200} required /></Field>
             <Field><label className="font-bold" htmlFor="workshop-description">وصف الورشة</label><textarea id="workshop-description" className={inputClassName} name="workshopDescription" rows={5} maxLength={4000} required /></Field>
-            <Field><label className="font-bold" htmlFor="workshop-audience">الفئة المستهدفة</label><input id="workshop-audience" className={inputClassName} name="workshopTargetAudience" maxLength={200} required /></Field>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field><label className="font-bold" htmlFor="workshop-duration">مدة الورشة</label><input id="workshop-duration" className={inputClassName} name="workshopDuration" maxLength={160} required /></Field>
-              <Field><label className="font-bold" htmlFor="workshop-attendance">عدد الحاضرات المتوقع</label><input id="workshop-attendance" className={inputClassName} name="workshopExpectedAttendance" type="number" min="1" inputMode="numeric" required /></Field>
-            </div>
+            <Field>
+              <label className="font-bold" htmlFor="workshop-audience">الفئة المستهدفة</label>
+              <select id="workshop-audience" className={inputClassName} name="workshopTargetAudience" defaultValue="كبار (فوق ١٨)" required>
+                <option value="كبار (فوق ١٨)">كبار (فوق ١٨)</option>
+                <option value="يافعين (من ١٢ إلى ١٨)">يافعين (من ١٢ إلى ١٨)</option>
+                <option value="صغار (أصغر من ١٢)">صغار (أصغر من ١٢)</option>
+              </select>
+            </Field>
+            <Field>
+              <label className="font-bold" htmlFor="workshop-duration">مدة الورشة</label>
+              <input id="workshop-duration" className={inputClassName} name="workshopDuration" maxLength={160} placeholder="مثال: ساعتان…" required />
+            </Field>
             <Field><label className="font-bold" htmlFor="workshop-requirements">متطلبات الورشة</label><textarea id="workshop-requirements" className={inputClassName} name="workshopRequirements" rows={4} maxLength={2000} required /></Field>
             <Field><label className="font-bold" htmlFor="workshop-portfolio">رابط الخبرة أو الملف <span className="text-sm font-normal muted-copy">(اختياري)</span></label><input id="workshop-portfolio" className={inputClassName} name="workshopPortfolioUrl" type="url" inputMode="url" dir="ltr" /></Field>
           </div>

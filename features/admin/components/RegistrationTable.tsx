@@ -37,7 +37,12 @@ function RegistrationActions({ registration, mode }: { registration: Registratio
   return (
     <div className="flex flex-wrap gap-2">
       {mode === "previous" && registration.status === "registered" ? (
-        <RegistrationFeedbackButton action={prepareEventFeedbackLinkAction.bind(null, registration.id)} />
+        <RegistrationFeedbackButton
+          attendeeName={registration.attendeeName}
+          eventTitle={registration.eventTitle}
+          phoneE164={registration.phoneE164}
+          action={prepareEventFeedbackLinkAction.bind(null, registration.id)}
+        />
       ) : null}
       {mode === "current" ? (
         <RegistrationReminderButton

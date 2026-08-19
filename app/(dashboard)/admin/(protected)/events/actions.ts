@@ -47,15 +47,30 @@ export async function createEventAction(
   const input = validateEventInput(formData);
   if (!input.ok) return { error: input.error };
 
-  let failed = false;
-  try {
-    const repository = await createAdminEventRepository();
-    await repository.create(input.value);
-  } catch {
-    failed = true;
+  const posterRaw = formData.get("poster");
+  const hasPoster = posterRaw instanceof File && posterRaw.size > 0;
+  if (hasPoster) {
+    const posterCheck = validateEventPoster(posterRaw);
+    if (!posterCheck.ok) return { error: "save" };
   }
 
-  if (failed) return { error: "save" };
+  try {
+    const repository = await createAdminEventRepository();
+    const createdEvent = await repository.create(input.value);
+
+    if (hasPoster) {
+      const posterCheck = validateEventPoster(posterRaw);
+      if (posterCheck.ok) {
+        const client = await createSupabaseServerClient();
+        const storage = new SupabaseEventPosterStorage(client);
+        const posterPath = await storage.upload(createdEvent.id, posterRaw, posterCheck.extension);
+        await repository.setPosterPath(createdEvent.id, posterPath);
+      }
+    }
+  } catch {
+    return { error: "save" };
+  }
+
   revalidateEventViews();
   redirect("/admin/events?success=created");
 }
@@ -69,15 +84,34 @@ export async function updateEventAction(
   const input = validateEventInput(formData);
   if (!input.ok) return { error: input.error };
 
-  let failed = false;
+  const posterRaw = formData.get("poster");
+  const hasPoster = posterRaw instanceof File && posterRaw.size > 0;
+  if (hasPoster) {
+    const posterCheck = validateEventPoster(posterRaw);
+    if (!posterCheck.ok) return { error: "save" };
+  }
+
   try {
     const repository = await createAdminEventRepository();
     await repository.update(id, input.value);
+
+    if (hasPoster) {
+      const posterCheck = validateEventPoster(posterRaw);
+      if (posterCheck.ok) {
+        const client = await createSupabaseServerClient();
+        const { data: currentEvent } = await client.from("events").select("poster_path").eq("id", id).maybeSingle();
+        const storage = new SupabaseEventPosterStorage(client);
+        const posterPath = await storage.upload(id, posterRaw, posterCheck.extension);
+        await repository.setPosterPath(id, posterPath);
+        if (currentEvent?.poster_path) {
+          await storage.remove(currentEvent.poster_path).catch(() => undefined);
+        }
+      }
+    }
   } catch {
-    failed = true;
+    return { error: "save" };
   }
 
-  if (failed) return { error: "save" };
   revalidateEventViews();
   redirect("/admin/events?success=updated");
 }

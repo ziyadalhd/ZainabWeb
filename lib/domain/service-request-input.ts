@@ -64,6 +64,14 @@ function validUrl(value: string | null): boolean {
   }
 }
 
+export const approvedWorkshopAudiences = [
+  "كبار (فوق ١٨)",
+  "يافعين (من ١٢ إلى ١٨)",
+  "صغار (أصغر من ١٢)",
+] as const;
+
+export type WorkshopAudience = (typeof approvedWorkshopAudiences)[number];
+
 export function isServiceRequestKind(value: string): value is ServiceRequestKind {
   return value === "space_booking" || value === "celebration_booking" || value === "workshop_application";
 }
@@ -85,9 +93,13 @@ export function validateServiceRequestInput(
   if (kind === "workshop_application") {
     const title = text(formData, "workshopTitle") || "طلب ورشة عمل";
     const description = text(formData, "workshopDescription") || "لا يوجد وصف إضافي";
-    const targetAudience = text(formData, "workshopTargetAudience") || "عام";
+    const rawAudience = text(formData, "workshopTargetAudience");
+    const targetAudience = approvedWorkshopAudiences.includes(rawAudience as WorkshopAudience)
+      ? rawAudience
+      : (rawAudience || "كبار (فوق ١٨)");
     const duration = text(formData, "workshopDuration") || "ساعتان";
-    const expectedAttendance = positiveInteger(text(formData, "workshopExpectedAttendance")) ?? 10;
+    const rawExpected = text(formData, "workshopExpectedAttendance");
+    const expectedAttendance = rawExpected ? (positiveInteger(rawExpected) ?? 10) : null;
     const requirements = text(formData, "workshopRequirements") || "لا يوجد";
     const portfolioUrl = optionalText(formData, "workshopPortfolioUrl");
     const validPortfolio = validUrl(portfolioUrl) ? portfolioUrl : null;

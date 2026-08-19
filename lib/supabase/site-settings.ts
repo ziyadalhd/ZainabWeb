@@ -31,7 +31,7 @@ const defaultSiteSettings: SiteSettings = {
   contactPhone: "0537918640",
   defaultVenueName: "نادي بَيْن الثقافي",
   defaultVenueAddress: "مكة المكرمة",
-  defaultVenueMapUrl: null,
+  defaultVenueMapUrl: "https://maps.app.goo.gl/Seti5sBZvmhaHeNe8?g_st=ic",
   instagramUrl: null,
   tiktokUrl: null,
   literaryPartnerTitle: "الشريك الأدبي",

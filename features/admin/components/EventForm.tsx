@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import type { Event } from "@/lib/domain/types";
+import { PosterFrame } from "@/components/ui/PosterFrame";
 import { EventSchedulePicker } from "@/features/scheduling/components/EventSchedulePicker";
 import { formatRiyadhDateInput, formatRiyadhTimeInput } from "@/lib/format/date";
 import type {
@@ -55,7 +56,12 @@ function formatPriceInput(priceHalalas: number | null | undefined): string {
 export function EventForm({ action, event, submitLabel }: EventFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
   const [dirty, setDirty] = useState(false);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => () => {
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+  }, [localPreviewUrl]);
 
   useEffect(() => {
     if (!dirty) return;
@@ -237,6 +243,40 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
             {fieldError("registrationStatus")}
           </div>
         </div>
+      </fieldset>
+
+      <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">
+          بوستر الفعالية
+        </legend>
+        <p className="text-sm muted-copy">اختياري. يقبل PNG أو JPG أو WebP، ويظهر للزائرات مع تفاصيل الفعالية.</p>
+        {(localPreviewUrl ?? event?.posterUrl) ? (
+          <div className="grid gap-2">
+            <p className="text-sm font-bold text-[var(--brand-forest)]">{localPreviewUrl ? "معاينة البوستر المختار" : "البوستر الحالي"}</p>
+            <PosterFrame
+              src={localPreviewUrl ?? event?.posterUrl ?? ""}
+              alt={event?.title ? `بوستر فعالية ${event.title}` : "معاينة بوستر الفعالية"}
+              sizes="(min-width: 640px) 28rem, 100vw"
+              className="aspect-[4/5] w-full max-w-md rounded-[var(--radius-surface)] border border-[var(--color-border)]"
+            />
+          </div>
+        ) : null}
+        <label className="grid gap-2 font-bold" htmlFor="event-poster">
+          {event?.posterUrl ? "استبدال البوستر" : "إضافة بوستر"}
+          <input
+            id="event-poster"
+            name="poster"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="field-control block text-sm"
+            onChange={(eventTarget) => {
+              if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+              const file = eventTarget.target.files?.[0];
+              setLocalPreviewUrl(file ? URL.createObjectURL(file) : null);
+              setDirty(true);
+            }}
+          />
+        </label>
       </fieldset>
 
       <div className="flex flex-col items-stretch gap-3 border-t border-[var(--color-border)] pt-6 sm:flex-row sm:items-center">

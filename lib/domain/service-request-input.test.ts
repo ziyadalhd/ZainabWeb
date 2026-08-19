@@ -35,19 +35,28 @@ describe("validateServiceRequestInput", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("requires the approved workshop fields", () => {
+  it("requires the approved workshop fields with structured audience", () => {
     const result = validateServiceRequestInput(form({
       requesterName: "سارة أحمد",
       phone: "0551234567",
       workshopTitle: "فن الحكي",
       workshopDescription: "ورشة عملية لتجربة الحكي أمام مجموعة صغيرة.",
-      workshopTargetAudience: "اليافعات",
+      workshopTargetAudience: "يافعين (من ١٢ إلى ١٨)",
       workshopDuration: "ساعتان",
-      workshopExpectedAttendance: "18",
       workshopRequirements: "قاعة ومقاعد",
       workshopPortfolioUrl: "https://example.com/portfolio",
     }), "workshop_application");
-    expect(result).toMatchObject({ ok: true, value: { workshop: { title: "فن الحكي" } } });
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        workshop: {
+          title: "فن الحكي",
+          targetAudience: "يافعين (من ١٢ إلى ١٨)",
+          duration: "ساعتان",
+          expectedAttendance: null,
+        },
+      },
+    });
   });
 
   it("normalizes Arabic-Indic numerals and time with single digit hour", () => {

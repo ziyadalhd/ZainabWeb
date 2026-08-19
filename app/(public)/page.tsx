@@ -2,16 +2,18 @@ import Link from "next/link";
 import { BrandIntersection } from "@/components/brand/BrandIntersection";
 import { ClubStoryTabs } from "@/features/home/components/ClubStoryTabs";
 import { HomeUpcomingEvents, selectHomeEvents } from "@/features/home/components/HomeUpcomingEvents";
+import { HomeInterestedSection } from "@/features/home/components/HomeInterestedSection";
 import { createEventCatalog } from "@/lib/supabase/events";
 import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
 const destinations = [
+  { href: "/events", label: "الفعاليات" },
   { href: "/space-booking", label: "حجز المساحة" },
   { href: "/celebration-booking", label: "حجز إقامة حفلات" },
   { href: "/bayn-trips", label: "رحلات بَيْن" },
+  { href: "/surveys/workshop-application", label: "طلب تقديم ورشة" },
   { href: "/literary-partner", label: "الشريك الأدبي" },
-  { href: "/events", label: "الفعاليات" },
-  { href: "/surveys", label: "استبيانات" },
+  { href: "/contact", label: "التواصل" },
 ];
 
 export default async function HomePage() {
@@ -34,7 +36,7 @@ export default async function HomePage() {
           <p className="eyebrow">مساحة ثقافية في مكة</p>
           <h1 className="page-title mt-5">نادي بَيْن الثقافي</h1>
           <div className="mt-7 flex flex-col gap-3 min-[380px]:flex-row min-[380px]:flex-wrap">
-            <Link href="/events" className="button-primary px-6 py-3">استعراض الفعاليات</Link>
+            <Link href="/events" className="button-primary px-6 py-3">استكشفي الفعاليات</Link>
             <Link href="/contact" className="button-secondary px-6 py-3">التواصل</Link>
           </div>
         </div>
@@ -51,19 +53,21 @@ export default async function HomePage() {
 
       <HomeUpcomingEvents events={events} />
 
+      <HomeInterestedSection />
+
       <section className="border-t border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className="page-shell section-space">
-        <p className="eyebrow">الأقسام</p>
-        <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">ابدأ من هنا</h2>
-        <div className="mt-8 border-t border-[var(--brand-olive)]">
-          {destinations.map((destination) => (
-            <Link key={destination.href} href={destination.href} className="group grid min-h-20 grid-cols-[1rem_1fr_auto] items-center gap-4 border-b border-[var(--color-border)] py-3 text-[var(--brand-forest)] transition-[background-color,padding] hover:bg-[var(--brand-cream)] hover:px-3">
-              <span aria-hidden="true" className="size-3 bg-[var(--brand-amber)]" />
-              <span className="text-xl font-black sm:text-2xl">{destination.label}</span>
-              <span aria-hidden="true" className="text-2xl transition-transform group-hover:-translate-x-1">←</span>
-            </Link>
-          ))}
-        </div>
+          <p className="eyebrow">الأقسام</p>
+          <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">ابدئي من هنا</h2>
+          <div className="mt-8 border-t border-[var(--brand-olive)]">
+            {destinations.map((destination) => (
+              <Link key={destination.href} href={destination.href} className="group grid min-h-20 grid-cols-[1rem_1fr_auto] items-center gap-4 border-b border-[var(--color-border)] py-3 text-[var(--brand-forest)] transition-[background-color,padding] hover:bg-[var(--brand-cream)] hover:px-3">
+                <span aria-hidden="true" className="size-3 bg-[var(--brand-amber)]" />
+                <span className="text-xl font-black sm:text-2xl">{destination.label}</span>
+                <span aria-hidden="true" className="text-2xl transition-transform group-hover:-translate-x-1">←</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>

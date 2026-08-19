@@ -10,6 +10,7 @@ vi.mock("@/app/(dashboard)/admin/(protected)/registrations/actions", () => ({
   inviteRegistrationAction: vi.fn(),
   markRegistrationReminderSentAction: vi.fn(),
   prepareRegistrationReminderAction: vi.fn(),
+  prepareEventFeedbackLinkAction: vi.fn(),
   recordCheckInAction: vi.fn(),
   revokeInvitationAction: vi.fn(),
   setRegistrationPaymentStatusAction: vi.fn(),
@@ -49,5 +50,11 @@ describe("RegistrationTable", () => {
     expect(screen.getByRole("button", { name: "تسجيل الحضور" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "تسجيل الغياب" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "تجهيز تذكير WhatsApp" })).toBeInTheDocument();
+  });
+
+  it("shows feedback preparation button in previous registrations mode", () => {
+    render(<RegistrationTable registrations={[registration]} mode="previous" />);
+
+    expect(screen.getByRole("button", { name: "تجهيز رابط تقييم" })).toBeInTheDocument();
   });
 });

@@ -8,7 +8,7 @@ export const publicNavigation: readonly NavigationItem[] = [
   { href: "/events", label: "الفعاليات" },
   { href: "/space-booking", label: "حجز المساحة" },
   { href: "/bayn-trips", label: "رحلات بَيْن" },
-  { href: "/surveys", label: "استبيانات" },
+  { href: "/surveys/workshop-application", label: "طلب تقديم ورشة" },
   { href: "/contact", label: "التواصل" },
 ];
 
