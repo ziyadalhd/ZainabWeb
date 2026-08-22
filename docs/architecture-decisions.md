@@ -191,7 +191,7 @@ Record approved architectural decisions here only after explicit user approval. 
 
 ## Administrator MFA device management: 2026-08-22
 
-- Status: approved by the owner, implemented on `codex/product-quality-polish`, and deployed to Production on 2026-08-22 in Vercel deployment `dpl_4ZQo4BtqHh1FSMzXspVi9S7RPfjy`.
+- Status: approved by the owner, implemented on `codex/product-quality-polish`, and deployed to Production on 2026-08-22 in Vercel deployment `dpl_CnKXxrLKFyqC1ufu8eAccVK29Www`.
 - Management boundary: only an already authenticated `aal2` administrator can open `/admin/security`, list verified TOTP factors, enroll and verify another factor, or remove an old factor.
 - Replacement safety: the application never silently removes a verified factor and prevents removing the final verified factor. The administrator must verify a new device before the old device can be removed.
 - Login behavior: when multiple verified factors exist, the MFA challenge screen displays their friendly names and lets the administrator choose which device to use.
