@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 
 const surveys = [
   { href: "/surveys/workshop-application", title: "طلب تقديم ورشة", status: "عندك فكرة ورشة؟ شاركينا التفاصيل" },
-  { href: "/surveys/interested-contact", title: "خليكِ قريبة من بَيْن", status: "سجّلي اهتمامك عشان توصلك الفعاليات القادمة" },
   { href: "/surveys/event-feedback", title: "تقييم الفعالية", status: "شاركينا رأيك بعد حضور الفعالية" },
 ];
 

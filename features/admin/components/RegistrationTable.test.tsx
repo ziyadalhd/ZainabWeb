@@ -7,10 +7,6 @@ vi.mock("@/app/(dashboard)/admin/(protected)/registrations/actions", () => ({
   cancelRegistrationAction: vi.fn(),
   cancelWaitlistedRegistrationAction: vi.fn(),
   confirmAttendanceAction: vi.fn(),
-  inviteRegistrationAction: vi.fn(),
-  markRegistrationReminderSentAction: vi.fn(),
-  prepareRegistrationReminderAction: vi.fn(),
-  prepareEventFeedbackLinkAction: vi.fn(),
   recordCheckInAction: vi.fn(),
   revokeInvitationAction: vi.fn(),
   setRegistrationPaymentStatusAction: vi.fn(),
@@ -49,12 +45,16 @@ describe("RegistrationTable", () => {
     expect(screen.getByRole("button", { name: "تأكيد الحضور" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "تسجيل الحضور" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "تسجيل الغياب" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "تجهيز تذكير WhatsApp" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "فتح التواصل" })).toHaveAttribute("href", `/admin/events/${registration.eventId}?tab=communications`);
+    expect(screen.queryByText("تجهيز تذكير WhatsApp")).not.toBeInTheDocument();
   });
 
-  it("shows feedback preparation button in previous registrations mode", () => {
+  it("routes previous-registration messaging to the event communication workspace", () => {
     render(<RegistrationTable registrations={[registration]} mode="previous" />);
 
-    expect(screen.getByRole("button", { name: "تجهيز رابط تقييم" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "فتح التواصل" })).toHaveAttribute("href", `/admin/events/${registration.eventId}?tab=communications`);
+    expect(screen.queryByRole("button", { name: "إلغاء التسجيل" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "حفظ الدفع" })).not.toBeInTheDocument();
+    expect(screen.getByText("غير مدفوع")).toBeInTheDocument();
   });
 });

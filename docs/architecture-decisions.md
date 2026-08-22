@@ -35,6 +35,14 @@ Record approved architectural decisions here only after explicit user approval. 
 - Security, privacy, and migration implications.
 - Related questions resolved in `docs/open-questions.md`.
 
+## Development migration reconciliation: 2026-08-20
+
+- Status: completed for the linked Supabase development project only. No production migration was applied, repaired, or promoted.
+- Evidence: `supabase migration list --linked` reports matching local and remote versions through `20260820092520`.
+- Repaired history: the verified existing schema changes for the default venue map URL, administrator message templates, and retained `cancelled` event status were recorded as applied. This repair only reconciled the development migration-history table; it did not execute DDL.
+- Deferred drafts: three conflicting, previously untracked SQL drafts now live in `supabase/migration-drafts/` and are explicitly excluded from the deployable migration chain. They cannot be applied without an explicit product decision and a reviewed forward migration.
+- Sources: Supabase official documentation was queried through the Supabase MCP for migration repair and deployment workflow; Context7 library ID `/supabase/supabase` was queried for exact-count pagination, ranges, relation selection, and filtering in `supabase-js`.
+
 ## Documentation check: 2026-08-02
 
 - Context7 library ID: `/vercel/next.js`.
@@ -131,6 +139,34 @@ Record approved architectural decisions here only after explicit user approval. 
 - Administrator security: one full-access administrator is approved initially, with MFA required before launch.
 - Monitoring: Sentry is approved with privacy filtering and no personal form payloads. Lightweight non-advertising traffic analytics are approved.
 
+## Admin experience redesign direction: 2026-08-20
+
+- Status: approved product and UX direction; foundational implementation started on 2026-08-20.
+- Overview: the redesigned admin command center is action-first. `يحتاج انتباهك` and the upcoming operational schedule lead; aggregate metrics are secondary.
+- Phase-one awareness: use an Attention Queue and Recent Activity. Do not build a notification center or header bell in the first redesign phase.
+- Templates: after the provider-neutral manual outbox foundation exists, administrators may edit global default message templates and create explicit per-event overrides with restore-to-default behavior.
+- Event duplication: duplication is a P2 capability. It creates a new draft from reusable event content and settings only and never copies registrations, reminders, messages, secure tokens, feedback, or history.
+- Interested contacts: the current consent baseline is email-only. Do not use the current consent as authorization for WhatsApp marketing or silently expand its channel scope.
+- Event cancellation: use one approved standard cancellation-message template populated with reliable event facts. Do not collect a custom cancellation-reason field.
+- Implementation authorization: the product owner subsequently authorized implementation on 2026-08-20. The foundational navigation, action-first Overview, and Event Workspace are implemented without a migration, provider setup, or new external service. Remaining phases retain their documented dependency and approval boundaries.
+- Registrations: the operational entry point is `/admin/registrations`. Its URL-backed views distinguish upcoming registrations, waitlist/invitations, and previous/cancelled records; existing legacy routes redirect to the matching view. The first increment filters an authorized in-memory result set at the page boundary; repository-level query filtering and pagination remain pending before data volume warrants them.
+- Manual outbox (superseded on 2026-08-20): `/admin/messages` was initially a sequential administrator-only reminder queue. The event-centered decision below replaces this route as the operational entry point while preserving `/admin/messages` as a compatibility redirect.
+- Requests: `/admin/requests` now uses a URL-backed master-detail view. Search and status/type filters narrow the authorized list before only the selected booking request fetches its conflict warning; workshop and booking details remain separate, and no event relationship is fabricated.
+- Template persistence: `20260820082341_add_message_templates.sql` defines an admin-only RLS-protected global manual-reminder template and optional event-specific override. It has not been applied to the linked development database because unrelated migrations precede it in the pending queue; do not skip or apply them without a separate review.
+- Detailed plan: `docs/admin-experience-redesign-plan.md`.
+
+## Event-centered manual messaging: 2026-08-20
+
+- Status: implemented and released to production on 2026-08-21.
+- Canonical workspace: `/admin/events/[id]?tab=communications` owns all manual participant communication for one event. `/admin/messages` redirects administrators to event selection instead of maintaining a second operational queue.
+- Supported categories: registration confirmation, 24-hour reminder, 3-hour reminder, waitlist invitation, the approved standard cancellation notice, and feedback request. Their availability follows the existing registration and event lifecycle rules.
+- Operator contract: one explicit click prepares a fresh secure recipient link and opens a prefilled WhatsApp destination. A separate `تم الإرسال` action records only the administrator's manual confirmation. The product never represents this as provider delivery or read evidence.
+- Persistence and privacy: `manual_messages` stores identifiers, category, preparation/sent/superseded timestamps, and only a SHA-256 token hash where a secure link is required. It stores no recipient name, phone, rendered body, or plaintext token. RLS and explicit grants restrict reads and mutations to allowlisted administrators.
+- Retry and idempotency: preparing again supersedes any unsent draft for the same registration and category before creating a new link. Marking the same message sent is idempotent. Legacy reminder rows remain visible as read-only history during migration.
+- Data scope: registrations, feedback responses, and message history are fetched for the selected event, and server actions revalidate only the event workspace and action-first overview.
+- Documentation consulted: Context7 library `/supabase/supabase` for Supabase JavaScript v2 RPC and query behavior, plus current official Supabase database-security guidance for RLS, grants, exposed schemas, and fixed-search-path `security definer` functions.
+- Production rollout: source migration `20260820194036_manual_message_workflow.sql` was applied through the Supabase migration API and recorded in the production history as `20260820210954_manual_message_workflow`. Post-apply checks confirmed RLS, the administrator select policy, explicit grants, both public RPC wrappers, the corrected cancellation constraint, unchanged event/registration counts, and no seeded message rows. Vercel deployment `dpl_35asjTbvw2uxsULZLBsubuTMScKe` was promoted afterward.
+
 ## Hosted development without Docker: 2026-08-09
 
 - Status: approved and provisioned for development.
@@ -152,6 +188,18 @@ Record approved architectural decisions here only after explicit user approval. 
 - Rollout: the application and migration must be released together. The migration must not reach production before the enrollment/challenge routes are available, because it would intentionally remove all administrator data access from `aal1` sessions.
 - Verification: application lint, TypeScript, 75 Vitest checks, and the Next.js production build passed. A transactionally isolated development-project check returned `false` for `aal1` and `true` for `aal2`; the security advisor reported only the pre-existing leaked-password-protection warning.
 - Documentation: Context7 `/supabase/supabase` and the current official Supabase TOTP MFA documentation were consulted for enrollment, challenge/verify, assurance-level routing, SSR handling, and AAL enforcement through RLS.
+
+## Administrator MFA device management: 2026-08-22
+
+- Status: approved by the owner, implemented on `codex/product-quality-polish`, and deployed to Production on 2026-08-22 in Vercel deployment `dpl_4ZQo4BtqHh1FSMzXspVi9S7RPfjy`.
+- Management boundary: only an already authenticated `aal2` administrator can open `/admin/security`, list verified TOTP factors, enroll and verify another factor, or remove an old factor.
+- Replacement safety: the application never silently removes a verified factor and prevents removing the final verified factor. The administrator must verify a new device before the old device can be removed.
+- Login behavior: when multiple verified factors exist, the MFA challenge screen displays their friendly names and lets the administrator choose which device to use.
+- Session handling: after removing a factor, the application refreshes the Supabase Auth session. If the refreshed session is no longer `aal2`, it immediately redirects to challenge one of the remaining factors.
+- Recovery boundary: Supabase Auth does not provide TOTP recovery codes. The approved normal recovery method is a second verified factor; losing every factor requires a trusted manual owner recovery through Supabase and never enables an `aal1` bypass in the application.
+- Privacy and dependencies: QR secrets remain browser-only transient state and are not logged or persisted by application code. No database migration, new package, paid tier, phone factor, or messaging provider is introduced.
+- Production verification: the deployment built with Next.js `16.2.12`, `/admin/security` redirected an unauthenticated request to `/admin/login`, public smoke routes succeeded, and Vercel reported no runtime error clusters or warning/error logs for the new deployment. The live factor-management UI was not mutated during smoke testing because doing so would change the owner's real MFA factors.
+- Documentation: Context7 was unavailable in this session, so the current official Supabase changelog, MFA guide, TOTP guide, JavaScript MFA API reference, and the installed `@supabase/auth-js@2.112.0` types were used as the documented fallback.
 
 ## Production registration rules implementation: 2026-08-09
 
@@ -201,6 +249,7 @@ Record approved architectural decisions here only after explicit user approval. 
 - Lifecycle: requests begin as `new`; an administrator can start review. The schema supports the approved `under_review`, `accepted`, `rejected`, and `cancelled` states plus a request-specific price, terms, and adjustable offer expiry (48 hours by default). User-facing offer authoring and acceptance remain unfinished.
 - Retention: the owner approved deletion of request personal data 90 days after `accepted`, `rejected`, or `cancelled`. A daily Supabase Cron job removes expired request rows; application roles cannot execute the cleanup helper.
 - Security review: the migration uses fixed empty search paths, non-exposed privileged helpers, explicit grants, and `security invoker` public wrappers. The current Supabase changelog was reviewed; the Data API's explicit-grant change is addressed by the explicit grants and RLS policy.
+- Application boundary: submission failures are surfaced as a save failure; the repository does not fall back to direct table insertion, preserving the narrowly scoped RPC boundary.
 
 ## Person-specific manual WhatsApp reminders: 2026-08-11
 
@@ -229,5 +278,12 @@ Record approved architectural decisions here only after explicit user approval. 
 - Posters: one shared frame presents the complete original image without cropping or distortion and uses a decorative blurred copy only to fill surrounding space.
 - Scheduling: `@daypicker/react@10.0.1` is pinned for the accessible Gregorian RTL calendar. Shared application components keep the existing `YYYY-MM-DD` and `HH:mm` server contract, Riyadh interpretation, and quarter-hour choices. No calendar API or external scheduling service receives data.
 - Venue map: the owner approved the exact public Google Maps destination `https://maps.app.goo.gl/Seti5sBZvmhaHeNe8?g_st=ic`. A forward-only nullable `site_settings.default_venue_map_url` column keeps the link administrator-editable. The site opens the external map only after a visitor selects the venue card; no map is embedded and no new tracking provider is initialized.
-- Turnstile: the existing server verification is unchanged. The public widget uses Cloudflare's flexible width mode so it fits small mobile screens.
+- Turnstile: the existing server verification remains mandatory when enforcement is enabled. The account widget is `managed`; the public widget uses flexible sizing and `interaction-only` appearance, with automatic challenge retry and token refresh, so ordinary visitors do not see it unless interaction is required.
 - Documentation: Context7 IDs `/gpbl/react-day-picker` and `/supabase/supabase` were queried for v10 controlled selection, Arabic locale/RTL, accessible keyboard behavior, stylesheet setup, forward migrations, and environment separation. Current official Cloudflare Turnstile widget-configuration documentation was used for flexible sizing.
+## Message-template schema repair: 2026-08-20
+
+- Status: applied to production.
+- Cause: the original message-template migration was present in migration history while the Data API initially returned `404` for `public.message_templates`, which made an otherwise valid reminder template appear as a validation failure.
+- Repair: forward-only migration `20260820102044_repair_message_templates_schema.sql` idempotently ensures the table, global and per-event uniqueness, update trigger, RLS, explicit authenticated grant, administrator-only policy, and approved global reminder template. The migration was recorded as applied only after the schema was verified.
+- Verification: production confirms the table exists, RLS is enabled, the administrator policy exists, and exactly one global `registration_reminder` template is available.
+- Documentation: official Supabase changelog and Data API/RLS guidance were checked. The Data API requires both explicit grants and RLS policies.

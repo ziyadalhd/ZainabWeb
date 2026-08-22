@@ -21,6 +21,17 @@ export async function startServiceRequestReviewAction(id: string): Promise<void>
   revalidateRequestViews();
 }
 
+export async function markServiceRequestContactedAction(id: string): Promise<void> {
+  await requireAdmin();
+  try {
+    const repository = await createAdminServiceRequestRepository();
+    await repository.markContacted(id);
+  } catch {
+    return;
+  }
+  revalidateRequestViews();
+}
+
 export async function createServiceRequestOfferAction(
   id: string,
   _previousState: ServiceRequestOfferActionState,

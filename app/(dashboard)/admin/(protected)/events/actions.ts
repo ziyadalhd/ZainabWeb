@@ -37,6 +37,7 @@ function revalidateEventViews() {
   revalidatePath("/admin");
   revalidatePath("/admin/calendar");
   revalidatePath("/admin/events");
+  revalidatePath("/admin/events/[id]", "page");
 }
 
 export async function createEventAction(

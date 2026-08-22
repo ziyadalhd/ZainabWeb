@@ -71,12 +71,10 @@ implements InterestedContactService, AdminInterestedContactRepository {
         .select("*")
         .order("consented_at", { ascending: false });
       if (error || !data) {
-        console.warn('[InterestedContacts] list returned error or empty data:', error);
         return [];
       }
       return data.map(mapRow);
-    } catch (err) {
-      console.warn('[InterestedContacts] list failed gracefully:', err);
+    } catch {
       return [];
     }
   }

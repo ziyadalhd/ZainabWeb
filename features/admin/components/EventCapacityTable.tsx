@@ -2,11 +2,21 @@ import Link from "next/link";
 import type { Event } from "@/lib/domain/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import {
+  EventStatusQuickActions,
+  type EventStatusAction,
+} from "@/features/admin/components/EventStatusQuickActions";
 import { formatArabicEventDate, formatArabicEventTimeRange, formatArabicNumber, formatEventPrice } from "@/lib/format/date";
-import { changeEventStatusAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
-import { ConfirmActionForm } from "@/features/admin/components/ConfirmActionForm";
 
-export function EventCapacityTable({ events, compact = false }: { events: readonly Event[]; compact?: boolean }) {
+export function EventCapacityTable({
+  events,
+  compact = false,
+  statusAction,
+}: {
+  events: readonly Event[];
+  compact?: boolean;
+  statusAction?: EventStatusAction;
+}) {
   if (events.length === 0) {
     return <EmptyState title="لا توجد فعاليات بعد" description="ابدئي بإنشاء فعالية جديدة؛ ستُحفظ أولًا كمسودة حتى تراجعيها." />;
   }
@@ -41,26 +51,8 @@ export function EventCapacityTable({ events, compact = false }: { events: readon
               {!compact ? (
                 <td data-label="الإجراءات" className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
-                    <Link href={`/admin/events/${event.id}/edit`} className="button-quiet min-h-9 px-3 py-1.5 text-sm">تعديل</Link>
-                    {event.publicationStatus === "draft" && event.endsAt !== null && event.priceHalalas !== null ? (
-                      <form action={changeEventStatusAction.bind(null, event.id, "published")}><button className="button-primary min-h-9 px-3 py-1.5 text-sm" type="submit">نشر</button></form>
-                    ) : null}
-                    {event.publicationStatus === "draft" && (event.endsAt === null || event.priceHalalas === null) ? (
-                      <span className="notice-warning inline-flex px-3 py-1.5 text-xs">أكمل البيانات للنشر</span>
-                    ) : null}
-                    {event.publicationStatus === "published" && (event.endsAt === null || event.priceHalalas === null) ? (
-                      <span className="notice-warning inline-flex px-3 py-1.5 text-xs">بيانات النشر ناقصة</span>
-                    ) : null}
-                    {event.publicationStatus !== "archived" ? (
-                      <ConfirmActionForm
-                        action={changeEventStatusAction.bind(null, event.id, "archived")}
-                        label="أرشفة"
-                        confirmation={`هل تريدين أرشفة «${event.title}»؟ ستختفي من الموقع العام.`}
-                        tone="quiet"
-                      />
-                    ) : (
-                      <form action={changeEventStatusAction.bind(null, event.id, "draft")}><button className="button-secondary min-h-9 px-3 py-1.5 text-sm" type="submit">إعادة إلى مسودة</button></form>
-                    )}
+                    <Link href={`/admin/events/${event.id}`} className="button-primary min-h-9 px-3 py-1.5 text-sm">إدارة الفعالية</Link>
+                    {statusAction ? <EventStatusQuickActions event={event} action={statusAction} /> : null}
                   </div>
                 </td>
               ) : null}

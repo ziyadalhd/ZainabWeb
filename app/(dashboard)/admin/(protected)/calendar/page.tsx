@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { buildCalendarItems } from "@/features/admin/calendar-items";
 import { CalendarMonthGrid } from "@/features/admin/components/CalendarMonthGrid";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getRiyadhDateParts } from "@/lib/format/date";
 import { createAdminEventRepository } from "@/lib/supabase/events";
+import { createAdminServiceRequestRepository } from "@/lib/supabase/service-requests";
 
 export const metadata: Metadata = { title: "التقويم" };
 export const dynamic = "force-dynamic";
@@ -37,22 +39,24 @@ export default async function AdminCalendarPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   await requireAdmin();
-  const [{ month: requestedMonth }, repository] = await Promise.all([
+  const [{ month: requestedMonth }, eventRepository, requestRepository] = await Promise.all([
     searchParams,
     createAdminEventRepository(),
+    createAdminServiceRequestRepository(),
   ]);
-  const events = await repository.list();
+  const [events, requests] = await Promise.all([eventRepository.list(), requestRepository.list()]);
   const month = getCalendarMonth(requestedMonth);
+  const items = buildCalendarItems(events, requests);
 
   return (
     <main className="admin-page">
-      <PageHeader eyebrow="لوحة الإدارة" title="التقويم" description="تقويم ميلادي عربي يعرض الفعاليات بتوقيت السعودية." />
+      <PageHeader eyebrow="لوحة الإدارة" title="التقويم" description="راجعي الفعاليات وطلبات الحجز والحجوزات المقبولة وتداخل مواعيدها بتوقيت السعودية." />
       <nav aria-label="التنقل بين أشهر التقويم" className="mt-8 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         <Link className="button-quiet" href={monthHref(month, -1)}>الشهر السابق</Link>
         <Link className="button-quiet" href={monthHref(month, 1)}>الشهر التالي</Link>
         <Link className="button-secondary col-span-2" href="/admin/calendar">الشهر الحالي</Link>
       </nav>
-      <div className="mt-5"><CalendarMonthGrid events={events} month={month} /></div>
+      <div className="mt-5"><CalendarMonthGrid items={items} month={month} /></div>
     </main>
   );
 }

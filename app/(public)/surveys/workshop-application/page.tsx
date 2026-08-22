@@ -5,13 +5,13 @@ import { ServiceRequestForm } from "@/features/requests/components/ServiceReques
 
 export const metadata: Metadata = {
   title: "طلب تقديم ورشة",
-  description: "إرسال طلب تقديم ورشة إلى نادي بَيْن الثقافي لمراجعته من الإدارة.",
+  description: "إرسال طلب تقديم ورشة إلى نادي بَيْن الثقافي للتواصل معك من الإدارة.",
 };
 
 export default function WorkshopApplicationPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="شاركي معرفتك" title="طلب تقديم ورشة" description="عندك فكرة تستحق تنشارك؟ عرفينا بالورشة ومتطلباتها، وبنراجع طلبك ونتواصل معك." />
+      <PageHeader eyebrow="شاركي معرفتك" title="طلب تقديم ورشة" description="عندك فكرة تستحق تنشارك؟ عرفينا بالورشة ومتطلباتها، ونتواصل معك عبر واتساب." />
       <section className="mt-7 max-w-3xl">
         <ServiceRequestForm kind="workshop_application" action={submitServiceRequestAction.bind(null, "workshop_application")} />
       </section>

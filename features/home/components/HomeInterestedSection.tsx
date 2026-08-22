@@ -1,22 +1,63 @@
-import { submitInterestedContactAction } from "@/app/(public)/surveys/interested-contact/actions";
+"use client";
+
+import { useActionState, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  submitInterestedContactAction,
+  type InterestedContactActionError,
+} from "@/app/(public)/surveys/interested-contact/actions";
 import { TurnstileField } from "@/features/security/components/TurnstileField";
 
-export function HomeInterestedSection() {
-  return (
-    <section className="border-t border-[var(--color-border)] bg-[var(--brand-cream)]/50">
-      <div className="page-shell section-space">
-        <div className="mx-auto max-w-3xl">
-          <p className="eyebrow">خليكِ قريبة</p>
-          <h2 className="mt-3 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">
-            خليكِ قريبة من النادي
-          </h2>
-          <p className="mt-3 text-base text-[var(--brand-forest)]/80 sm:text-lg">
-            سجّلي اهتمامكِ لتصلكِ معلومات الفعاليات والأنشطة القادمة من نادي بَيْن الثقافي فور فتح التسجيل.
-          </p>
+const errorMessages: Record<InterestedContactActionError, string> = {
+  contactName: "اكتبي الاسم من حرفين إلى ١٢٠ حرفًا.",
+  phone: "اكتبي رقم جوال سعودي صحيحًا.",
+  email: "اكتبي بريدًا إلكترونيًا صحيحًا.",
+  consent: "يلزم تحديد موافقتك لتسجيل اهتمامك بالفعاليات القادمة.",
+  turnstile: "لم يكتمل التحقق. حاولي مرة أخرى.",
+  invalid: "تحققي من البيانات ثم حاولي مرة أخرى.",
+  save: "تعذر الحفظ الآن. حاولي مرة أخرى بعد قليل.",
+};
 
-          <div className="form-surface mt-8 p-5 sm:p-8">
-            <form action={submitInterestedContactAction} className="grid gap-5">
-              <div className="grid gap-5 sm:grid-cols-2">
+const errorField: Partial<Record<InterestedContactActionError, string>> = {
+  contactName: "contactName",
+  phone: "phone",
+  email: "email",
+  consent: "upcomingEventsConsent",
+};
+
+export function HomeInterestedSection() {
+  const [state, formAction, pending] = useActionState(submitInterestedContactAction, {});
+  const formRef = useRef<HTMLFormElement>(null);
+  const [turnstileVerified, setTurnstileVerified] = useState(false);
+  const [turnstileConfigurationFailed, setTurnstileConfigurationFailed] = useState(false);
+
+  useEffect(() => {
+    const field = state.error ? errorField[state.error] : undefined;
+    if (field) formRef.current?.querySelector<HTMLElement>(`[name="${field}"]`)?.focus();
+  }, [state.error]);
+
+  return (
+    <section id="interest" className="border-t border-[var(--color-border)] bg-[var(--brand-cream)]/50">
+      <div className="page-shell section-space">
+        <div className="mx-auto grid max-w-5xl gap-7 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgb(40_75_47_/_0.08)] sm:p-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(22rem,1fr)] lg:gap-12 lg:p-10">
+          <div className="self-center">
+            <p className="eyebrow">خليكِ قريبة</p>
+            <h2 className="mt-3 text-3xl font-black leading-tight text-[var(--brand-forest)] sm:text-4xl">نبقيكِ على اطلاع</h2>
+            <p className="mt-4 max-w-md text-base leading-8 text-[var(--brand-forest)]/80">سجّلي اهتمامكِ لتصلكِ معلومات الفعاليات والأنشطة القادمة من نادي بَيْن الثقافي.</p>
+            <p className="mt-5 border-s-4 border-[var(--brand-amber)] ps-4 text-sm leading-7 muted-copy">يُستخدم بريدكِ لإرسال أخبار الفعاليات فقط، ويمكنكِ إلغاء الاشتراك متى شئتِ.</p>
+          </div>
+
+          <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-muted)]/55 p-4 sm:p-6">
+            {state.saved ? (
+              <div role="status" className="notice-success">
+                <h3 className="text-lg font-black">تم تسجيل اهتمامكِ</h3>
+                <p className="mt-2 text-sm leading-7">سنشارككِ أخبار الفعاليات القادمة عبر البريد الإلكتروني.</p>
+                {state.unsubscribePath ? <Link href={state.unsubscribePath} className="mt-4 inline-block text-sm font-bold underline underline-offset-4">إلغاء الاشتراك</Link> : null}
+              </div>
+            ) : (
+              <form ref={formRef} action={formAction} className="grid gap-4" noValidate>
+                {state.error && !errorField[state.error] ? <p role="alert" className="notice-error text-sm">{errorMessages[state.error]}</p> : null}
+                <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <label htmlFor="home-contact-name" className="font-bold text-[var(--brand-green-deep)]">
                     الاسم
@@ -25,10 +66,13 @@ export function HomeInterestedSection() {
                     id="home-contact-name"
                     name="contactName"
                     required
+                    maxLength={120}
                     autoComplete="name"
                     className="field-control"
                     placeholder="اسمكِ الكريم"
+                    aria-invalid={state.error === "contactName"}
                   />
+                  {state.error === "contactName" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.contactName}</span> : null}
                 </div>
                 <div className="grid gap-2">
                   <label htmlFor="home-contact-phone" className="font-bold text-[var(--brand-green-deep)]">
@@ -44,7 +88,9 @@ export function HomeInterestedSection() {
                     placeholder="05xxxxxxxx"
                     dir="ltr"
                     className="field-control text-right"
+                    aria-invalid={state.error === "phone"}
                   />
+                  {state.error === "phone" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.phone}</span> : null}
                 </div>
               </div>
 
@@ -63,26 +109,36 @@ export function HomeInterestedSection() {
                   dir="ltr"
                   className="field-control text-right"
                   placeholder="name@example.com"
+                  maxLength={254}
+                  aria-invalid={state.error === "email"}
                 />
+                {state.error === "email" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.email}</span> : null}
               </div>
 
-              <label className="flex items-start gap-3 border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-xs leading-6 sm:text-sm">
+              <label className="flex items-start gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-white/65 p-3 text-xs leading-6 sm:text-sm">
                 <input
                   name="upcomingEventsConsent"
                   type="checkbox"
+                  required
                   className="mt-1 size-5 accent-[var(--brand-green)]"
+                  aria-invalid={state.error === "consent"}
                 />
                 <span>
-                  أوافق على أن يستخدم النادي بياناتي لإرسال معلومات الفعاليات القادمة. هذه الموافقة اختيارية وليست محددة مسبقًا، ويمكنني إلغاؤها لاحقًا.
+                  أوافق على أن يستخدم النادي بريدي الإلكتروني لإرسال معلومات الفعاليات القادمة، ويمكنني إلغاء الاشتراك لاحقًا.
                 </span>
               </label>
+              {state.error === "consent" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.consent}</span> : null}
 
-              <TurnstileField />
+              <div className="border-t border-[var(--color-border)] pt-4">
+                <p className="mb-2 text-xs muted-copy">تأكيد سريع قبل الإرسال</p>
+                <TurnstileField className="max-w-[22rem]" onVerifiedChange={setTurnstileVerified} onConfigurationFailedChange={setTurnstileConfigurationFailed} />
+              </div>
 
-              <button type="submit" className="button-primary min-h-12 w-full px-5 py-3 sm:w-fit">
-                سجّلي اهتمامكِ بالفعاليات
+              <button type="submit" disabled={pending || !turnstileVerified} className="button-primary min-h-12 w-full px-5 py-3 sm:w-fit">
+                {pending ? "جارٍ الحفظ…" : turnstileConfigurationFailed ? "الحفظ غير متاح مؤقتًا" : !turnstileVerified ? "جارٍ تجهيز الحفظ…" : "سجّلي اهتمامكِ"}
               </button>
-            </form>
+              </form>
+            )}
           </div>
         </div>
       </div>

@@ -7,13 +7,12 @@ import { createEventCatalog } from "@/lib/supabase/events";
 import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
 const destinations = [
-  { href: "/events", label: "الفعاليات" },
-  { href: "/space-booking", label: "حجز المساحة" },
-  { href: "/celebration-booking", label: "حجز إقامة حفلات" },
-  { href: "/bayn-trips", label: "رحلات بَيْن" },
-  { href: "/surveys/workshop-application", label: "طلب تقديم ورشة" },
-  { href: "/literary-partner", label: "الشريك الأدبي" },
-  { href: "/contact", label: "التواصل" },
+  { href: "/events", label: "الفعاليات", description: "استكشفي اللقاءات الأدبية والورش الثقافية القادمة واحجزي مقعدكِ." },
+  { href: "/space-booking", label: "حجز المساحة", description: "مساحة هادئة ومجهزة للقاءاتكِ الثقافية وفعالياتكِ الخاصة." },
+  { href: "/bayn-trips", label: "رحلات بَيْن", description: "تجارب ورحلات ثقافية نوعية تثري معرفتكِ وتجمعكِ بالمهتمات." },
+  { href: "/surveys/workshop-application", label: "طلب تقديم ورشة", description: "شاركينا خبرتكِ وشغفكِ وقدمي مقترح ورشة عمل ثقافية أو مهارية." },
+  { href: "/literary-partner", label: "الشريك الأدبي", description: "مبادرة لتعزيز الحراك الأدبي وإثراء المشهد الثقافي في مكة." },
+  { href: "/contact", label: "التواصل والمقر", description: "طرق التواصل وموقع النادي في مكة المكرمة." },
 ];
 
 export default async function HomePage() {
@@ -57,14 +56,29 @@ export default async function HomePage() {
 
       <section className="border-t border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className="page-shell section-space">
-          <p className="eyebrow">الأقسام</p>
-          <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">ابدئي من هنا</h2>
-          <div className="mt-8 border-t border-[var(--brand-olive)]">
+          <p className="eyebrow">أقسام النادي</p>
+          <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">ابدئي هنا</h2>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {destinations.map((destination) => (
-              <Link key={destination.href} href={destination.href} className="group grid min-h-20 grid-cols-[1rem_1fr_auto] items-center gap-4 border-b border-[var(--color-border)] py-3 text-[var(--brand-forest)] transition-[background-color,padding] hover:bg-[var(--brand-cream)] hover:px-3">
-                <span aria-hidden="true" className="size-3 bg-[var(--brand-amber)]" />
-                <span className="text-xl font-black sm:text-2xl">{destination.label}</span>
-                <span aria-hidden="true" className="text-2xl transition-transform group-hover:-translate-x-1">←</span>
+              <Link
+                key={destination.href}
+                href={destination.href}
+                className="group card-surface flex flex-col justify-between p-6 transition-[border-color,transform] hover:border-[var(--brand-olive)] hover:-translate-y-0.5"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-xl font-black text-[var(--brand-forest)] group-hover:text-[var(--brand-green-deep)]">
+                      {destination.label}
+                    </h3>
+                    <span aria-hidden="true" className="text-xl text-[var(--brand-amber)] transition-transform group-hover:-translate-x-1">
+                      ←
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 muted-copy">{destination.description}</p>
+                </div>
+                <div className="mt-4 flex items-center gap-2 text-xs font-bold text-[var(--brand-forest)]">
+                  <span>استكشفي القسم ←</span>
+                </div>
               </Link>
             ))}
           </div>

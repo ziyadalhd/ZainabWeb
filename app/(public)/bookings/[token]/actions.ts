@@ -21,6 +21,7 @@ async function runBookingAction(
     if (operation === "confirm") await service.confirmBookingAttendance(token);
     if (operation === "cancel") await service.cancelBooking(token);
     revalidatePath("/admin/registrations/current");
+    revalidatePath("/admin/registrations");
     revalidatePath("/admin/waitlist");
     return { success: operation === "confirm" ? "confirmed" : "cancelled" };
   } catch (error) {

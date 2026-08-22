@@ -51,6 +51,8 @@ function normalizeTime(value: string): string | null {
 function normalizeDate(value: string): string | null {
   const normalized = normalizeDigits(value).trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return null;
+  const date = new Date(`${normalized}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== normalized) return null;
   return normalized;
 }
 
@@ -72,6 +74,22 @@ export const approvedWorkshopAudiences = [
 
 export type WorkshopAudience = (typeof approvedWorkshopAudiences)[number];
 
+export function parseWorkshopAudienceList(value: string | string[]): WorkshopAudience[] {
+  if (Array.isArray(value)) {
+    return value.filter((v): v is WorkshopAudience => approvedWorkshopAudiences.includes(v as WorkshopAudience));
+  }
+  return value
+    .split(/[,،]/)
+    .map((s) => s.trim())
+    .filter((s): s is WorkshopAudience => approvedWorkshopAudiences.includes(s as WorkshopAudience));
+}
+
+export function getWorkshopAudienceChips(audience: string | null | undefined): string[] {
+  if (!audience) return [];
+  const list = parseWorkshopAudienceList(audience);
+  return list.length > 0 ? list : [audience];
+}
+
 export function isServiceRequestKind(value: string): value is ServiceRequestKind {
   return value === "space_booking" || value === "celebration_booking" || value === "workshop_application";
 }
@@ -80,29 +98,51 @@ export function validateServiceRequestInput(
   formData: FormData,
   kind: ServiceRequestKind,
 ): ServiceRequestInputResult {
-  const requesterName = text(formData, "requesterName") || "زائرة";
+  const requesterName = text(formData, "requesterName");
+  if (requesterName.length < 2 || requesterName.length > 120) {
+    return { ok: false, error: "requesterName" };
+  }
 
   const rawPhone = text(formData, "phone");
-  const phoneE164 = normalizeSaudiMobile(rawPhone) || "+966500000000";
+  const phoneE164 = normalizeSaudiMobile(rawPhone);
+  if (!phoneE164) return { ok: false, error: "phone" };
 
   const rawEmail = optionalText(formData, "email")?.toLowerCase() ?? null;
-  const email = rawEmail && rawEmail.includes("@") && rawEmail.length <= 254 ? rawEmail : null;
+  if (rawEmail && (rawEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail))) {
+    return { ok: false, error: "email" };
+  }
+  const email = rawEmail;
 
-  const notes = optionalText(formData, "notes")?.slice(0, 4000) ?? null;
+  const notes = optionalText(formData, "notes");
+  if (notes && notes.length > 4000) return { ok: false, error: "notes" };
 
   if (kind === "workshop_application") {
-    const title = text(formData, "workshopTitle") || "طلب ورشة عمل";
-    const description = text(formData, "workshopDescription") || "لا يوجد وصف إضافي";
-    const rawAudience = text(formData, "workshopTargetAudience");
-    const targetAudience = approvedWorkshopAudiences.includes(rawAudience as WorkshopAudience)
-      ? rawAudience
-      : (rawAudience || "كبار (فوق ١٨)");
-    const duration = text(formData, "workshopDuration") || "ساعتان";
+    const title = text(formData, "workshopTitle");
+    if (title.length < 2 || title.length > 200) return { ok: false, error: "workshopTitle" };
+    const description = text(formData, "workshopDescription");
+    if (description.length < 2 || description.length > 4000) {
+      return { ok: false, error: "workshopDescription" };
+    }
+    const rawAudienceValues = formData.getAll("workshopTargetAudience").map(String).filter(Boolean);
+    const parsedAudienceList = parseWorkshopAudienceList(rawAudienceValues);
+    if (parsedAudienceList.length === 0) {
+      return { ok: false, error: "workshopTargetAudience" };
+    }
+    const targetAudience = parsedAudienceList.join("، ");
+    if (targetAudience.length < 2 || targetAudience.length > 200) {
+      return { ok: false, error: "workshopTargetAudience" };
+    }
+    const duration = text(formData, "workshopDuration");
+    if (duration.length < 1 || duration.length > 160) return { ok: false, error: "workshopDuration" };
     const rawExpected = text(formData, "workshopExpectedAttendance");
-    const expectedAttendance = rawExpected ? (positiveInteger(rawExpected) ?? 10) : null;
-    const requirements = text(formData, "workshopRequirements") || "لا يوجد";
+    const expectedAttendance = positiveInteger(rawExpected);
+    if (!expectedAttendance) return { ok: false, error: "workshopExpectedAttendance" };
+    const requirements = text(formData, "workshopRequirements");
+    if (requirements.length < 1 || requirements.length > 2000) {
+      return { ok: false, error: "workshopRequirements" };
+    }
     const portfolioUrl = optionalText(formData, "workshopPortfolioUrl");
-    const validPortfolio = validUrl(portfolioUrl) ? portfolioUrl : null;
+    if (!validUrl(portfolioUrl)) return { ok: false, error: "workshopPortfolioUrl" };
 
     return {
       ok: true,
@@ -119,32 +159,31 @@ export function validateServiceRequestInput(
           duration,
           expectedAttendance,
           requirements,
-          portfolioUrl: validPortfolio,
+          portfolioUrl,
         },
       },
     };
   }
 
-  const useOrOccasionType = text(formData, "useOrOccasionType") || "طلب حجز";
+  const useOrOccasionType = text(formData, "useOrOccasionType");
+  if (useOrOccasionType.length < 2 || useOrOccasionType.length > 160) {
+    return { ok: false, error: "useOrOccasionType" };
+  }
   const rawDate = text(formData, "requestedDate");
-  const requestedDate = normalizeDate(rawDate) || new Date().toISOString().slice(0, 10);
+  const requestedDate = normalizeDate(rawDate);
+  if (!requestedDate) return { ok: false, error: "requestedDate" };
   const rawStartTime = text(formData, "requestedStartTime");
-  let requestedStartTime = normalizeTime(rawStartTime) || "17:00";
+  const requestedStartTime = normalizeTime(rawStartTime);
+  if (!requestedStartTime) return { ok: false, error: "requestedTime" };
   const rawEndTime = text(formData, "requestedEndTime");
-  let requestedEndTime = normalizeTime(rawEndTime) || "20:00";
-
-  if (requestedStartTime >= requestedEndTime) {
-    const startHour = Number(requestedStartTime.slice(0, 2));
-    const nextHour = Math.min(23, startHour + 2);
-    requestedEndTime = `${String(nextHour).padStart(2, "0")}:00`;
-    if (requestedStartTime >= requestedEndTime) {
-      requestedStartTime = "09:00";
-      requestedEndTime = "12:00";
-    }
+  const requestedEndTime = normalizeTime(rawEndTime);
+  if (!requestedEndTime || requestedStartTime >= requestedEndTime) {
+    return { ok: false, error: "requestedTime" };
   }
 
   const rawAttendeeCount = text(formData, "attendeeCount");
-  const attendeeCount = positiveInteger(rawAttendeeCount) ?? 1;
+  const attendeeCount = positiveInteger(rawAttendeeCount);
+  if (!attendeeCount) return { ok: false, error: "attendeeCount" };
 
   return {
     ok: true,

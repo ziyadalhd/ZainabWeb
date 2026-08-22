@@ -70,6 +70,7 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
         if (!eventTitle) return [];
         return [{
           id: row.id,
+          eventId: row.event_id,
           eventTitle,
           attendeeName: row.identity_visible && row.registration_id ? attendeeNames.get(row.registration_id) ?? null : null,
           hospitalityRating: row.hospitality_rating,
@@ -80,6 +81,39 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
       });
     } catch (err) {
       console.warn('[EventFeedback] listSubmitted failed gracefully:', err);
+      return [];
+    }
+  }
+
+  async listSubmittedForEvent(eventId: string): Promise<readonly AdminEventFeedbackResponse[]> {
+    try {
+      const [
+        { data: feedback, error: feedbackError },
+        { data: event, error: eventError },
+        { data: registrations, error: registrationsError },
+      ] = await Promise.all([
+        this.client.from("event_feedback_links").select("*").eq("event_id", eventId).not("submitted_at", "is", null).order("submitted_at", { ascending: false }),
+        this.client.from("events").select("id,title").eq("id", eventId).maybeSingle(),
+        this.client.from("registrations").select("id,attendee_name").eq("event_id", eventId),
+      ]);
+      if (feedbackError || eventError || registrationsError || !feedback || !event || !registrations) return [];
+
+      const attendeeNames = new Map(registrations.map((registration) => [registration.id, registration.attendee_name]));
+      return feedback.flatMap((row: FeedbackRow) => {
+        if (!row.submitted_at || !isRating(row.hospitality_rating) || !isRating(row.material_rating)) return [];
+        return [{
+          id: row.id,
+          eventId: row.event_id,
+          eventTitle: event.title,
+          attendeeName: row.identity_visible && row.registration_id ? attendeeNames.get(row.registration_id) ?? null : null,
+          hospitalityRating: row.hospitality_rating,
+          materialRating: row.material_rating,
+          suggestions: row.suggestions,
+          submittedAt: row.submitted_at,
+        }];
+      });
+    } catch (error) {
+      console.warn("[EventFeedback] listSubmittedForEvent failed gracefully:", error);
       return [];
     }
   }

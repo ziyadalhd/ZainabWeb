@@ -11,6 +11,8 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}
 
 function revalidateRegistrationViews() {
   revalidatePath("/admin");
+  revalidatePath("/admin/messages");
+  revalidatePath("/admin/registrations");
   revalidatePath("/admin/registrations/current");
   revalidatePath("/admin/registrations/previous");
   revalidatePath("/admin/waitlist");
@@ -22,7 +24,8 @@ async function runRegistrationAction(
   successPath: string,
 ) {
   await requireAdmin();
-  if (!uuidPattern.test(id)) redirect(`${successPath}?error=invalid`);
+  const withResult = (key: "success" | "error", value: string) => `${successPath}${successPath.includes("?") ? "&" : "?"}${key}=${value}`;
+  if (!uuidPattern.test(id)) redirect(withResult("error", "invalid"));
 
   let failed = false;
   try {
@@ -34,34 +37,17 @@ async function runRegistrationAction(
     failed = true;
   }
 
-  if (failed) redirect(`${successPath}?error=${operation}`);
+  if (failed) redirect(withResult("error", operation));
   revalidateRegistrationViews();
-  redirect(`${successPath}?success=${operation}`);
+  redirect(withResult("success", operation));
 }
 
 export async function cancelRegistrationAction(id: string) {
-  await runRegistrationAction(id, "cancel", "/admin/registrations/current");
+  await runRegistrationAction(id, "cancel", "/admin/registrations?view=upcoming");
 }
 
 export async function cancelWaitlistedRegistrationAction(id: string) {
-  await runRegistrationAction(id, "cancel", "/admin/waitlist");
-}
-
-export interface WaitlistInviteActionState {
-  invitationPath?: string;
-  expiresAt?: string;
-  error?: "invalid" | "capacity" | "save";
-}
-
-export interface RegistrationReminderActionState {
-  reminderId?: string;
-  managementPath?: string;
-  error?: "invalid" | "save";
-}
-
-export interface EventFeedbackLinkActionState {
-  feedbackPath?: string;
-  error?: "invalid" | "save";
+  await runRegistrationAction(id, "cancel", "/admin/registrations?view=waitlist");
 }
 
 export interface RegistrationPaymentActionState {
@@ -69,109 +55,29 @@ export interface RegistrationPaymentActionState {
   error?: "status" | "save";
 }
 
-export async function prepareRegistrationReminderAction(
-  id: string,
-  _previousState: RegistrationReminderActionState,
-): Promise<RegistrationReminderActionState> {
-  void _previousState;
-  await requireAdmin();
-  if (!uuidPattern.test(id)) return { error: "invalid" };
-
-  try {
-    const repository = await createAdminRegistrationRepository();
-    const reminder = await repository.issueReminder(id);
-    return {
-      reminderId: reminder.id,
-      managementPath: `/bookings/${reminder.managementToken}`,
-    };
-  } catch {
-    return { error: "save" };
-  }
-}
-
-export async function prepareEventFeedbackLinkAction(
-  id: string,
-  _previousState: EventFeedbackLinkActionState,
-): Promise<EventFeedbackLinkActionState> {
-  void _previousState;
-  await requireAdmin();
-  if (!uuidPattern.test(id)) return { error: "invalid" };
-
-  try {
-    const repository = await createAdminRegistrationRepository();
-    const feedback = await repository.issueEventFeedbackLink(id);
-    return { feedbackPath: `/surveys/event-feedback/${feedback.token}` };
-  } catch {
-    return { error: "save" };
-  }
-}
-
-export interface MarkRegistrationReminderSentActionState {
-  sent?: true;
-  error?: "invalid" | "save";
-}
-
-export async function markRegistrationReminderSentAction(
-  id: string,
-  _previousState: MarkRegistrationReminderSentActionState,
-): Promise<MarkRegistrationReminderSentActionState> {
-  void _previousState;
-  await requireAdmin();
-  if (!uuidPattern.test(id)) return { error: "invalid" };
-
-  try {
-    const repository = await createAdminRegistrationRepository();
-    await repository.markReminderSent(id);
-    return { sent: true };
-  } catch {
-    return { error: "save" };
-  }
-}
-
-export async function inviteRegistrationAction(
-  id: string,
-  _previousState: WaitlistInviteActionState,
-): Promise<WaitlistInviteActionState> {
-  void _previousState;
-  await requireAdmin();
-  if (!uuidPattern.test(id)) return { error: "invalid" };
-
-  try {
-    const repository = await createAdminRegistrationRepository();
-    const invitation = await repository.invite(id);
-    revalidateRegistrationViews();
-    return {
-      invitationPath: `/waitlist-invitations/${invitation.token}`,
-      expiresAt: invitation.expiresAt,
-    };
-  } catch {
-    return { error: "save" };
-  }
-}
-
 export async function revokeInvitationAction(id: string) {
-  await runRegistrationAction(id, "revoke", "/admin/waitlist");
+  await runRegistrationAction(id, "revoke", "/admin/registrations?view=waitlist");
 }
 
 export async function confirmAttendanceAction(id: string) {
-  await runRegistrationAction(id, "confirm", "/admin/registrations/current");
+  await runRegistrationAction(id, "confirm", "/admin/registrations?view=upcoming");
 }
 
 export async function recordCheckInAction(id: string, outcome: string) {
   await requireAdmin();
   if (!uuidPattern.test(id) || !isRegistrationCheckInStatus(outcome) || outcome === "pending") {
-    redirect("/admin/registrations/current?error=check-in");
+    redirect("/admin/registrations?view=upcoming&error=check-in");
   }
 
   try {
     const repository = await createAdminRegistrationRepository();
     await repository.recordCheckIn(id, outcome);
   } catch {
-    redirect("/admin/registrations/current?error=check-in");
+    redirect("/admin/registrations?view=upcoming&error=check-in");
   }
 
   revalidateRegistrationViews();
-  redirect("/admin/registrations/current?success=check-in");
+  redirect("/admin/registrations?view=upcoming&success=check-in");
 }
 
 export async function setRegistrationPaymentStatusAction(

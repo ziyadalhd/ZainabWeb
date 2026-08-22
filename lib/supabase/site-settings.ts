@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AdminSiteSettingsRepository, SiteSettingsRepository } from "@/lib/data/contracts";
 import type { SiteSettings, SiteSettingsInput } from "@/lib/domain/types";
 import type { Database } from "@/lib/supabase/database.types";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 
 type SiteSettingsRow = Database["public"]["Tables"]["site_settings"]["Row"];
 
@@ -82,7 +82,7 @@ export async function createSiteSettingsRepository(): Promise<SiteSettingsReposi
 }
 
 export async function createAdminSiteSettingsRepository(): Promise<AdminSiteSettingsRepository> {
-  return new SupabaseSiteSettingsRepository(await createSupabaseServerClient());
+  return new SupabaseSiteSettingsRepository(createSupabaseServiceClient());
 }
 
 export const getPublicSiteSettings = cache(async (): Promise<SiteSettings> => {

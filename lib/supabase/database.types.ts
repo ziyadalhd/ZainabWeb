@@ -170,6 +170,79 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_messages: {
+        Row: {
+          id: string
+          message_kind: string
+          prepared_at: string
+          registration_id: string
+          secure_token_hash: string | null
+          sent_at: string | null
+          superseded_at: string | null
+        }
+        Insert: {
+          id?: string
+          message_kind: string
+          prepared_at?: string
+          registration_id: string
+          secure_token_hash?: string | null
+          sent_at?: string | null
+          superseded_at?: string | null
+        }
+        Update: {
+          id?: string
+          message_kind?: string
+          prepared_at?: string
+          registration_id?: string
+          secure_token_hash?: string | null
+          sent_at?: string | null
+          superseded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_messages_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          body: string
+          created_at: string
+          event_id: string | null
+          id: string
+          kind: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          kind: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          kind?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_templates_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registration_reminders: {
         Row: {
           id: string
@@ -210,6 +283,7 @@ export type Database = {
           cancelled_at: string | null
           check_in_status: string
           checked_in_at: string | null
+          confirmation_sent_at: string | null
           created_at: string
           email: string | null
           event_id: string
@@ -239,6 +313,7 @@ export type Database = {
           cancelled_at?: string | null
           check_in_status?: string
           checked_in_at?: string | null
+          confirmation_sent_at?: string | null
           created_at?: string
           email?: string | null
           event_id: string
@@ -268,6 +343,7 @@ export type Database = {
           cancelled_at?: string | null
           check_in_status?: string
           checked_in_at?: string | null
+          confirmation_sent_at?: string | null
           created_at?: string
           email?: string | null
           event_id?: string
@@ -304,6 +380,7 @@ export type Database = {
         Row: {
           attendee_count: number | null
           created_at: string
+          contacted_at: string | null
           email: string | null
           id: string
           management_token_hash: string
@@ -335,6 +412,7 @@ export type Database = {
         Insert: {
           attendee_count?: number | null
           created_at?: string
+          contacted_at?: string | null
           email?: string | null
           id?: string
           management_token_hash: string
@@ -366,6 +444,7 @@ export type Database = {
         Update: {
           attendee_count?: number | null
           created_at?: string
+          contacted_at?: string | null
           email?: string | null
           id?: string
           management_token_hash?: string
@@ -566,6 +645,26 @@ export type Database = {
       mark_registration_reminder_sent: {
         Args: { p_reminder_id: string }
         Returns: undefined
+      }
+      mark_registration_confirmation_sent: {
+        Args: { p_registration_id: string }
+        Returns: undefined
+      }
+      mark_manual_message_sent: {
+        Args: { p_message_id: string }
+        Returns: string
+      }
+      mark_service_request_contacted: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      prepare_manual_registration_message: {
+        Args: {
+          p_message_kind: string
+          p_registration_id: string
+          p_secure_token_hash?: string
+        }
+        Returns: string
       }
       record_registration_check_in: {
         Args: { p_check_in_status: string; p_registration_id: string }

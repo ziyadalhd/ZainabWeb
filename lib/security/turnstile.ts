@@ -5,6 +5,12 @@ export type TurnstileVerification =
   | { ok: true }
   | { ok: false; reason: "unavailable" | "failed" };
 
+export function isTurnstileEnabled(): boolean {
+  return process.env.VERCEL_ENV === "production"
+    || process.env.TURNSTILE_ENFORCE === "true"
+    || Boolean(process.env.TURNSTILE_SECRET_KEY);
+}
+
 type SiteverifyResponse = {
   success?: boolean;
 };
@@ -13,12 +19,9 @@ export async function verifyTurnstile(formData: FormData): Promise<TurnstileVeri
   const secret = process.env.TURNSTILE_SECRET_KEY;
   const token = formData.get(responseField);
 
-  if (!secret || typeof token !== "string" || token.length === 0 || token.length > 2048) {
-    if (token) {
-      console.warn('[Turnstile] Skipping verification: secret not configured or token invalid length');
-    }
-    return { ok: true };
-  }
+  if (!isTurnstileEnabled()) return { ok: true };
+  if (!secret) return { ok: false, reason: "unavailable" };
+  if (typeof token !== "string" || token.length === 0 || token.length > 2048) return { ok: false, reason: "failed" };
 
   const payload = new FormData();
   payload.set("secret", secret);
@@ -31,15 +34,10 @@ export async function verifyTurnstile(formData: FormData): Promise<TurnstileVeri
       signal: AbortSignal.timeout(5_000),
       cache: "no-store",
     });
-    if (!response.ok) {
-      console.warn('[Turnstile] Verification HTTP error:', response.status);
-      return { ok: true };
-    }
+    if (!response.ok) return { ok: false, reason: "unavailable" };
     const result = await response.json() as SiteverifyResponse;
-    console.error('[Turnstile] Verification response payload:', result);
-    return { ok: true };
-  } catch (error) {
-    console.warn('[Turnstile] Verification fetch exception (non-blocking):', error);
-    return { ok: true };
+    return result.success ? { ok: true } : { ok: false, reason: "failed" };
+  } catch {
+    return { ok: false, reason: "unavailable" };
   }
 }

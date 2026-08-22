@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { SubmitEventFeedbackActionState } from "@/app/(public)/surveys/event-feedback/[token]/actions";
 import { TurnstileField } from "@/features/security/components/TurnstileField";
 
@@ -38,6 +38,8 @@ export function EventFeedbackForm({
   action: (state: SubmitEventFeedbackActionState, formData: FormData) => Promise<SubmitEventFeedbackActionState>;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
+  const [turnstileVerified, setTurnstileVerified] = useState(false);
+  const [turnstileConfigurationFailed, setTurnstileConfigurationFailed] = useState(false);
 
   return (
     <form action={formAction} className="form-surface mt-10 grid gap-8 p-5 sm:p-8" noValidate>
@@ -59,8 +61,8 @@ export function EventFeedbackForm({
       </fieldset>
       {state.error === "save" ? <p role="alert" className="notice-error">{errors.save}</p> : null}
       {state.error === "turnstile" ? <p role="alert" className="notice-error">{errors.turnstile}</p> : null}
-      <TurnstileField />
-      <button type="submit" disabled={pending} className="button-primary px-6 py-3">{pending ? "جارٍ إرسال التقييم…" : "إرسال التقييم"}</button>
+      <TurnstileField onVerifiedChange={setTurnstileVerified} onConfigurationFailedChange={setTurnstileConfigurationFailed} />
+      <button type="submit" disabled={pending || !turnstileVerified} className="button-primary px-6 py-3">{pending ? "جارٍ إرسال التقييم…" : turnstileConfigurationFailed ? "الإرسال غير متاح مؤقتًا" : !turnstileVerified ? "جارٍ تجهيز الإرسال…" : "إرسال التقييم"}</button>
     </form>
   );
 }

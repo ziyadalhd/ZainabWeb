@@ -1,6 +1,7 @@
 export interface NavigationItem {
   href: string;
   label: string;
+  activePrefixes?: readonly string[];
 }
 
 export const publicNavigation: readonly NavigationItem[] = [
@@ -9,19 +10,16 @@ export const publicNavigation: readonly NavigationItem[] = [
   { href: "/space-booking", label: "حجز المساحة" },
   { href: "/bayn-trips", label: "رحلات بَيْن" },
   { href: "/surveys/workshop-application", label: "طلب تقديم ورشة" },
+  { href: "/literary-partner", label: "الشريك الأدبي" },
   { href: "/contact", label: "التواصل" },
 ];
 
 export const adminNavigation: readonly NavigationItem[] = [
   { href: "/admin", label: "نظرة عامة" },
   { href: "/admin/calendar", label: "التقويم" },
-  { href: "/admin/events", label: "الفعاليات" },
-  { href: "/admin/requests", label: "طلبات الحجز والورش" },
-  { href: "/admin/registrations/current", label: "المسجلات الحاليات" },
-  { href: "/admin/registrations/previous", label: "التسجيلات السابقة" },
+  { href: "/admin/events", label: "الفعاليات والرحلات", activePrefixes: ["/admin/events", "/admin/registrations", "/admin/waitlist", "/admin/messages", "/admin/surveys"] },
+  { href: "/admin/requests", label: "الطلبات" },
   { href: "/admin/interested", label: "المهتمات" },
-  { href: "/admin/waitlist", label: "قائمة الانتظار" },
-  { href: "/admin/messages", label: "الرسائل" },
-  { href: "/admin/surveys", label: "الاستبيانات" },
-  { href: "/admin/content", label: "محتوى الموقع" },
+  { href: "/admin/content", label: "الموقع والإعدادات" },
+  { href: "/admin/security", label: "الأمان" },
 ];

@@ -26,7 +26,9 @@ describe("registration input", () => {
     expect(normalizeSaudiMobile("501234567")).toBe("+966501234567");
     expect(normalizeSaudiMobile("05.01.23.45.67")).toBe("+966501234567");
     expect(normalizeSaudiMobile("\u200E+966 50 123 4567")).toBe("+966501234567");
-    expect(normalizeSaudiMobile("05123")).toBe("+966500000123");
+    expect(normalizeSaudiMobile("05123")).toBeNull();
+    expect(normalizeSaudiMobile("05012345678")).toBeNull();
+    expect(normalizeSaudiMobile("+966 55 123 4567 ext")).toBe("+966551234567");
     expect(normalizeSaudiMobile("")).toBeNull();
   });
 
@@ -61,6 +63,15 @@ describe("registration input", () => {
     expect(validateRegistrationInput(withoutEmail, "adults")).toMatchObject({
       ok: true,
       value: { email: null },
+    });
+  });
+
+  it("matches the registration name boundary enforced by the database", () => {
+    const tooShort = validFormData();
+    tooShort.set("attendeeName", "ا");
+    expect(validateRegistrationInput(tooShort, "adults")).toEqual({
+      ok: false,
+      error: "attendeeName",
     });
   });
 

@@ -22,7 +22,7 @@ describe("validateServiceRequestInput", () => {
     expect(result).toMatchObject({ ok: true, value: { phoneE164: "+966551234567", email: "sara@example.com" } });
   });
 
-  it("auto-corrects an invalid booking time range to valid range", () => {
+  it("rejects an invalid booking time range", () => {
     const result = validateServiceRequestInput(form({
       requesterName: "سارة أحمد",
       phone: "0551234567",
@@ -32,7 +32,7 @@ describe("validateServiceRequestInput", () => {
       requestedEndTime: "17:00",
       attendeeCount: "25",
     }), "celebration_booking");
-    expect(result.ok).toBe(true);
+    expect(result).toEqual({ ok: false, error: "requestedTime" });
   });
 
   it("requires the approved workshop fields with structured audience", () => {
@@ -43,6 +43,7 @@ describe("validateServiceRequestInput", () => {
       workshopDescription: "ورشة عملية لتجربة الحكي أمام مجموعة صغيرة.",
       workshopTargetAudience: "يافعين (من ١٢ إلى ١٨)",
       workshopDuration: "ساعتان",
+      workshopExpectedAttendance: "١٨",
       workshopRequirements: "قاعة ومقاعد",
       workshopPortfolioUrl: "https://example.com/portfolio",
     }), "workshop_application");
@@ -53,7 +54,7 @@ describe("validateServiceRequestInput", () => {
           title: "فن الحكي",
           targetAudience: "يافعين (من ١٢ إلى ١٨)",
           duration: "ساعتان",
-          expectedAttendance: null,
+          expectedAttendance: 18,
         },
       },
     });
@@ -113,5 +114,31 @@ describe("validateServiceRequestInput", () => {
       attendeeCount: "25",
     }), "space_booking");
     expect(result).toMatchObject({ ok: true, value: { phoneE164: "+966551234567" } });
+  });
+
+  it("rejects invalid required values instead of inventing defaults", () => {
+    const result = validateServiceRequestInput(form({
+      requesterName: "سارة أحمد",
+      phone: "05123",
+      useOrOccasionType: "لقاء ثقافي",
+      requestedDate: "2026-02-30",
+      requestedStartTime: "17:00",
+      requestedEndTime: "20:00",
+      attendeeCount: "25",
+    }), "space_booking");
+    expect(result).toEqual({ ok: false, error: "phone" });
+  });
+
+  it("requires expected attendance for workshop applications", () => {
+    const result = validateServiceRequestInput(form({
+      requesterName: "سارة أحمد",
+      phone: "0551234567",
+      workshopTitle: "فن الحكي",
+      workshopDescription: "ورشة عملية لتجربة الحكي أمام مجموعة صغيرة.",
+      workshopTargetAudience: "كبار (فوق ١٨)",
+      workshopDuration: "ساعتان",
+      workshopRequirements: "قاعة ومقاعد",
+    }), "workshop_application");
+    expect(result).toEqual({ ok: false, error: "workshopExpectedAttendance" });
   });
 });

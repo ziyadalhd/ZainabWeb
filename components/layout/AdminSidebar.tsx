@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ClubLogo } from "@/components/brand/ClubLogo";
 import { adminNavigation } from "@/lib/navigation";
 import { logoutAction } from "@/app/(dashboard)/admin/actions";
 
 export function AdminSidebar() {
+  const pathname = usePathname() ?? "";
+
   return (
     <aside className="sticky top-0 hidden h-screen overflow-y-auto overscroll-contain bg-[var(--brand-forest)] px-5 py-6 text-[var(--color-on-primary)] lg:block">
       <Link href="/admin" aria-label="لوحة إدارة نادي بَيْن الثقافي" className="flex items-center gap-3 border-b border-white/18 pb-6">
@@ -12,13 +17,19 @@ export function AdminSidebar() {
       </Link>
       <nav aria-label="أقسام لوحة الإدارة" className="mt-6">
         <ul className="grid gap-0.5">
-          {adminNavigation.map((item) => (
+          {adminNavigation.map((item) => {
+            const matches = item.activePrefixes ?? [item.href];
+            const isActive = item.href === "/admin"
+              ? pathname === item.href
+              : matches.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+            return (
             <li key={item.href}>
-              <Link href={item.href} className="block border-r-4 border-transparent px-4 py-2.5 text-sm font-bold text-white/82 transition-[border-color,background-color,color] hover:border-[var(--brand-amber)] hover:bg-white/8 hover:text-white">
+              <Link href={item.href} aria-current={isActive ? "page" : undefined} className={`block border-r-4 px-4 py-2.5 text-sm font-bold transition-[border-color,background-color,color] ${isActive ? "border-[var(--brand-amber)] bg-white/12 text-white" : "border-transparent text-white/82 hover:border-[var(--brand-amber)] hover:bg-white/8 hover:text-white"}`}>
                 {item.label}
               </Link>
             </li>
-          ))}
+          );
+          })}
         </ul>
       </nav>
       <form action={logoutAction} className="mt-8 border-t border-white/15 pt-5">

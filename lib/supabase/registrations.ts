@@ -14,9 +14,13 @@ import type {
   Registration,
   RegistrationInput,
   RegistrationReceipt,
-  RegistrationReminderReceipt,
   RegistrationPaymentStatus,
   EventFeedbackLinkReceipt,
+  ManualMessageKind,
+  ManualMessageReceipt,
+  ManualMessageRecord,
+  AdminRegistrationListFilter,
+  PaginatedResult,
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
 } from "@/lib/domain/types";
@@ -27,9 +31,11 @@ import {
 } from "@/lib/security/secure-token";
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isManualMessageKind } from "@/lib/messaging/manual-messages";
 
 type RegistrationRow = Database["public"]["Tables"]["registrations"]["Row"];
 type ReminderRow = Database["public"]["Tables"]["registration_reminders"]["Row"];
+type ManualMessageRow = Database["public"]["Tables"]["manual_messages"]["Row"];
 type RegisterRpcArgs = Database["public"]["Functions"]["register_for_event"]["Args"];
 
 export type RegistrationFailureCode =
@@ -98,6 +104,7 @@ function mapRegistration(
     invitationExpiresAt: row.invitation_expires_at,
     latestReminderPreparedAt: latestReminder?.prepared_at ?? null,
     latestReminderSentAt: latestReminder?.sent_at ?? null,
+    confirmationSentAt: row.confirmation_sent_at,
     createdAt: row.created_at,
   };
 }
@@ -234,9 +241,154 @@ implements RegistrationService, AdminRegistrationRepository {
     }
   }
 
+  async listForEvent(eventId: string): Promise<readonly Registration[]> {
+    try {
+      const [{ data: event, error: eventError }, { data: registrations, error }] = await Promise.all([
+        this.client.from("events").select("id,title,starts_at").eq("id", eventId).maybeSingle(),
+        this.client.from("registrations").select("*").eq("event_id", eventId).order("created_at", { ascending: false }),
+      ]);
+      if (eventError || error || !event || !registrations) return [];
+
+      const registrationIds = registrations.map((registration) => registration.id);
+      const { data: reminders, error: remindersError } = registrationIds.length
+        ? await this.client.from("registration_reminders").select("*").in("registration_id", registrationIds).order("prepared_at", { ascending: false })
+        : { data: [] as ReminderRow[], error: null };
+      if (remindersError) return [];
+
+      const latestReminders = new Map<string, ReminderRow>();
+      for (const reminder of reminders ?? []) {
+        if (!latestReminders.has(reminder.registration_id)) latestReminders.set(reminder.registration_id, reminder);
+      }
+      const eventDetails = { title: event.title, startsAt: event.starts_at };
+      return registrations.map((row) => mapRegistration(row, eventDetails, latestReminders.get(row.id)));
+    } catch (error) {
+      console.warn("[Registrations] listForEvent failed gracefully:", error);
+      return [];
+    }
+  }
+
+  async listManualMessagesForEvent(eventId: string): Promise<readonly ManualMessageRecord[]> {
+    const { data: registrations, error: registrationsError } = await this.client
+      .from("registrations")
+      .select("id")
+      .eq("event_id", eventId);
+    if (registrationsError || !registrations?.length) return [];
+
+    const registrationIds = registrations.map((registration) => registration.id);
+    const [
+      { data, error },
+      { data: legacyReminders, error: legacyError },
+    ] = await Promise.all([
+      this.client.from("manual_messages").select("*").in("registration_id", registrationIds).order("prepared_at", { ascending: false }),
+      this.client.from("registration_reminders").select("*").in("registration_id", registrationIds).order("prepared_at", { ascending: false }),
+    ]);
+    if (error || legacyError || !data || !legacyReminders) return [];
+
+    const currentMessages: ManualMessageRecord[] = data.flatMap((row: ManualMessageRow) => isManualMessageKind(row.message_kind) ? [{
+      id: row.id,
+      registrationId: row.registration_id,
+      kind: row.message_kind,
+      preparedAt: row.prepared_at,
+      sentAt: row.sent_at,
+      supersededAt: row.superseded_at,
+    }] : []);
+    const legacyMessages: ManualMessageRecord[] = legacyReminders.map((row: ReminderRow) => ({
+      id: row.id,
+      registrationId: row.registration_id,
+      kind: "legacy_reminder",
+      preparedAt: row.prepared_at,
+      sentAt: row.sent_at,
+      supersededAt: null,
+    }));
+    return [...currentMessages, ...legacyMessages].sort((first, second) => new Date(second.preparedAt).getTime() - new Date(first.preparedAt).getTime());
+  }
+
+  async listPage(filter: AdminRegistrationListFilter): Promise<PaginatedResult<Registration>> {
+    const page = Math.max(1, Math.floor(filter.page));
+    const pageSize = Math.min(100, Math.max(1, Math.floor(filter.pageSize)));
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    const searchTerm = filter.query.trim().replace(/[,%().]/g, "");
+
+    try {
+      let eventQuery = this.client.from("events").select("id,title,starts_at");
+      if (filter.view === "upcoming") eventQuery = eventQuery.gte("starts_at", filter.now);
+      if (filter.view === "previous") eventQuery = eventQuery.lt("starts_at", filter.now);
+      const { data: viewEvents, error: eventsError } = await eventQuery;
+      if (eventsError || !viewEvents) return { items: [], total: 0, page, pageSize };
+      const eventIds = viewEvents.map((event) => event.id);
+      if ((filter.view === "upcoming" || filter.view === "previous") && eventIds.length === 0) return { items: [], total: 0, page, pageSize };
+
+      let titleQuery = this.client.from("events").select("id").ilike("title", `%${searchTerm}%`);
+      if (filter.view === "upcoming") titleQuery = titleQuery.gte("starts_at", filter.now);
+      if (filter.view === "previous") titleQuery = titleQuery.lt("starts_at", filter.now);
+      const { data: titleMatches, error: titleMatchesError } = searchTerm ? await titleQuery : { data: [], error: null };
+      if (titleMatchesError) return { items: [], total: 0, page, pageSize };
+
+      let query = this.client.from("registrations").select("*", { count: "exact" });
+      if (filter.view === "waitlist") query = query.in("status", ["waitlisted", "invited"]);
+      if (filter.view === "previous") query = query.or(`status.eq.cancelled,event_id.in.(${eventIds.join(",")})`);
+      if (filter.view === "upcoming") query = query.eq("status", "registered").in("event_id", eventIds);
+      if (searchTerm) {
+        const textFilters = ["attendee_name", "phone_e164", "email", "public_reference"].map((column) => `${column}.ilike.%${searchTerm}%`);
+        if (titleMatches && titleMatches.length > 0) textFilters.push(`event_id.in.(${titleMatches.map((event) => event.id).join(",")})`);
+        query = query.or(textFilters.join(","));
+      }
+      const { data: registrations, error, count } = await query.order("created_at", { ascending: false }).range(from, to);
+      if (error || !registrations) return { items: [], total: 0, page, pageSize };
+
+      const pageEventIds = [...new Set(registrations.map((registration) => registration.event_id))];
+      const [{ data: eventDetails }, { data: reminders }] = await Promise.all([
+        pageEventIds.length ? this.client.from("events").select("id,title,starts_at").in("id", pageEventIds) : Promise.resolve({ data: [] }),
+        registrations.length ? this.client.from("registration_reminders").select("*").in("registration_id", registrations.map((registration) => registration.id)).order("prepared_at", { ascending: false }) : Promise.resolve({ data: [] }),
+      ]);
+      const eventDetailsById = new Map((eventDetails ?? []).map((event) => [event.id, { title: event.title, startsAt: event.starts_at }]));
+      const latestReminders = new Map<string, ReminderRow>();
+      for (const reminder of reminders ?? []) if (!latestReminders.has(reminder.registration_id)) latestReminders.set(reminder.registration_id, reminder);
+      return { items: registrations.map((row) => mapRegistration(row, eventDetailsById.get(row.event_id), latestReminders.get(row.id))), total: count ?? 0, page, pageSize };
+    } catch (err) {
+      console.warn("[Registrations] listPage failed gracefully:", err);
+      return { items: [], total: 0, page, pageSize };
+    }
+  }
+
   async cancel(id: string): Promise<void> {
     const { error } = await this.client.rpc("cancel_registration", { p_registration_id: id });
     if (error) throw mapFailure(error.message);
+  }
+
+  async prepareManualMessage(id: string, kind: ManualMessageKind): Promise<ManualMessageReceipt> {
+    let token: string | null = null;
+    let securePath: string | null = null;
+
+    if (kind === "waitlist_invitation") {
+      const invitation = await this.invite(id);
+      token = invitation.token;
+      securePath = `/waitlist-invitations/${token}`;
+    } else if (kind === "feedback_request") {
+      const feedback = await this.issueEventFeedbackLink(id);
+      token = feedback.token;
+      securePath = `/surveys/event-feedback/${token}`;
+    } else if (kind !== "cancellation") {
+      token = generateSecureToken();
+      securePath = `/bookings/${token}`;
+    }
+
+    const { data, error } = await this.client.rpc("prepare_manual_registration_message", {
+      p_registration_id: id,
+      p_message_kind: kind,
+      ...(token ? { p_secure_token_hash: hashSecureToken(token) } : {}),
+    });
+    if (error || !data) throw mapFailure(error?.message ?? "save");
+    return { id: data, kind, securePath };
+  }
+
+  async markManualMessageSent(id: string): Promise<string> {
+    const { data, error } = await this.client.rpc("mark_manual_message_sent", {
+      p_message_id: id,
+    });
+    if (error || !data) throw mapFailure(error?.message ?? "save");
+    return data;
   }
 
   async invite(id: string): Promise<WaitlistInvitationReceipt> {
@@ -265,23 +417,6 @@ implements RegistrationService, AdminRegistrationRepository {
     const { error } = await this.client.rpc("record_registration_check_in", {
       p_registration_id: id,
       p_check_in_status: outcome,
-    });
-    if (error) throw mapFailure(error.message);
-  }
-
-  async issueReminder(id: string): Promise<RegistrationReminderReceipt> {
-    const managementToken = generateSecureToken();
-    const { data, error } = await this.client.rpc("issue_registration_reminder", {
-      p_registration_id: id,
-      p_management_token_hash: hashSecureToken(managementToken),
-    });
-    if (error || !data) throw mapFailure(error?.message ?? "save");
-    return { id: data, managementToken };
-  }
-
-  async markReminderSent(id: string): Promise<void> {
-    const { error } = await this.client.rpc("mark_registration_reminder_sent", {
-      p_reminder_id: id,
     });
     if (error) throw mapFailure(error.message);
   }

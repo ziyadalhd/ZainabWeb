@@ -17,6 +17,9 @@ const labels = {
   archived: "مؤرشفة",
   subscribed: "موافقة سارية",
   unsubscribed: "ألغت الاشتراك",
+  unpaid: "غير مدفوع",
+  deposit_paid: "دُفع العربون",
+  paid_in_full: "مدفوع بالكامل",
 } as const;
 
 export type StatusBadgeValue = keyof typeof labels;
@@ -31,15 +34,18 @@ const statusTone: Record<StatusBadgeValue, "positive" | "warning" | "neutral" | 
   confirmed: "positive",
   checked_in: "positive",
   absent: "danger",
-  cancelled: "danger",
   registered: "positive",
   waitlisted: "warning",
   invited: "warning",
   draft: "neutral",
   published: "positive",
   archived: "neutral",
+  cancelled: "danger",
   subscribed: "positive",
   unsubscribed: "neutral",
+  unpaid: "warning",
+  deposit_paid: "warning",
+  paid_in_full: "positive",
 };
 
 const toneClass = {

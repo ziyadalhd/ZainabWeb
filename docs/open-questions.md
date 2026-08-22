@@ -1,6 +1,6 @@
 # Open Questions
 
-Last updated: `2026-08-15`
+Last updated: `2026-08-21`
 
 This file contains only unresolved decisions and launch inputs. Approved behavior belongs in `AGENTS.md`, `PLAN.md`, and `docs/architecture-decisions.md`.
 
@@ -24,6 +24,8 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 
 - Review and approve the drafted club introduction, name story, objectives, and other public content before launch.
 - Supply or approve the literary-partner content.
+- What input format and approved choices should the workshop application's `target audience` field use? The current local form offers multiple audience checkboxes, including a youth range that does not match the approved event boundary of 13–17; do not treat those choices as final business rules until approved.
+- The approved scope includes public `celebration_booking`, but the current migration `20260820142841_retire_celebration_requests.sql` rejects new requests of that kind and the public route is currently absent. Should the flow be restored with a forward corrective migration, or is the retirement intentional? Do not expose the public form until this conflict is resolved.
 - **Approved**: The Privacy Policy and Terms of Service have been established as official text and draft warning notices were removed on `2026-08-16`. Formal legal consultation remains recommended for future business entity expansions.
 
 ## Paid service decisions

@@ -8,6 +8,7 @@ describe("mapServiceRequestRow", () => {
   it("keeps every approved workshop detail for the admin dashboard", () => {
     const row: ServiceRequestRow = {
       attendee_count: null,
+      contacted_at: null,
       created_at: "2026-08-16T09:00:00.000Z",
       email: "presenter@example.com",
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

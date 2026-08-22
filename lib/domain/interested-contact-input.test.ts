@@ -31,6 +31,16 @@ describe("interested contact input", () => {
     expect(validateInterestedContactInput(noEmail)).toEqual({ ok: false, error: "email" });
   });
 
+  it("matches the database name limits before attempting to save", () => {
+    const tooShort = validFormData();
+    tooShort.set("contactName", "أ");
+    expect(validateInterestedContactInput(tooShort)).toEqual({ ok: false, error: "contactName" });
+
+    const tooLong = validFormData();
+    tooLong.set("contactName", "أ".repeat(121));
+    expect(validateInterestedContactInput(tooLong)).toEqual({ ok: false, error: "contactName" });
+  });
+
   it("does not reject submissions with a website field", () => {
     const formData = validFormData();
     formData.set("website", "https://spam.example");

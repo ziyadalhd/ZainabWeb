@@ -5,20 +5,34 @@ import { validateInterestedContactInput } from "@/lib/domain/interested-contact-
 import { createInterestedContactService, InterestedContactFailure } from "@/lib/supabase/interested-contacts";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 
-export async function submitInterestedContactAction(formData: FormData): Promise<void> {
+export type InterestedContactActionError = "contactName" | "phone" | "email" | "consent" | "turnstile" | "invalid" | "save";
+
+export type InterestedContactActionState = {
+  error?: InterestedContactActionError;
+  unsubscribePath?: string;
+  saved?: true;
+};
+
+export async function submitInterestedContactAction(
+  _previousState: InterestedContactActionState,
+  formData: FormData,
+): Promise<InterestedContactActionState> {
   const turnstile = await verifyTurnstile(formData);
-  if (!turnstile.ok) redirect("/surveys/interested-contact?error=turnstile");
+  if (!turnstile.ok) return { error: "turnstile" };
 
   const input = validateInterestedContactInput(formData);
-  if (!input.ok) redirect(`/surveys/interested-contact?error=${input.error}`);
+  if (!input.ok) return { error: input.error };
 
   try {
     const service = await createInterestedContactService();
     const receipt = await service.submit(input.value);
-    redirect(`/surveys/interested-contact/confirmed/${receipt.unsubscribeToken}`);
+    return {
+      saved: true,
+      unsubscribePath: `/surveys/interested-contact/unsubscribe/${receipt.unsubscribeToken}`,
+    };
   } catch (error) {
     const code = error instanceof InterestedContactFailure ? error.code : "save";
-    redirect(`/surveys/interested-contact?error=${code === "invalid" ? "invalid" : "save"}`);
+    return { error: code === "invalid" ? "invalid" : "save" };
   }
 }
 

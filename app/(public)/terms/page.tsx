@@ -15,7 +15,7 @@ export default function TermsPage() {
       <article className="card-surface mt-8 max-w-4xl p-6 sm:p-10">
         <section className="mt-2">
           <h2 className="text-2xl font-black text-[var(--brand-green-deep)]">نطاق الموقع</h2>
-          <p className="mt-3 leading-8 muted-copy">يقدم موقع نادي بَيْن الثقافي من مكة المكرمة معلومات عن النادي والفعاليات، ونماذج لتسجيل الزائرات وطلبات حجز المساحة أو إقامة الحفلات أو تقديم الورش. يمكن التواصل عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>.</p>
+          <p className="mt-3 leading-8 muted-copy">يقدم موقع نادي بَيْن الثقافي من مكة المكرمة معلومات عن النادي والفعاليات، ونماذج لتسجيل الزائرات وطلبات حجز المساحة أو تقديم الورش. يمكن التواصل عبر <a className="underline decoration-[var(--brand-amber)] underline-offset-4" dir="ltr" href={`mailto:${publicContactEmail}`}>{publicContactEmail}</a>.</p>
         </section>
 
         <section className="mt-8">

@@ -26,7 +26,7 @@ describe("EventRegistrationForm", () => {
     expect(screen.getByLabelText("عمر المشاركة")).toHaveAttribute("min", "13");
     expect(screen.getByLabelText("عمر المشاركة")).toHaveAttribute("max", "17");
     expect(screen.getByRole("heading", { name: "قائمة الانتظار" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "الانضمام إلى قائمة الانتظار" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "جارٍ تجهيز التسجيل…" })).toBeDisabled();
   });
 
 });

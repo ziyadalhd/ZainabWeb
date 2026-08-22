@@ -5,11 +5,13 @@ export type EventAudience = "adults" | "youth" | "children";
 export type EventKind = "club_event" | "bayn_trip";
 export type EventRegistrationStatus = "open" | "closed";
 export type EventAvailability = "available" | "full" | "closed";
-export type EventPublicationStatus = "draft" | "published" | "archived";
+export type EventPublicationStatus = "draft" | "published" | "archived" | "cancelled";
 export type RegistrationStatus = "registered" | "waitlisted" | "invited" | "cancelled";
 export type RegistrationAttendanceStatus = "pending" | "confirmed";
 export type RegistrationCheckInStatus = "pending" | "checked_in" | "absent";
 export type RegistrationPaymentStatus = "unpaid" | "deposit_paid" | "paid_in_full";
+export type ManualMessageKind = "confirmation" | "reminder_24h" | "reminder_3h" | "waitlist_invitation" | "cancellation" | "feedback_request";
+export type ManualMessageRecordKind = ManualMessageKind | "legacy_reminder";
 export type ServiceRequestKind = "space_booking" | "celebration_booking" | "workshop_application";
 export type ServiceRequestStatus = "new" | "under_review" | "accepted" | "rejected" | "cancelled";
 export type ServiceRequestPaymentStatus = "unpaid" | "deposit_paid" | "paid_in_full";
@@ -81,12 +83,40 @@ export interface Registration {
   invitationExpiresAt: IsoDateTime | null;
   latestReminderPreparedAt: IsoDateTime | null;
   latestReminderSentAt: IsoDateTime | null;
+  confirmationSentAt?: IsoDateTime | null;
   createdAt: IsoDateTime;
 }
 
-export interface RegistrationReminderReceipt {
+export interface PaginatedResult<T> {
+  items: readonly T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export type AdminRegistrationListView = "upcoming" | "waitlist" | "previous";
+
+export interface AdminRegistrationListFilter {
+  view: AdminRegistrationListView;
+  query: string;
+  page: number;
+  pageSize: number;
+  now: IsoDateTime;
+}
+
+export interface ManualMessageRecord {
   id: EntityId;
-  managementToken: string;
+  registrationId: EntityId;
+  kind: ManualMessageRecordKind;
+  preparedAt: IsoDateTime;
+  sentAt: IsoDateTime | null;
+  supersededAt: IsoDateTime | null;
+}
+
+export interface ManualMessageReceipt {
+  id: EntityId;
+  kind: ManualMessageKind;
+  securePath: string | null;
 }
 
 export interface WaitlistInvitationReceipt {
@@ -156,6 +186,7 @@ export interface EventFeedbackLinkReceipt {
 
 export interface AdminEventFeedbackResponse {
   id: EntityId;
+  eventId: EntityId;
   eventTitle: string;
   attendeeName: string | null;
   hospitalityRating: Rating;
@@ -198,7 +229,7 @@ export interface ServiceRequestInput {
     description: string;
     targetAudience: string;
     duration: string;
-    expectedAttendance?: number | null;
+    expectedAttendance: number;
     requirements: string;
     portfolioUrl: string | null;
   } | null;
@@ -257,6 +288,15 @@ export interface AdminServiceRequest {
   offerExpiresAt: IsoDateTime | null;
   paymentStatus: ServiceRequestPaymentStatus;
   createdAt: IsoDateTime;
+  contactedAt?: IsoDateTime | null;
+}
+
+export interface AdminServiceRequestListFilter {
+  status: ServiceRequestStatus | "all";
+  kind: ServiceRequestKind | "all";
+  query: string;
+  page: number;
+  pageSize: number;
 }
 
 export interface ServiceRequestConflict {

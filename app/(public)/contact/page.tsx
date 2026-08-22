@@ -22,7 +22,7 @@ export default async function ContactPage() {
         <a className="card-surface p-6 transition-colors hover:border-[var(--brand-olive)]" href={whatsappUrl ?? `tel:${phone}`} target={whatsappUrl ? "_blank" : undefined} rel={whatsappUrl ? "noopener noreferrer" : undefined}>
           <p className="text-sm font-bold muted-copy">رقم التواصل</p>
           <p className="mt-3 text-2xl font-extrabold text-[var(--brand-green-deep)]" dir="ltr">{phone}</p>
-          <p className="mt-2 text-sm muted-copy">تواصلي معنا على WhatsApp</p>
+          <p className="mt-2 text-sm muted-copy">تواصلي معنا على واتساب</p>
         </a>
         <a className="card-surface p-6" href={`mailto:${publicContactEmail}`}>
           <p className="text-sm font-bold muted-copy">البريد الإلكتروني</p>

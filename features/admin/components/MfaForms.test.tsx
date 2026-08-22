@@ -28,6 +28,13 @@ describe("MfaVerifyForm", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    listFactors.mockResolvedValue({
+      data: {
+        all: [{ id: "factor-1", factor_type: "totp", status: "verified", friendly_name: "جوالي" }],
+        totp: [{ id: "factor-1", factor_type: "totp", status: "verified", friendly_name: "جوالي" }],
+      },
+      error: null,
+    });
     replaceMock = vi.fn();
     vi.spyOn(window, "location", "get").mockReturnValue({
       ...window.location,
@@ -41,15 +48,16 @@ describe("MfaVerifyForm", () => {
     expect(screen.getByRole("button", { name: "التحقق والدخول" })).toBeInTheDocument();
   });
 
-  it("validates 6-digit length before calling Supabase", async () => {
+  it("validates 6-digit length before creating a challenge", async () => {
     render(<MfaVerifyForm />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "التحقق والدخول" })).toBeEnabled());
     fireEvent.change(screen.getByRole("textbox", { name: "الرمز من تطبيق المصادقة" }), {
       target: { value: "123" },
     });
     fireEvent.click(screen.getByRole("button", { name: "التحقق والدخول" }));
 
     expect(await screen.findByText("اكتبي الرمز المكوّن من 6 أرقام.")).toBeInTheDocument();
-    expect(listFactors).not.toHaveBeenCalled();
+    expect(challenge).not.toHaveBeenCalled();
   });
 
   it("verifies TOTP code and redirects to /admin on success", async () => {
@@ -70,6 +78,7 @@ describe("MfaVerifyForm", () => {
     });
 
     render(<MfaVerifyForm />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "التحقق والدخول" })).toBeEnabled());
     fireEvent.change(screen.getByRole("textbox", { name: "الرمز من تطبيق المصادقة" }), {
       target: { value: "١٢٣٤٥٦" },
     });
@@ -104,6 +113,7 @@ describe("MfaVerifyForm", () => {
     });
 
     render(<MfaVerifyForm />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "التحقق والدخول" })).toBeEnabled());
     fireEvent.change(screen.getByRole("textbox", { name: "الرمز من تطبيق المصادقة" }), {
       target: { value: "123456" },
     });
@@ -113,6 +123,41 @@ describe("MfaVerifyForm", () => {
       await screen.findByText("الرمز غير صحيح أو انتهت صلاحيته. اكتبي الرمز الحالي من التطبيق."),
     ).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("allows choosing between multiple verified devices", async () => {
+    listFactors.mockResolvedValue({
+      data: {
+        all: [
+          { id: "primary", factor_type: "totp", status: "verified", friendly_name: "الجوال الأساسي" },
+          { id: "backup", factor_type: "totp", status: "verified", friendly_name: "الجهاز الاحتياطي" },
+        ],
+        totp: [
+          { id: "primary", factor_type: "totp", status: "verified", friendly_name: "الجوال الأساسي" },
+          { id: "backup", factor_type: "totp", status: "verified", friendly_name: "الجهاز الاحتياطي" },
+        ],
+      },
+      error: null,
+    });
+    challenge.mockResolvedValue({ data: { id: "challenge-backup" }, error: null });
+    verify.mockResolvedValue({ data: { access_token: "token-aal2" }, error: null });
+
+    render(<MfaVerifyForm />);
+    const backup = await screen.findByRole("radio", { name: "الجهاز الاحتياطي" });
+    fireEvent.click(backup);
+    fireEvent.change(screen.getByRole("textbox", { name: "الرمز من تطبيق المصادقة" }), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "التحقق والدخول" }));
+
+    await waitFor(() => {
+      expect(challenge).toHaveBeenCalledWith({ factorId: "backup" });
+      expect(verify).toHaveBeenCalledWith({
+        factorId: "backup",
+        challengeId: "challenge-backup",
+        code: "123456",
+      });
+    });
   });
 });
 

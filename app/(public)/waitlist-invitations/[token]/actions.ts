@@ -22,6 +22,7 @@ export async function acceptWaitlistInvitationAction(
     const service = await createRegistrationService();
     await service.acceptWaitlistInvitation(token);
     revalidatePath("/admin/registrations/current");
+    revalidatePath("/admin/registrations");
     revalidatePath("/admin/waitlist");
   } catch (error) {
     if (error instanceof RegistrationFailure && error.code === "unavailable") {

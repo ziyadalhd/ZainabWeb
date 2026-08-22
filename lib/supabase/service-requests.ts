@@ -12,6 +12,8 @@ import type {
   ServiceRequestConflict,
   ServiceRequestPaymentStatus,
   ServiceRequestStatus,
+  AdminServiceRequestListFilter,
+  PaginatedResult,
 } from "@/lib/domain/types";
 import { generateSecureToken, hashSecureToken, isSecureToken } from "@/lib/security/secure-token";
 import type { Database } from "@/lib/supabase/database.types";
@@ -65,6 +67,7 @@ export function mapServiceRequestRow(row: ServiceRequestRow): AdminServiceReques
     offerExpiresAt: row.offer_expires_at,
     paymentStatus: row.payment_status,
     createdAt: row.created_at,
+    contactedAt: row.contacted_at,
   };
 }
 
@@ -81,61 +84,51 @@ implements ServiceRequestService, AdminServiceRequestRepository {
     const booking = input.booking;
     const workshop = input.workshop;
 
-    const requesterName = (input.requesterName || "زائرة").trim() || "زائرة";
-    const phoneE164 = input.phoneE164 || "+966500000000";
+    const requesterName = input.requesterName.trim();
+    const phoneE164 = input.phoneE164;
 
     const useOrOccasionType = kind === "workshop_application"
       ? ""
-      : (booking?.useOrOccasionType || "طلب حجز").trim() || "طلب حجز";
+      : booking?.useOrOccasionType.trim() ?? "";
 
     const requestedDate = kind === "workshop_application"
       ? null
-      : (booking?.requestedDate || new Date().toISOString().slice(0, 10));
+      : booking?.requestedDate ?? null;
 
-    let requestedStartTime = kind === "workshop_application"
+    const requestedStartTime = kind === "workshop_application"
       ? null
-      : (booking?.requestedStartTime || "17:00");
+      : booking?.requestedStartTime ?? null;
 
-    let requestedEndTime = kind === "workshop_application"
+    const requestedEndTime = kind === "workshop_application"
       ? null
-      : (booking?.requestedEndTime || "20:00");
-
-    if (requestedStartTime && requestedEndTime && requestedStartTime >= requestedEndTime) {
-      const startH = Number(requestedStartTime.slice(0, 2));
-      const endH = Math.min(23, startH + 2);
-      requestedEndTime = `${String(endH).padStart(2, "0")}:00`;
-      if (requestedStartTime >= requestedEndTime) {
-        requestedStartTime = "09:00";
-        requestedEndTime = "12:00";
-      }
-    }
+      : booking?.requestedEndTime ?? null;
 
     const attendeeCount = kind === "workshop_application"
       ? null
-      : (booking?.attendeeCount && booking.attendeeCount > 0 ? booking.attendeeCount : 1);
+      : booking?.attendeeCount ?? null;
 
     const workshopTitle = kind === "workshop_application"
-      ? (workshop?.title || "طلب ورشة عمل").trim() || "طلب ورشة عمل"
+      ? workshop?.title.trim() ?? ""
       : "";
 
     const workshopDescription = kind === "workshop_application"
-      ? (workshop?.description || "لا يوجد وصف إضافي").trim() || "لا يوجد وصف إضافي"
+      ? workshop?.description.trim() ?? ""
       : "";
 
     const workshopTargetAudience = kind === "workshop_application"
-      ? (workshop?.targetAudience || "عام").trim() || "عام"
+      ? workshop?.targetAudience.trim() ?? ""
       : "";
 
     const workshopDuration = kind === "workshop_application"
-      ? (workshop?.duration || "ساعتان").trim() || "ساعتان"
+      ? workshop?.duration.trim() ?? ""
       : "";
 
     const workshopExpectedAttendance = kind === "workshop_application"
-      ? (workshop?.expectedAttendance && workshop.expectedAttendance > 0 ? workshop.expectedAttendance : 10)
+      ? workshop?.expectedAttendance ?? null
       : null;
 
     const workshopRequirements = kind === "workshop_application"
-      ? (workshop?.requirements || "لا يوجد").trim() || "لا يوجد"
+      ? workshop?.requirements.trim() ?? ""
       : "";
 
     const workshopPortfolioUrl = kind === "workshop_application"
@@ -172,45 +165,11 @@ implements ServiceRequestService, AdminServiceRequestRepository {
       if (!error && data) {
         return { reference: data, managementToken };
       }
-      console.warn('[ServiceRequest RPC Warning] RPC submit_service_request did not succeed, falling back to direct table insert:', error);
-    } catch (rpcErr) {
-      console.warn('[ServiceRequest RPC Exception] RPC failed, falling back to direct table insert:', rpcErr);
+    } catch {
+      throw new ServiceRequestFailure("save");
     }
 
-    // 2. Fallback to direct Supabase table insert
-    const insertPayload = {
-      request_kind: kind,
-      requester_name: requesterName,
-      phone_e164: phoneE164,
-      email: email,
-      use_or_occasion_type: useOrOccasionType || null,
-      requested_date: requestedDate,
-      requested_start_time: requestedStartTime,
-      requested_end_time: requestedEndTime,
-      attendee_count: attendeeCount,
-      workshop_title: workshopTitle || null,
-      workshop_description: workshopDescription || null,
-      workshop_target_audience: workshopTargetAudience || null,
-      workshop_duration: workshopDuration || null,
-      workshop_expected_attendance: workshopExpectedAttendance,
-      workshop_requirements: workshopRequirements || null,
-      workshop_portfolio_url: workshopPortfolioUrl || null,
-      notes: notes,
-      management_token_hash: managementTokenHash,
-    };
-
-    const { data: inserted, error: insertError } = await this.client
-      .from("service_requests")
-      .insert(insertPayload)
-      .select("public_reference")
-      .single();
-
-    if (insertError || !inserted) {
-      console.error('[ServiceRequest Insert Error] Direct table insert failed:', insertError);
-      throw new Error(insertError?.message || "Failed to insert service request into table.");
-    }
-
-    return { reference: inserted.public_reference, managementToken };
+    throw new ServiceRequestFailure("save");
   }
 
   async list(): Promise<readonly AdminServiceRequest[]> {
@@ -227,6 +186,28 @@ implements ServiceRequestService, AdminServiceRequestRepository {
     } catch (err) {
       console.warn('[ServiceRequest] list failed gracefully:', err);
       return [];
+    }
+  }
+
+  async listPage(filter: AdminServiceRequestListFilter): Promise<PaginatedResult<AdminServiceRequest>> {
+    const page = Math.max(1, Math.floor(filter.page));
+    const pageSize = Math.min(100, Math.max(1, Math.floor(filter.pageSize)));
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    const searchTerm = filter.query.trim().replace(/[,%().]/g, "");
+    try {
+      let query = this.client.from("service_requests").select("*", { count: "exact" });
+      if (filter.status !== "all") query = query.eq("status", filter.status);
+      if (filter.kind !== "all") query = query.eq("request_kind", filter.kind);
+      if (searchTerm) query = query.or([
+        "requester_name", "phone_e164", "email", "public_reference", "workshop_title", "use_or_occasion_type",
+      ].map((column) => `${column}.ilike.%${searchTerm}%`).join(","));
+      const { data, error, count } = await query.order("created_at", { ascending: false }).range(from, to);
+      if (error || !data) return { items: [], total: 0, page, pageSize };
+      return { items: data.map(mapServiceRequestRow), total: count ?? 0, page, pageSize };
+    } catch (err) {
+      console.warn("[ServiceRequest] listPage failed gracefully:", err);
+      return { items: [], total: 0, page, pageSize };
     }
   }
 
@@ -327,6 +308,11 @@ implements ServiceRequestService, AdminServiceRequestRepository {
       console.warn('[ServiceRequest] getConflicts failed gracefully:', err);
       return [];
     }
+  }
+
+  async markContacted(id: string): Promise<void> {
+    const { error } = await this.client.rpc("mark_service_request_contacted", { p_request_id: id });
+    if (error) throw mapFailure(error.message);
   }
 }
 

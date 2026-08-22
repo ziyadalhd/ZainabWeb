@@ -9,7 +9,7 @@ import type {
 const audiences: readonly EventAudience[] = ["adults", "youth", "children"];
 const eventKinds: readonly EventKind[] = ["club_event", "bayn_trip"];
 const registrationStatuses: readonly EventRegistrationStatus[] = ["open", "closed"];
-const publicationStatuses: readonly EventPublicationStatus[] = ["draft", "published", "archived"];
+const publicationStatuses: readonly EventPublicationStatus[] = ["draft", "published", "archived", "cancelled"];
 
 export type EventInputErrorCode =
   | "title"
@@ -151,8 +151,9 @@ export function validateEventInput(formData: FormData): EventInputResult {
 
 const allowedTransitions: Record<EventPublicationStatus, readonly EventPublicationStatus[]> = {
   draft: ["published", "archived"],
-  published: ["archived"],
-  archived: ["draft"],
+  published: ["archived", "cancelled"],
+  archived: ["draft", "cancelled"],
+  cancelled: [],
 };
 
 export function canChangeEventStatus(

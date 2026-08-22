@@ -15,11 +15,18 @@ describe("verifyTurnstile", () => {
     await expect(verifyTurnstile(new FormData())).resolves.toEqual({ ok: true });
   });
 
-  it("is non-blocking even without a valid token or secret", async () => {
+  it("fails closed when a configured widget does not provide a token", async () => {
     process.env.TURNSTILE_ENFORCE = "true";
+    process.env.TURNSTILE_SECRET_KEY = "test-secret";
+    const { verifyTurnstile } = await import("@/lib/security/turnstile");
+    await expect(verifyTurnstile(new FormData())).resolves.toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("fails closed in production when the secret is missing", async () => {
+    process.env.VERCEL_ENV = "production";
     delete process.env.TURNSTILE_SECRET_KEY;
     const { verifyTurnstile } = await import("@/lib/security/turnstile");
-    await expect(verifyTurnstile(new FormData())).resolves.toEqual({ ok: true });
+    await expect(verifyTurnstile(new FormData())).resolves.toEqual({ ok: false, reason: "unavailable" });
   });
 
   it("passes when Siteverify responds", async () => {

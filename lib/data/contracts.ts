@@ -8,18 +8,23 @@ import type {
   RegistrationReceipt,
   WaitlistInvitationDetails,
   WaitlistInvitationReceipt,
-  RegistrationReminderReceipt,
+  ManualMessageKind,
+  ManualMessageReceipt,
+  ManualMessageRecord,
+  IsoDateTime,
   RegistrationPaymentStatus,
   InterestedContactInput,
   InterestedContactReceipt,
   AdminInterestedContact,
-  EventFeedbackLinkReceipt,
+  AdminRegistrationListFilter,
+  PaginatedResult,
   EventFeedbackSurvey,
   EventFeedbackInput,
   AdminEventFeedbackResponse,
   SiteSettings,
   SiteSettingsInput,
   AdminServiceRequest,
+  AdminServiceRequestListFilter,
   ServiceRequestInput,
   ServiceRequestKind,
   ServiceRequestReceipt,
@@ -54,14 +59,16 @@ export interface RegistrationService {
 
 export interface AdminRegistrationRepository {
   list(): Promise<readonly Registration[]>;
+  listForEvent(eventId: string): Promise<readonly Registration[]>;
+  listPage(filter: AdminRegistrationListFilter): Promise<PaginatedResult<Registration>>;
+  listManualMessagesForEvent(eventId: string): Promise<readonly ManualMessageRecord[]>;
+  prepareManualMessage(id: string, kind: ManualMessageKind): Promise<ManualMessageReceipt>;
+  markManualMessageSent(id: string): Promise<IsoDateTime>;
   cancel(id: string): Promise<void>;
   invite(id: string): Promise<WaitlistInvitationReceipt>;
   revokeInvitation(id: string): Promise<void>;
   confirmAttendance(id: string): Promise<void>;
   recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void>;
-  issueReminder(id: string): Promise<RegistrationReminderReceipt>;
-  markReminderSent(id: string): Promise<void>;
-  issueEventFeedbackLink(id: string): Promise<EventFeedbackLinkReceipt>;
   setPaymentStatus(id: string, status: RegistrationPaymentStatus): Promise<void>;
 }
 
@@ -81,6 +88,7 @@ export interface EventFeedbackService {
 
 export interface AdminEventFeedbackRepository {
   listSubmitted(): Promise<readonly AdminEventFeedbackResponse[]>;
+  listSubmittedForEvent(eventId: string): Promise<readonly AdminEventFeedbackResponse[]>;
 }
 
 export interface SiteSettingsRepository {
@@ -100,8 +108,10 @@ export interface ServiceRequestService {
 
 export interface AdminServiceRequestRepository {
   list(): Promise<readonly AdminServiceRequest[]>;
+  listPage(filter: AdminServiceRequestListFilter): Promise<PaginatedResult<AdminServiceRequest>>;
   startReview(id: string): Promise<void>;
   createOffer(id: string, priceHalalas: number, terms: string, expiresAt: string | null): Promise<void>;
   setPaymentStatus(id: string, status: ServiceRequestPaymentStatus): Promise<void>;
   getConflicts(id: string): Promise<readonly ServiceRequestConflict[]>;
+  markContacted(id: string): Promise<void>;
 }

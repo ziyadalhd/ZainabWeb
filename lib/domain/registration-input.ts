@@ -32,13 +32,7 @@ export function normalizeSaudiMobile(value: string): string | null {
   if (/^05\d{8}$/.test(digits)) return `+966${digits.slice(1)}`;
   if (/^5\d{8}$/.test(digits)) return `+966${digits}`;
 
-  const localDigits = digits.startsWith("05")
-    ? digits.slice(2)
-    : digits.startsWith("5")
-      ? digits.slice(1)
-      : digits;
-  const padded = localDigits.padStart(8, "0").slice(-8);
-  return `+9665${padded}`;
+  return null;
 }
 
 export function isRegistrationStatus(value: string): value is "registered" | "waitlisted" | "invited" | "cancelled" {
@@ -62,7 +56,7 @@ export function validateRegistrationInput(
   audience: EventAudience,
 ): RegistrationInputResult {
   const attendeeName = String(formData.get("attendeeName") ?? "").trim();
-  if (attendeeName.length < 1 || attendeeName.length > 255) {
+  if (attendeeName.length < 2 || attendeeName.length > 120) {
     return { ok: false, error: "attendeeName" };
   }
 
