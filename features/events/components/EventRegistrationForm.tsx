@@ -1,13 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { EventAudience, EventAvailability } from "@/lib/domain/types";
 import type {
   RegistrationActionError,
   RegistrationActionState,
 } from "@/app/(public)/events/[id]/actions";
-import { TurnstileField } from "@/features/security/components/TurnstileField";
 
 interface EventRegistrationFormProps {
   action: (
@@ -27,7 +26,6 @@ const errorMessages: Record<RegistrationActionError, string> = {
   guardianConsent: "موافقة ولية الأمر مطلوبة لتسجيل القاصرات.",
   duplicate: "يوجد تسجيل سابق لهذه الفعالية بنفس الجوال أو البريد.",
   unavailable: "التسجيل غير متاح لهذه الفعالية حاليًا.",
-  turnstile: "ما قدرنا نكمل التحقق. جرّبي مرة ثانية",
   save: "ما قدرنا نكمل التسجيل الآن. جرّبي مرة ثانية بعد قليل.",
 };
 
@@ -46,8 +44,6 @@ const inputClassName =
 export function EventRegistrationForm({ action, audience, availability }: EventRegistrationFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
   const formRef = useRef<HTMLFormElement>(null);
-  const [turnstileVerified, setTurnstileVerified] = useState(false);
-  const [turnstileConfigurationFailed, setTurnstileConfigurationFailed] = useState(false);
   const minorRegistration = audience !== "adults";
 
   useEffect(() => {
@@ -178,10 +174,8 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
         هذه الفعالية مخصصة للنساء. تُستخدم بيانات التواصل لإدارة هذا التسجيل فقط، وتُحذف تلقائيًا بعد 90 يومًا من انتهاء الفعالية.
       </p>
 
-      <TurnstileField onVerifiedChange={setTurnstileVerified} onConfigurationFailedChange={setTurnstileConfigurationFailed} />
-
-      <button type="submit" disabled={pending || !turnstileVerified} className="button-primary min-h-12 w-full px-5 py-3">
-        {pending ? "جارٍ التسجيل…" : turnstileConfigurationFailed ? "التسجيل غير متاح مؤقتًا" : !turnstileVerified ? "جارٍ تجهيز التسجيل…" : availability === "full" ? "الانضمام إلى قائمة الانتظار" : "تأكيد التسجيل"}
+      <button type="submit" disabled={pending} className="button-primary min-h-12 w-full px-5 py-3">
+        {pending ? "جارٍ التسجيل…" : availability === "full" ? "الانضمام إلى قائمة الانتظار" : "تأكيد التسجيل"}
       </button>
     </form>
   );

@@ -21,12 +21,12 @@ describe("EventRegistrationForm", () => {
     expect(screen.getByRole("checkbox")).toBeRequired();
   });
 
-  it("uses the youth age boundary and explains derived waitlist behavior", () => {
+  it("uses the youth age boundary and keeps the waitlist submit button ready", () => {
     render(<EventRegistrationForm action={vi.fn()} audience="youth" availability="full" />);
     expect(screen.getByLabelText("عمر المشاركة")).toHaveAttribute("min", "13");
     expect(screen.getByLabelText("عمر المشاركة")).toHaveAttribute("max", "17");
     expect(screen.getByRole("heading", { name: "قائمة الانتظار" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "جارٍ تجهيز التسجيل…" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "الانضمام إلى قائمة الانتظار" })).toBeEnabled();
   });
 
 });

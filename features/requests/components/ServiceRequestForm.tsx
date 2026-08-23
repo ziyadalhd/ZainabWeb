@@ -1,9 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import type { ServiceRequestActionState } from "@/app/(public)/requests/actions";
 import type { ServiceRequestKind } from "@/lib/domain/types";
-import { TurnstileField } from "@/features/security/components/TurnstileField";
 import { RequestSchedulePicker } from "@/features/scheduling/components/RequestSchedulePicker";
 
 interface ServiceRequestFormProps {
@@ -30,7 +29,6 @@ const errorMessages: Record<string, string> = {
   workshopPortfolioUrl: "تحققي من رابط الخبرة أو الملف.",
   notes: "الملاحظات أطول من الحد المسموح.",
   invalid: "تعذر التحقق من الطلب. أعيدي المحاولة.",
-  turnstile: "ما قدرنا نكمل التحقق. جرّبي مرة ثانية",
   save: "تعذر إرسال الطلب الآن. حاولي مرة أخرى بعد قليل.",
 };
 
@@ -40,8 +38,6 @@ function Field({ children }: Readonly<{ children: ReactNode }>) {
 
 export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
-  const [turnstileVerified, setTurnstileVerified] = useState(false);
-  const [turnstileConfigurationFailed, setTurnstileConfigurationFailed] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const workshop = kind === "workshop_application";
   const label = kind === "space_booking"
@@ -51,7 +47,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
       : "إرسال طلب الورشة";
 
   useEffect(() => {
-    if (!state.error || state.error === "turnstile" || state.error === "save" || state.error === "invalid") return;
+    if (!state.error || state.error === "save" || state.error === "invalid") return;
     const fieldByError: Record<string, string> = {
       requesterName: "requester-name",
       phone: "request-phone",
@@ -180,8 +176,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
       </fieldset>
       <div className="request-form__footer">
         <p className="text-xs muted-copy">هذا الطلب لا يمثل حجزًا مؤكدًا. ستتواصل معك إدارة النادي عبر واتساب.</p>
-        <TurnstileField onVerifiedChange={setTurnstileVerified} onConfigurationFailedChange={setTurnstileConfigurationFailed} />
-        <button type="submit" disabled={pending || !turnstileVerified} className="button-primary min-h-12 px-5 py-3">{pending ? "جارٍ الإرسال…" : turnstileConfigurationFailed ? "الإرسال غير متاح مؤقتًا" : !turnstileVerified ? "جارٍ تجهيز الإرسال…" : label}</button>
+        <button type="submit" disabled={pending} className="button-primary min-h-12 px-5 py-3">{pending ? "جارٍ الإرسال…" : label}</button>
       </div>
     </form>
   );

@@ -2,7 +2,7 @@
 
 ## Decision status
 
-Supabase and Vercel are approved for the event-management scope recorded below. No ORM is used. Phase-three event-detail and registration work is in progress. Registration retention, minor consent, the initial reminder schedule, Resend, Cloudflare Turnstile, Sentry, and the temporary manual WhatsApp boundary are approved. Automated WhatsApp remains deferred pending a business number and official provider decision.
+Supabase and Vercel are approved for the event-management scope recorded below. No ORM is used. Phase-three event-detail and registration work is in progress. Registration retention, minor consent, the initial reminder schedule, Resend, Sentry, and the temporary manual WhatsApp boundary are approved. Automated WhatsApp remains deferred pending a business number and official provider decision.
 
 ## Approved technology constraints
 
@@ -135,7 +135,7 @@ Record approved architectural decisions here only after explicit user approval. 
 - Transactional email: Resend is approved after a custom `bayn` domain is purchased and verified. Email remains optional for guests and is a backup channel.
 - Reminder schedule: immediate confirmation, 24 hours before, and 3 hours before are approved.
 - WhatsApp: the initial production workflow is an administrator-only manual queue with prefilled messages. Automated WhatsApp is deferred until a business number, official provider, pricing, webhook, consent, and template implications are approved.
-- Abuse protection: Cloudflare Turnstile is approved for anonymous mutation forms. Server validation, database constraints, idempotency, and rate limiting remain required.
+- Abuse protection: Server validation, database constraints, idempotency, and rate limiting remain required for anonymous mutation forms.
 - Administrator security: one full-access administrator is approved initially, with MFA required before launch.
 - Monitoring: Sentry is approved with privacy filtering and no personal form payloads. Lightweight non-advertising traffic analytics are approved.
 
@@ -278,8 +278,7 @@ Record approved architectural decisions here only after explicit user approval. 
 - Posters: one shared frame presents the complete original image without cropping or distortion and uses a decorative blurred copy only to fill surrounding space.
 - Scheduling: `@daypicker/react@10.0.1` is pinned for the accessible Gregorian RTL calendar. Shared application components keep the existing `YYYY-MM-DD` and `HH:mm` server contract, Riyadh interpretation, and quarter-hour choices. No calendar API or external scheduling service receives data.
 - Venue map: the owner approved the exact public Google Maps destination `https://maps.app.goo.gl/Seti5sBZvmhaHeNe8?g_st=ic`. A forward-only nullable `site_settings.default_venue_map_url` column keeps the link administrator-editable. The site opens the external map only after a visitor selects the venue card; no map is embedded and no new tracking provider is initialized.
-- Turnstile: the existing server verification remains mandatory when enforcement is enabled. The account widget is `managed`; the public widget uses flexible sizing and `interaction-only` appearance, with automatic challenge retry and token refresh, so ordinary visitors do not see it unless interaction is required.
-- Documentation: Context7 IDs `/gpbl/react-day-picker` and `/supabase/supabase` were queried for v10 controlled selection, Arabic locale/RTL, accessible keyboard behavior, stylesheet setup, forward migrations, and environment separation. Current official Cloudflare Turnstile widget-configuration documentation was used for flexible sizing.
+- Documentation: Context7 IDs `/gpbl/react-day-picker` and `/supabase/supabase` were queried for v10 controlled selection, Arabic locale/RTL, accessible keyboard behavior, stylesheet setup, forward migrations, and environment separation.
 ## Message-template schema repair: 2026-08-20
 
 - Status: applied to production.

@@ -107,7 +107,7 @@ Do not add any of the following without explicit user approval:
 
 Do not add adjacent features merely because they are common in event or cultural-club products.
 
-The following providers are explicitly approved for their recorded scope: Supabase for database/auth/storage, Vercel for hosting, Resend for transactional email after domain verification, Cloudflare Turnstile for public-form abuse protection, and Sentry for privacy-filtered error monitoring. Approval of a provider does not authorize a paid plan or unbounded data collection; present cost and privacy implications before enabling a paid tier.
+The following providers are explicitly approved for their recorded scope: Supabase for database/auth/storage, Vercel for hosting, Resend for transactional email after domain verification, and Sentry for privacy-filtered error monitoring. Approval of a provider does not authorize a paid plan or unbounded data collection; present cost and privacy implications before enabling a paid tier.
 
 ## 6. Technology and coding conventions
 
@@ -327,4 +327,4 @@ Never state that work is production-ready when it depends on unresolved decision
 7. Perform smoke tests for public events, admin authentication, registration, cancellation, and messaging.
 8. Keep Vercel Authentication enabled until the explicit public-launch decision. Do not expose unfinished or placeholder routes.
 
-The pre-launch environment also requires administrator MFA, Cloudflare Turnstile on anonymous mutation forms, privacy-filtered Sentry monitoring, a verified email domain, privacy and terms pages, and a real acceptance test. Online payment and automated WhatsApp remain deferred and are not launch blockers because pay-at-venue and structured manual WhatsApp workflows are the approved release behavior.
+The pre-launch environment also requires administrator MFA, privacy-filtered Sentry monitoring, a verified email domain, privacy and terms pages, and a real acceptance test. Online payment and automated WhatsApp remain deferred and are not launch blockers because pay-at-venue and structured manual WhatsApp workflows are the approved release behavior.

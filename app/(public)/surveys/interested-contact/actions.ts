@@ -3,9 +3,8 @@
 import { redirect } from "next/navigation";
 import { validateInterestedContactInput } from "@/lib/domain/interested-contact-input";
 import { createInterestedContactService, InterestedContactFailure } from "@/lib/supabase/interested-contacts";
-import { verifyTurnstile } from "@/lib/security/turnstile";
 
-export type InterestedContactActionError = "contactName" | "phone" | "email" | "consent" | "turnstile" | "invalid" | "save";
+export type InterestedContactActionError = "contactName" | "phone" | "email" | "consent" | "invalid" | "save";
 
 export type InterestedContactActionState = {
   error?: InterestedContactActionError;
@@ -17,9 +16,6 @@ export async function submitInterestedContactAction(
   _previousState: InterestedContactActionState,
   formData: FormData,
 ): Promise<InterestedContactActionState> {
-  const turnstile = await verifyTurnstile(formData);
-  if (!turnstile.ok) return { error: "turnstile" };
-
   const input = validateInterestedContactInput(formData);
   if (!input.ok) return { error: input.error };
 

@@ -1,19 +1,17 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   submitInterestedContactAction,
   type InterestedContactActionError,
 } from "@/app/(public)/surveys/interested-contact/actions";
-import { TurnstileField } from "@/features/security/components/TurnstileField";
 
 const errorMessages: Record<InterestedContactActionError, string> = {
   contactName: "اكتبي الاسم من حرفين إلى ١٢٠ حرفًا.",
   phone: "اكتبي رقم جوال سعودي صحيحًا.",
   email: "اكتبي بريدًا إلكترونيًا صحيحًا.",
   consent: "يلزم تحديد موافقتك لتسجيل اهتمامك بالفعاليات القادمة.",
-  turnstile: "لم يكتمل التحقق. حاولي مرة أخرى.",
   invalid: "تحققي من البيانات ثم حاولي مرة أخرى.",
   save: "تعذر الحفظ الآن. حاولي مرة أخرى بعد قليل.",
 };
@@ -28,8 +26,6 @@ const errorField: Partial<Record<InterestedContactActionError, string>> = {
 export function HomeInterestedSection() {
   const [state, formAction, pending] = useActionState(submitInterestedContactAction, {});
   const formRef = useRef<HTMLFormElement>(null);
-  const [turnstileVerified, setTurnstileVerified] = useState(false);
-  const [turnstileConfigurationFailed, setTurnstileConfigurationFailed] = useState(false);
 
   useEffect(() => {
     const field = state.error ? errorField[state.error] : undefined;
@@ -129,13 +125,8 @@ export function HomeInterestedSection() {
               </label>
               {state.error === "consent" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.consent}</span> : null}
 
-              <div className="border-t border-[var(--color-border)] pt-4">
-                <p className="mb-2 text-xs muted-copy">تأكيد سريع قبل الإرسال</p>
-                <TurnstileField className="max-w-[22rem]" onVerifiedChange={setTurnstileVerified} onConfigurationFailedChange={setTurnstileConfigurationFailed} />
-              </div>
-
-              <button type="submit" disabled={pending || !turnstileVerified} className="button-primary min-h-12 w-full px-5 py-3 sm:w-fit">
-                {pending ? "جارٍ الحفظ…" : turnstileConfigurationFailed ? "الحفظ غير متاح مؤقتًا" : !turnstileVerified ? "جارٍ تجهيز الحفظ…" : "سجّلي اهتمامكِ"}
+              <button type="submit" disabled={pending} className="button-primary min-h-12 w-full px-5 py-3 sm:w-fit">
+                {pending ? "جارٍ الحفظ…" : "سجّلي اهتمامكِ"}
               </button>
               </form>
             )}

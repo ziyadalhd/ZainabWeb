@@ -653,17 +653,6 @@ body {
   min-width: 0;
 }
 
-.turnstile-field {
-  display: grid;
-  width: 100%;
-  min-width: 0;
-}
-
-.turnstile-field > div {
-  width: 100%;
-  min-width: 0;
-}
-
 .notice-success,
 .notice-warning,
 .notice-error,

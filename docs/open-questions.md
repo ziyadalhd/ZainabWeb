@@ -32,7 +32,7 @@ This file contains only unresolved decisions and launch inputs. Approved behavio
 
 The providers are approved, but no paid tier is automatically authorized. Before provisioning or upgrading, present current pricing and expected usage for:
 
-- **Deferred by owner for the current low-traffic period:** Sentry setup and custom enforced rate limiting. Vercel Runtime Logs, Turnstile, Supabase Auth limits, and automatic Vercel DDoS protection remain the temporary baseline.
+- **Deferred by owner for the current low-traffic period:** Sentry setup and custom enforced rate limiting. Vercel Runtime Logs, Supabase Auth limits, and automatic Vercel DDoS protection remain the temporary baseline.
 
 - Vercel plan and production region.
 - Supabase production and development environments, including backups and Branching if used.
