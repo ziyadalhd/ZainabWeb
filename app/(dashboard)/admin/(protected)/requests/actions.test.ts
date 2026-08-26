@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { idleActionResult } from "@/lib/data/action-result";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
@@ -25,21 +26,29 @@ describe("markServiceRequestContactedAction", () => {
   it("requires an administrator before mutating a request", async () => {
     mocks.requireAdmin.mockRejectedValueOnce(new Error("unauthorized"));
 
-    await expect(markServiceRequestContactedAction(validId)).rejects.toThrow("unauthorized");
+    await expect(markServiceRequestContactedAction(validId, idleActionResult, new FormData())).rejects.toThrow("unauthorized");
+    expect(mocks.markContacted).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed request id before touching the repository (admin overhaul plan A12)", async () => {
+    const result = await markServiceRequestContactedAction("not-a-uuid", idleActionResult, new FormData());
+    expect(result).toEqual({ status: "error", message: "معرف الطلب غير صالح." });
     expect(mocks.markContacted).not.toHaveBeenCalled();
   });
 
   it("marks the request contacted and revalidates the admin views", async () => {
-    await markServiceRequestContactedAction(validId);
+    const result = await markServiceRequestContactedAction(validId, idleActionResult, new FormData());
 
+    expect(result).toEqual({ status: "success" });
     expect(mocks.markContacted).toHaveBeenCalledWith(validId);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/requests");
   });
 
-  it("swallows a repository failure without surfacing any error to the caller (characterises A9/S4 — fix in Phase 3)", async () => {
+  it("surfaces a repository failure as an error result instead of swallowing it (fixes A9/S4)", async () => {
     mocks.markContacted.mockRejectedValueOnce(new Error("db down"));
 
-    await expect(markServiceRequestContactedAction(validId)).resolves.toBeUndefined();
+    const result = await markServiceRequestContactedAction(validId, idleActionResult, new FormData());
+    expect(result).toEqual({ status: "error" });
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });

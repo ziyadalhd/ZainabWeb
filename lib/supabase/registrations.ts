@@ -325,11 +325,16 @@ implements RegistrationService, AdminRegistrationRepository {
     const to = from + pageSize - 1;
     const searchTerm = filter.query.trim().replace(/[,%().]/g, "");
     const empty = () => ok<PaginatedResult<Registration>>({ items: [], total: 0, page, pageSize });
+    // Registration rows are deleted `retention_until` (event end + 90 days) after the event, by
+    // a daily cron job — so a "previous" event older than that window can have no live
+    // registration data left. Bounding the lookback keeps the event_id.in.(...) filter below
+    // from growing without limit as events accumulate over years (finding A6).
+    const previousEventLookbackStart = new Date(new Date(filter.now).getTime() - 100 * 24 * 60 * 60 * 1000).toISOString();
 
     try {
       let eventQuery = this.client.from("events").select("id,title,starts_at");
       if (filter.view === "upcoming") eventQuery = eventQuery.gte("starts_at", filter.now);
-      if (filter.view === "previous") eventQuery = eventQuery.lt("starts_at", filter.now);
+      if (filter.view === "previous") eventQuery = eventQuery.lt("starts_at", filter.now).gte("starts_at", previousEventLookbackStart);
       const { data: viewEvents, error: eventsError } = await eventQuery;
       if (eventsError || !viewEvents) {
         logRepositoryFailure("Registrations.listPage", eventsError);
@@ -341,7 +346,7 @@ implements RegistrationService, AdminRegistrationRepository {
 
       let titleQuery = this.client.from("events").select("id").ilike("title", `%${searchTerm}%`);
       if (filter.view === "upcoming") titleQuery = titleQuery.gte("starts_at", filter.now);
-      if (filter.view === "previous") titleQuery = titleQuery.lt("starts_at", filter.now);
+      if (filter.view === "previous") titleQuery = titleQuery.lt("starts_at", filter.now).gte("starts_at", previousEventLookbackStart);
       const { data: titleMatches, error: titleMatchesError } = searchTerm ? await titleQuery : { data: [], error: null };
       if (titleMatchesError) {
         logRepositoryFailure("Registrations.listPage", titleMatchesError);

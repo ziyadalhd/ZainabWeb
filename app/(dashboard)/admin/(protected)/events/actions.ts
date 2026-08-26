@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { isEntityId } from "@/lib/domain/entity-id";
 import {
   canChangeEventStatus,
   isEventPublicationStatus,
@@ -13,8 +14,6 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 import { validateEventPoster } from "@/lib/domain/event-poster-input";
 import { SupabaseEventPosterStorage } from "@/lib/supabase/event-posters";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type EventFormActionError =
   | "title"
@@ -81,6 +80,7 @@ export async function updateEventAction(
   formData: FormData,
 ): Promise<EventFormActionState> {
   await requireAdmin();
+  if (!isEntityId(id)) return { error: "save" };
   const input = validateEventInput(formData);
   if (!input.ok) return { error: input.error };
 
@@ -118,7 +118,7 @@ export async function updateEventAction(
 
 export async function changeEventStatusAction(id: string, requestedStatus: EventPublicationStatus) {
   await requireAdmin();
-  if (!isEventPublicationStatus(requestedStatus)) redirect("/admin/events?error=status");
+  if (!isEntityId(id) || !isEventPublicationStatus(requestedStatus)) redirect("/admin/events?error=status");
 
   let failure: "status" | "incomplete" | null = null;
   try {
@@ -155,7 +155,7 @@ export async function uploadEventPosterAction(
 ): Promise<EventPosterActionState> {
   void _previousState;
   await requireAdmin();
-  if (!uuidPattern.test(id)) return { error: "save" };
+  if (!isEntityId(id)) return { error: "save" };
 
   const poster = validateEventPoster(formData.get("poster"));
   if (!poster.ok) return { error: poster.error };

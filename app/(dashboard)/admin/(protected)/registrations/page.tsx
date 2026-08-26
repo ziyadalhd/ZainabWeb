@@ -22,10 +22,10 @@ export const revalidate = 0;
 
 type RegistrationView = "upcoming" | "waitlist" | "previous";
 
-const views: ReadonlyArray<{ id: RegistrationView; label: string; exportScope: "current" | "waitlist" | "previous" }> = [
-  { id: "upcoming", label: "القادمة", exportScope: "current" },
-  { id: "waitlist", label: "الانتظار والدعوات", exportScope: "waitlist" },
-  { id: "previous", label: "السابقة والملغاة", exportScope: "previous" },
+const views: ReadonlyArray<{ id: RegistrationView; label: string }> = [
+  { id: "upcoming", label: "القادمة" },
+  { id: "waitlist", label: "الانتظار والدعوات" },
+  { id: "previous", label: "السابقة والملغاة" },
 ];
 
 const registrationActions = {
@@ -86,12 +86,11 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
     registrationRepository.listPage({ view, query, page: getPage(requestedPage), pageSize, now: new Date().toISOString(), eventId }),
     eventId ? createAdminEventRepository().then((repository) => repository.get(eventId)) : Promise.resolve(null),
   ]);
-  const activeView = views.find((item) => item.id === view) ?? views[0];
   const actionMode = view === "upcoming" ? "current" : view;
 
   return (
     <main className="admin-page">
-      <div className="flex flex-wrap items-end justify-between gap-5"><PageHeader eyebrow="التشغيل" title="التسجيلات" description="ابحثي في الحجوزات القادمة والانتظار والتسجيلات السابقة من مكان واحد." /><Link href={`/admin/registrations/export?scope=${activeView.exportScope}`} className="button-secondary">تنزيل القائمة المعروضة</Link></div>
+      <PageHeader eyebrow="التشغيل" title="التسجيلات" description="ابحثي في الحجوزات القادمة والانتظار والتسجيلات السابقة من مكان واحد." />
       {eventId ? <p className="notice-info mt-5">تُعرض تسجيلات فعالية واحدة فقط{eventOutcome ? ` — «${eventOutcome.title}»` : ""}. <Link href={clearEventHref(view, query)} className="font-bold underline decoration-current underline-offset-4">عرض كل التسجيلات</Link></p> : null}
       <nav aria-label="حالات التسجيل" className="workspace-tabs mt-7">{views.map((item) => <Link key={item.id} href={viewHref(item.id, query, eventId)} aria-current={item.id === view ? "page" : undefined} className={item.id === view ? "workspace-tab workspace-tab--active" : "workspace-tab"}>{item.label}</Link>)}</nav>
       {outcome.ok ? (

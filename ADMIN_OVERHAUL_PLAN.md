@@ -668,7 +668,7 @@ relevant `docs/` entries need correcting as part of Phase 3. `requests/page.tsx`
 | **1** | ✅ Done | Failures stop rendering as empty states (A2) — see §11.1. |
 | **2** | ✅ Done | Eleven destinations collapse to five; the dead registration selection (A1) is fixed by removal — see §11.2. |
 | **3** | ✅ Done (scoped) | One interaction model for registrations (A4, A9, A11); A7 corrected, not built — see §11.3. Request status model (§10.2) and activity badges deferred: both need a migration and hosted-DB access unavailable this session. |
-| **4** | Not started | Correctness and hygiene (A6, A10, A12) + verify the pg_cron retention jobs are live. |
+| **4** | ✅ Done (scoped) | A6 fixed; A10 removed rather than fixed (product decision); A12 unified. Retention cron verification still needs hosted DB access — see §11.4. |
 | **5** | Not started | Day-of mobile mode (Q5) and conflict warnings (Q3). |
 | **6** | Not started | Readability and the full RTL pass. |
 
@@ -736,3 +736,17 @@ What genuinely was missing was *discoverability*: nothing pointed a waitlisted r
 - **Activity badges (§6.5)** — needs `last_seen_at` persistence (a schema change), same constraint as above.
 
 **Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 55 files / 195 tests. `pnpm build` / `pnpm test:db` not run, same environment constraints as Phases 1–2.
+
+### 11.4 Phase 4 — what changed
+
+**A10 (CSV export) is removed, not fixed.** The product decision (superseding the v1 recommendation to make it honour the active filter) is to drop the feature entirely: `app/(dashboard)/admin/(protected)/registrations/export/` (route + test) and `lib/export/registrations-csv.ts` (+ test) are deleted, along with the "تنزيل القائمة المعروضة" button and the now-unused `exportScope` field on the registrations page's view list.
+
+**A6 fixed** — the unbounded UUID list in the "previous" registrations view's PostgREST filter. `listPage()`'s past-events lookup now adds a 100-day lower bound (`.gte("starts_at", now - 100 days)`) alongside the existing `.lt("starts_at", now)` upper bound. This isn't an arbitrary cutoff: `registrations.retention_until` is set to the event's end (or start) plus 90 days, and a daily cron job deletes rows past that — so no registration data can exist for an event more than ~90 days old regardless. The 100-day window (90 + a 10-day margin for cron lag) is provably safe: it can never exclude a registration that still exists in the table. This converts an unbounded, multi-year-growing ID list into one bounded to roughly a quarter's worth of events, permanently. Regression test in `lib/supabase/registrations.test.ts` asserts the repository issues the bounded `gte` call for `previous` and no bound for `upcoming`.
+
+**A12 unified.** Four duplicated (and one looser) UUID-validation regexes across `events/actions.ts`, `registrations/actions.ts`, `events/[id]/message-actions.ts`, and `messages/templates/actions.ts` (`/^[0-9a-f-]{36}$/i` — accepted malformed input the other three would reject) are replaced by one `isEntityId()` in the new `lib/domain/entity-id.ts`. Two admin actions gained ID validation they never had at all: `updateEventAction` and `changeEventStatusAction` previously trusted their `id` parameter unchecked. (`app/(public)/events/[id]/page.tsx`'s copy of the same pattern is left as-is — public routes are out of scope for this plan.)
+
+**S4 fixed in passing.** `markServiceRequestContactedAction` silently swallowed repository failures (`catch { return; }`, no error surfaced) — flagged back in Phase 0's safety-net tests as "characterises A9/S4 — fix in Phase 3" but not reached until now. Converted to the `ActionResult`/`ActionButton` pattern from Phase 3 for consistency: it now returns a typed error and the requests page shows a toast on failure instead of nothing happening.
+
+**Retention cron verification (§2, correction from Phase 1) still not done** — `select * from cron.job` requires the hosted Supabase project, which this session doesn't have access to. Recorded as an open operational check, not a code change.
+
+**Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 54 files / 193 tests (net -2 from Phase 3: -7 for the deleted export tests, +5 for new A6/A12/S4 regression tests). `pnpm build` / `pnpm test:db` not run, same environment constraints as prior phases.

@@ -116,6 +116,12 @@ describe("createEventAction", () => {
 });
 
 describe("updateEventAction", () => {
+  it("rejects a malformed event id before validating input (admin overhaul plan A12)", async () => {
+    const result = await updateEventAction("not-a-uuid", {}, validEventFormData());
+    expect(result).toEqual({ error: "save" });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
   it("returns a field-specific error without calling the repository", async () => {
     const formData = validEventFormData();
     formData.set("capacity", "0");
@@ -134,6 +140,11 @@ describe("updateEventAction", () => {
 });
 
 describe("changeEventStatusAction", () => {
+  it("rejects a malformed event id (admin overhaul plan A12)", async () => {
+    await expect(changeEventStatusAction("not-a-uuid", "published")).rejects.toThrow("REDIRECT:/admin/events?error=status");
+    expect(mocks.get).not.toHaveBeenCalled();
+  });
+
   it("rejects a status value outside the known publication states", async () => {
     // @ts-expect-error intentionally invalid to characterise the guard
     await expect(changeEventStatusAction(validId, "deleted")).rejects.toThrow("REDIRECT:/admin/events?error=status");

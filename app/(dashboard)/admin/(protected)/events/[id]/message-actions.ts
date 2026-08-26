@@ -2,11 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { isEntityId } from "@/lib/domain/entity-id";
 import type { ManualMessageKind } from "@/lib/domain/types";
 import { isManualMessageKind } from "@/lib/messaging/manual-messages";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
-
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export interface OpenManualMessageResult {
   messageId?: string;
@@ -31,7 +30,7 @@ export async function openManualWhatsAppMessageAction(
   kind: string,
 ): Promise<OpenManualMessageResult> {
   await requireAdmin();
-  if (!uuidPattern.test(eventId) || !uuidPattern.test(registrationId) || !isManualMessageKind(kind)) {
+  if (!isEntityId(eventId) || !isEntityId(registrationId) || !isManualMessageKind(kind)) {
     return { error: "invalid" };
   }
 
@@ -54,7 +53,7 @@ export async function markManualMessageSentAction(
   messageId: string,
 ): Promise<MarkManualMessageSentResult> {
   await requireAdmin();
-  if (!uuidPattern.test(eventId) || !uuidPattern.test(messageId)) return { error: "invalid" };
+  if (!isEntityId(eventId) || !isEntityId(messageId)) return { error: "invalid" };
 
   try {
     const repository = await createAdminRegistrationRepository();
