@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { mapEventRow } from "@/lib/supabase/events";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { mapEventRow, SupabaseEventRepository } from "@/lib/supabase/events";
+import type { Database } from "@/lib/supabase/database.types";
 
 const row = {
   id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
@@ -49,5 +51,46 @@ describe("mapEventRow", () => {
   it("rejects unexpected constrained values", () => {
     expect(() => mapEventRow({ ...row, publication_status: "deleted" }, state)).toThrow();
     expect(() => mapEventRow({ ...row, event_kind: "unknown" }, state)).toThrow();
+  });
+});
+
+function chainable(result: { data: unknown; error: unknown }): PromiseLike<{ data: unknown; error: unknown }> {
+  const handler: Record<string, unknown> = {
+    then: (onFulfilled: (value: { data: unknown; error: unknown }) => unknown, onRejected?: (reason: unknown) => unknown) =>
+      Promise.resolve(result).then(onFulfilled, onRejected),
+  };
+  for (const method of ["select", "order", "eq", "gte", "lt", "in", "ilike", "or", "range", "not"]) {
+    handler[method] = () => handler;
+  }
+  return handler as unknown as PromiseLike<{ data: unknown; error: unknown }>;
+}
+
+function fakeEventsClient(eventsResult: { data: unknown; error: unknown }, statesResult: { data: unknown; error: unknown }): SupabaseClient<Database> {
+  return {
+    from: () => chainable(eventsResult),
+    rpc: () => Promise.resolve(statesResult),
+  } as unknown as SupabaseClient<Database>;
+}
+
+describe("SupabaseEventRepository.list", () => {
+  it("returns a load-failed result instead of an empty array when the events query errors (admin overhaul plan A2)", async () => {
+    const repository = new SupabaseEventRepository(fakeEventsClient(
+      { data: null, error: { code: "PGRST116" } },
+      { data: [], error: null },
+    ));
+
+    await expect(repository.list()).resolves.toEqual({ ok: false, code: "load_failed" });
+  });
+
+  it("returns the mapped events wrapped in a successful result", async () => {
+    const repository = new SupabaseEventRepository(fakeEventsClient(
+      { data: [row], error: null },
+      { data: [state], error: null },
+    ));
+
+    const result = await repository.list();
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.data).toEqual([mapEventRow(row, state)]);
   });
 });

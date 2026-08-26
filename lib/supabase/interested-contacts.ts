@@ -11,6 +11,8 @@ import type {
 import { generateSecureToken, hashSecureToken, isSecureToken } from "@/lib/security/secure-token";
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { loadFailed, ok, type RepositoryResult } from "@/lib/data/result";
+import { logRepositoryFailure } from "@/lib/observability/logger";
 
 type InterestedContactRow = Database["public"]["Tables"]["interested_contacts"]["Row"];
 
@@ -64,18 +66,20 @@ implements InterestedContactService, AdminInterestedContactRepository {
     if (error) throw mapFailure(error.message);
   }
 
-  async list(): Promise<readonly AdminInterestedContact[]> {
+  async list(): Promise<RepositoryResult<readonly AdminInterestedContact[]>> {
     try {
       const { data, error } = await this.client
         .from("interested_contacts")
         .select("*")
         .order("consented_at", { ascending: false });
       if (error || !data) {
-        return [];
+        logRepositoryFailure("InterestedContacts.list", error);
+        return loadFailed();
       }
-      return data.map(mapRow);
-    } catch {
-      return [];
+      return ok(data.map(mapRow));
+    } catch (err) {
+      logRepositoryFailure("InterestedContacts.list", err);
+      return loadFailed();
     }
   }
 }

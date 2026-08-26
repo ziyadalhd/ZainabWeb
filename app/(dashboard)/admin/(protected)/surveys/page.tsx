@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LoadErrorNotice } from "@/components/ui/LoadErrorNotice";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminEventFeedbackRepository } from "@/lib/supabase/event-feedback";
@@ -12,5 +13,12 @@ export default async function AdminSurveysPage() {
   await requireAdmin();
   const repository = await createAdminEventFeedbackRepository();
   const responses = await repository.listSubmitted();
-  return <main className="admin-page"><PageHeader eyebrow="لوحة الإدارة" title="الاستبيانات" description="تظهر التقييمات المرسلة بالاسم فقط عندما تختار المشاركة إظهاره." /><div className="mt-8"><AdminEventFeedbackTable responses={responses} /></div></main>;
+  return (
+    <main className="admin-page">
+      <PageHeader eyebrow="لوحة الإدارة" title="الاستبيانات" description="تظهر التقييمات المرسلة بالاسم فقط عندما تختار المشاركة إظهاره." />
+      {responses.ok
+        ? <div className="mt-8"><AdminEventFeedbackTable responses={responses.data} /></div>
+        : <LoadErrorNotice />}
+    </main>
+  );
 }

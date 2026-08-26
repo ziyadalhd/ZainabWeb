@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LoadErrorNotice } from "@/components/ui/LoadErrorNotice";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EventCapacityTable } from "@/features/admin/components/EventCapacityTable";
 import { requireAdmin } from "@/lib/auth/require-admin";
@@ -26,7 +27,9 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
       {success && successMessages[success] ? <p role="status" className="notice-success mt-6">{successMessages[success]}</p> : null}
       {error && errorMessages[error] ? <p role="alert" className="notice-error mt-6">{errorMessages[error]}</p> : null}
       {notice === "communications" ? <p className="notice-info mt-6">اختاري الفعالية، ثم افتحي تبويب «التواصل» لإدارة جميع رسائلها في مكان واحد.</p> : null}
-      <div className="mt-8"><EventCapacityTable events={events} statusAction={changeEventStatusAction} /></div>
+      {events.ok
+        ? <div className="mt-8"><EventCapacityTable events={events.data} statusAction={changeEventStatusAction} /></div>
+        : <LoadErrorNotice />}
     </main>
   );
 }

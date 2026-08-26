@@ -32,6 +32,8 @@ import {
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isManualMessageKind } from "@/lib/messaging/manual-messages";
+import { loadFailed, ok, type RepositoryResult } from "@/lib/data/result";
+import { logRepositoryFailure } from "@/lib/observability/logger";
 
 type RegistrationRow = Database["public"]["Tables"]["registrations"]["Row"];
 type ReminderRow = Database["public"]["Tables"]["registration_reminders"]["Row"];
@@ -205,7 +207,7 @@ implements RegistrationService, AdminRegistrationRepository {
     if (error) throw mapFailure(error.message);
   }
 
-  async list(): Promise<readonly Registration[]> {
+  async list(): Promise<RepositoryResult<readonly Registration[]>> {
     try {
       const [
         { data: registrations, error },
@@ -217,8 +219,8 @@ implements RegistrationService, AdminRegistrationRepository {
         this.client.from("registration_reminders").select("*").order("prepared_at", { ascending: false }),
       ]);
       if (error || eventsError || remindersError || !registrations || !events || !reminders) {
-        console.warn('[Registrations] list returned error or empty data:', error ?? eventsError ?? remindersError);
-        return [];
+        logRepositoryFailure("Registrations.list", error ?? eventsError ?? remindersError);
+        return loadFailed();
       }
       const eventDetails = new Map(events.map((event) => [
         event.id,
@@ -230,49 +232,59 @@ implements RegistrationService, AdminRegistrationRepository {
           latestReminders.set(reminder.registration_id, reminder);
         }
       }
-      return registrations.map((row) => mapRegistration(
+      return ok(registrations.map((row) => mapRegistration(
         row,
         eventDetails.get(row.event_id),
         latestReminders.get(row.id),
-      ));
+      )));
     } catch (err) {
-      console.warn('[Registrations] list failed gracefully:', err);
-      return [];
+      logRepositoryFailure("Registrations.list", err);
+      return loadFailed();
     }
   }
 
-  async listForEvent(eventId: string): Promise<readonly Registration[]> {
+  async listForEvent(eventId: string): Promise<RepositoryResult<readonly Registration[]>> {
     try {
       const [{ data: event, error: eventError }, { data: registrations, error }] = await Promise.all([
         this.client.from("events").select("id,title,starts_at").eq("id", eventId).maybeSingle(),
         this.client.from("registrations").select("*").eq("event_id", eventId).order("created_at", { ascending: false }),
       ]);
-      if (eventError || error || !event || !registrations) return [];
+      if (eventError || error || !event || !registrations) {
+        logRepositoryFailure("Registrations.listForEvent", eventError ?? error);
+        return loadFailed();
+      }
 
       const registrationIds = registrations.map((registration) => registration.id);
       const { data: reminders, error: remindersError } = registrationIds.length
         ? await this.client.from("registration_reminders").select("*").in("registration_id", registrationIds).order("prepared_at", { ascending: false })
         : { data: [] as ReminderRow[], error: null };
-      if (remindersError) return [];
+      if (remindersError) {
+        logRepositoryFailure("Registrations.listForEvent", remindersError);
+        return loadFailed();
+      }
 
       const latestReminders = new Map<string, ReminderRow>();
       for (const reminder of reminders ?? []) {
         if (!latestReminders.has(reminder.registration_id)) latestReminders.set(reminder.registration_id, reminder);
       }
       const eventDetails = { title: event.title, startsAt: event.starts_at };
-      return registrations.map((row) => mapRegistration(row, eventDetails, latestReminders.get(row.id)));
+      return ok(registrations.map((row) => mapRegistration(row, eventDetails, latestReminders.get(row.id))));
     } catch (error) {
-      console.warn("[Registrations] listForEvent failed gracefully:", error);
-      return [];
+      logRepositoryFailure("Registrations.listForEvent", error);
+      return loadFailed();
     }
   }
 
-  async listManualMessagesForEvent(eventId: string): Promise<readonly ManualMessageRecord[]> {
+  async listManualMessagesForEvent(eventId: string): Promise<RepositoryResult<readonly ManualMessageRecord[]>> {
     const { data: registrations, error: registrationsError } = await this.client
       .from("registrations")
       .select("id")
       .eq("event_id", eventId);
-    if (registrationsError || !registrations?.length) return [];
+    if (registrationsError) {
+      logRepositoryFailure("Registrations.listManualMessagesForEvent", registrationsError);
+      return loadFailed();
+    }
+    if (!registrations?.length) return ok([]);
 
     const registrationIds = registrations.map((registration) => registration.id);
     const [
@@ -282,7 +294,10 @@ implements RegistrationService, AdminRegistrationRepository {
       this.client.from("manual_messages").select("*").in("registration_id", registrationIds).order("prepared_at", { ascending: false }),
       this.client.from("registration_reminders").select("*").in("registration_id", registrationIds).order("prepared_at", { ascending: false }),
     ]);
-    if (error || legacyError || !data || !legacyReminders) return [];
+    if (error || legacyError || !data || !legacyReminders) {
+      logRepositoryFailure("Registrations.listManualMessagesForEvent", error ?? legacyError);
+      return loadFailed();
+    }
 
     const currentMessages: ManualMessageRecord[] = data.flatMap((row: ManualMessageRow) => isManualMessageKind(row.message_kind) ? [{
       id: row.id,
@@ -300,30 +315,38 @@ implements RegistrationService, AdminRegistrationRepository {
       sentAt: row.sent_at,
       supersededAt: null,
     }));
-    return [...currentMessages, ...legacyMessages].sort((first, second) => new Date(second.preparedAt).getTime() - new Date(first.preparedAt).getTime());
+    return ok([...currentMessages, ...legacyMessages].sort((first, second) => new Date(second.preparedAt).getTime() - new Date(first.preparedAt).getTime()));
   }
 
-  async listPage(filter: AdminRegistrationListFilter): Promise<PaginatedResult<Registration>> {
+  async listPage(filter: AdminRegistrationListFilter): Promise<RepositoryResult<PaginatedResult<Registration>>> {
     const page = Math.max(1, Math.floor(filter.page));
     const pageSize = Math.min(100, Math.max(1, Math.floor(filter.pageSize)));
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
     const searchTerm = filter.query.trim().replace(/[,%().]/g, "");
+    const empty = () => ok<PaginatedResult<Registration>>({ items: [], total: 0, page, pageSize });
 
     try {
       let eventQuery = this.client.from("events").select("id,title,starts_at");
       if (filter.view === "upcoming") eventQuery = eventQuery.gte("starts_at", filter.now);
       if (filter.view === "previous") eventQuery = eventQuery.lt("starts_at", filter.now);
       const { data: viewEvents, error: eventsError } = await eventQuery;
-      if (eventsError || !viewEvents) return { items: [], total: 0, page, pageSize };
+      if (eventsError || !viewEvents) {
+        logRepositoryFailure("Registrations.listPage", eventsError);
+        return loadFailed();
+      }
       const eventIds = viewEvents.map((event) => event.id);
-      if ((filter.view === "upcoming" || filter.view === "previous") && eventIds.length === 0) return { items: [], total: 0, page, pageSize };
+      // No events fall in this time window — a legitimate empty result, not a failure.
+      if ((filter.view === "upcoming" || filter.view === "previous") && eventIds.length === 0) return empty();
 
       let titleQuery = this.client.from("events").select("id").ilike("title", `%${searchTerm}%`);
       if (filter.view === "upcoming") titleQuery = titleQuery.gte("starts_at", filter.now);
       if (filter.view === "previous") titleQuery = titleQuery.lt("starts_at", filter.now);
       const { data: titleMatches, error: titleMatchesError } = searchTerm ? await titleQuery : { data: [], error: null };
-      if (titleMatchesError) return { items: [], total: 0, page, pageSize };
+      if (titleMatchesError) {
+        logRepositoryFailure("Registrations.listPage", titleMatchesError);
+        return loadFailed();
+      }
 
       let query = this.client.from("registrations").select("*", { count: "exact" });
       if (filter.view === "waitlist") query = query.in("status", ["waitlisted", "invited"]);
@@ -335,7 +358,10 @@ implements RegistrationService, AdminRegistrationRepository {
         query = query.or(textFilters.join(","));
       }
       const { data: registrations, error, count } = await query.order("created_at", { ascending: false }).range(from, to);
-      if (error || !registrations) return { items: [], total: 0, page, pageSize };
+      if (error || !registrations) {
+        logRepositoryFailure("Registrations.listPage", error);
+        return loadFailed();
+      }
 
       const pageEventIds = [...new Set(registrations.map((registration) => registration.event_id))];
       const [{ data: eventDetails }, { data: reminders }] = await Promise.all([
@@ -345,10 +371,10 @@ implements RegistrationService, AdminRegistrationRepository {
       const eventDetailsById = new Map((eventDetails ?? []).map((event) => [event.id, { title: event.title, startsAt: event.starts_at }]));
       const latestReminders = new Map<string, ReminderRow>();
       for (const reminder of reminders ?? []) if (!latestReminders.has(reminder.registration_id)) latestReminders.set(reminder.registration_id, reminder);
-      return { items: registrations.map((row) => mapRegistration(row, eventDetailsById.get(row.event_id), latestReminders.get(row.id))), total: count ?? 0, page, pageSize };
+      return ok({ items: registrations.map((row) => mapRegistration(row, eventDetailsById.get(row.event_id), latestReminders.get(row.id))), total: count ?? 0, page, pageSize });
     } catch (err) {
-      console.warn("[Registrations] listPage failed gracefully:", err);
-      return { items: [], total: 0, page, pageSize };
+      logRepositoryFailure("Registrations.listPage", err);
+      return loadFailed();
     }
   }
 

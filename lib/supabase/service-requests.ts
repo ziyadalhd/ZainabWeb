@@ -18,6 +18,8 @@ import type {
 import { generateSecureToken, hashSecureToken, isSecureToken } from "@/lib/security/secure-token";
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { loadFailed, ok, type RepositoryResult } from "@/lib/data/result";
+import { logRepositoryFailure } from "@/lib/observability/logger";
 
 type ServiceRequestRow = Database["public"]["Tables"]["service_requests"]["Row"];
 
@@ -172,24 +174,24 @@ implements ServiceRequestService, AdminServiceRequestRepository {
     throw new ServiceRequestFailure("save");
   }
 
-  async list(): Promise<readonly AdminServiceRequest[]> {
+  async list(): Promise<RepositoryResult<readonly AdminServiceRequest[]>> {
     try {
       const { data, error } = await this.client
         .from("service_requests")
         .select("*")
         .order("created_at", { ascending: false });
       if (error || !data) {
-        console.warn('[ServiceRequest] list returned error or empty data:', error);
-        return [];
+        logRepositoryFailure("ServiceRequests.list", error);
+        return loadFailed();
       }
-      return data.map(mapServiceRequestRow);
+      return ok(data.map(mapServiceRequestRow));
     } catch (err) {
-      console.warn('[ServiceRequest] list failed gracefully:', err);
-      return [];
+      logRepositoryFailure("ServiceRequests.list", err);
+      return loadFailed();
     }
   }
 
-  async listPage(filter: AdminServiceRequestListFilter): Promise<PaginatedResult<AdminServiceRequest>> {
+  async listPage(filter: AdminServiceRequestListFilter): Promise<RepositoryResult<PaginatedResult<AdminServiceRequest>>> {
     const page = Math.max(1, Math.floor(filter.page));
     const pageSize = Math.min(100, Math.max(1, Math.floor(filter.pageSize)));
     const from = (page - 1) * pageSize;
@@ -203,11 +205,14 @@ implements ServiceRequestService, AdminServiceRequestRepository {
         "requester_name", "phone_e164", "email", "public_reference", "workshop_title", "use_or_occasion_type",
       ].map((column) => `${column}.ilike.%${searchTerm}%`).join(","));
       const { data, error, count } = await query.order("created_at", { ascending: false }).range(from, to);
-      if (error || !data) return { items: [], total: 0, page, pageSize };
-      return { items: data.map(mapServiceRequestRow), total: count ?? 0, page, pageSize };
+      if (error || !data) {
+        logRepositoryFailure("ServiceRequests.listPage", error);
+        return loadFailed();
+      }
+      return ok({ items: data.map(mapServiceRequestRow), total: count ?? 0, page, pageSize });
     } catch (err) {
-      console.warn("[ServiceRequest] listPage failed gracefully:", err);
-      return { items: [], total: 0, page, pageSize };
+      logRepositoryFailure("ServiceRequests.listPage", err);
+      return loadFailed();
     }
   }
 
@@ -250,14 +255,14 @@ implements ServiceRequestService, AdminServiceRequestRepository {
     if (error) throw mapFailure(error.message);
   }
 
-  async getConflicts(id: string): Promise<readonly ServiceRequestConflict[]> {
+  async getConflicts(id: string): Promise<RepositoryResult<readonly ServiceRequestConflict[]>> {
     try {
       const { data, error } = await this.client.rpc("get_service_request_conflicts", { p_request_id: id });
       if (error || !data) {
-        console.warn('[ServiceRequest] getConflicts returned error or empty data:', error);
-        return [];
+        logRepositoryFailure("ServiceRequests.getConflicts", error);
+        return loadFailed();
       }
-      return data.flatMap((row) => {
+      return ok(data.flatMap((row) => {
         if (
           (row.conflict_source !== "event" && row.conflict_source !== "service_request")
           || !row.conflict_title
@@ -271,10 +276,10 @@ implements ServiceRequestService, AdminServiceRequestRepository {
           endsAt: row.conflict_ends_at,
           status: row.conflict_status,
         }];
-      });
+      }));
     } catch (err) {
-      console.warn('[ServiceRequest] getConflicts failed gracefully:', err);
-      return [];
+      logRepositoryFailure("ServiceRequests.getConflicts", err);
+      return loadFailed();
     }
   }
 

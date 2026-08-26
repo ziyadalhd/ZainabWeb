@@ -31,6 +31,7 @@ import type {
   ServiceRequestDetails,
   ServiceRequestConflict,
 } from "@/lib/domain/types";
+import type { RepositoryResult } from "@/lib/data/result";
 
 export interface EventCatalog {
   listUpcomingEvents(): Promise<readonly Event[]>;
@@ -39,7 +40,7 @@ export interface EventCatalog {
 }
 
 export interface AdminEventRepository {
-  list(): Promise<readonly Event[]>;
+  list(): Promise<RepositoryResult<readonly Event[]>>;
   get(id: string): Promise<Event | null>;
   create(input: EventInput): Promise<Event>;
   update(id: string, input: EventInput): Promise<Event>;
@@ -57,10 +58,10 @@ export interface RegistrationService {
 }
 
 export interface AdminRegistrationRepository {
-  list(): Promise<readonly Registration[]>;
-  listForEvent(eventId: string): Promise<readonly Registration[]>;
-  listPage(filter: AdminRegistrationListFilter): Promise<PaginatedResult<Registration>>;
-  listManualMessagesForEvent(eventId: string): Promise<readonly ManualMessageRecord[]>;
+  list(): Promise<RepositoryResult<readonly Registration[]>>;
+  listForEvent(eventId: string): Promise<RepositoryResult<readonly Registration[]>>;
+  listPage(filter: AdminRegistrationListFilter): Promise<RepositoryResult<PaginatedResult<Registration>>>;
+  listManualMessagesForEvent(eventId: string): Promise<RepositoryResult<readonly ManualMessageRecord[]>>;
   prepareManualMessage(id: string, kind: ManualMessageKind): Promise<ManualMessageReceipt>;
   markManualMessageSent(id: string): Promise<IsoDateTime>;
   cancel(id: string): Promise<void>;
@@ -77,7 +78,7 @@ export interface InterestedContactService {
 }
 
 export interface AdminInterestedContactRepository {
-  list(): Promise<readonly AdminInterestedContact[]>;
+  list(): Promise<RepositoryResult<readonly AdminInterestedContact[]>>;
 }
 
 export interface EventFeedbackService {
@@ -86,8 +87,8 @@ export interface EventFeedbackService {
 }
 
 export interface AdminEventFeedbackRepository {
-  listSubmitted(): Promise<readonly AdminEventFeedbackResponse[]>;
-  listSubmittedForEvent(eventId: string): Promise<readonly AdminEventFeedbackResponse[]>;
+  listSubmitted(): Promise<RepositoryResult<readonly AdminEventFeedbackResponse[]>>;
+  listSubmittedForEvent(eventId: string): Promise<RepositoryResult<readonly AdminEventFeedbackResponse[]>>;
 }
 
 export interface SiteSettingsRepository {
@@ -105,8 +106,8 @@ export interface ServiceRequestService {
 }
 
 export interface AdminServiceRequestRepository {
-  list(): Promise<readonly AdminServiceRequest[]>;
-  listPage(filter: AdminServiceRequestListFilter): Promise<PaginatedResult<AdminServiceRequest>>;
-  getConflicts(id: string): Promise<readonly ServiceRequestConflict[]>;
+  list(): Promise<RepositoryResult<readonly AdminServiceRequest[]>>;
+  listPage(filter: AdminServiceRequestListFilter): Promise<RepositoryResult<PaginatedResult<AdminServiceRequest>>>;
+  getConflicts(id: string): Promise<RepositoryResult<readonly ServiceRequestConflict[]>>;
   markContacted(id: string): Promise<void>;
 }

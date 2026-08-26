@@ -25,7 +25,11 @@ export async function GET(request: NextRequest) {
   }
 
   const repository = await createAdminRegistrationRepository();
-  const registrations = filterRegistrationsForExport(await repository.list(), scope);
+  const outcome = await repository.list();
+  if (!outcome.ok) {
+    return new Response("تعذر تحميل بيانات التسجيلات حاليًا.", { status: 502 });
+  }
+  const registrations = filterRegistrationsForExport(outcome.data, scope);
 
   return new Response(buildRegistrationsCsv(registrations), {
     headers: {

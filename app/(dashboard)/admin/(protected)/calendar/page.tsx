@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LoadErrorNotice } from "@/components/ui/LoadErrorNotice";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { buildCalendarItems } from "@/features/admin/calendar-items";
 import { CalendarMonthGrid } from "@/features/admin/components/CalendarMonthGrid";
@@ -46,7 +47,6 @@ export default async function AdminCalendarPage({
   ]);
   const [events, requests] = await Promise.all([eventRepository.list(), requestRepository.list()]);
   const month = getCalendarMonth(requestedMonth);
-  const items = buildCalendarItems(events, requests);
 
   return (
     <main className="admin-page">
@@ -56,7 +56,9 @@ export default async function AdminCalendarPage({
         <Link className="button-quiet" href={monthHref(month, 1)}>الشهر التالي</Link>
         <Link className="button-secondary col-span-2" href="/admin/calendar">الشهر الحالي</Link>
       </nav>
-      <div className="mt-5"><CalendarMonthGrid items={items} month={month} /></div>
+      {events.ok && requests.ok
+        ? <div className="mt-5"><CalendarMonthGrid items={buildCalendarItems(events.data, requests.data)} month={month} /></div>
+        : <LoadErrorNotice />}
     </main>
   );
 }

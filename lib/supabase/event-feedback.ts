@@ -9,6 +9,8 @@ import type {
 import { hashSecureToken, isSecureToken } from "@/lib/security/secure-token";
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { loadFailed, ok, type RepositoryResult } from "@/lib/data/result";
+import { logRepositoryFailure } from "@/lib/observability/logger";
 
 type FeedbackRow = Database["public"]["Tables"]["event_feedback_links"]["Row"];
 
@@ -45,7 +47,7 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
     if (error) unavailable();
   }
 
-  async listSubmitted(): Promise<readonly AdminEventFeedbackResponse[]> {
+  async listSubmitted(): Promise<RepositoryResult<readonly AdminEventFeedbackResponse[]>> {
     try {
       const [
         { data: feedback, error: feedbackError },
@@ -57,14 +59,14 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
         this.client.from("registrations").select("id,attendee_name"),
       ]);
       if (feedbackError || eventsError || registrationsError || !feedback || !events || !registrations) {
-        console.warn('[EventFeedback] listSubmitted returned error or empty data:', feedbackError ?? eventsError ?? registrationsError);
-        return [];
+        logRepositoryFailure("EventFeedback.listSubmitted", feedbackError ?? eventsError ?? registrationsError);
+        return loadFailed();
       }
 
       const eventTitles = new Map(events.map((event) => [event.id, event.title]));
       const attendeeNames = new Map(registrations.map((registration) => [registration.id, registration.attendee_name]));
 
-      return feedback.flatMap((row: FeedbackRow) => {
+      return ok(feedback.flatMap((row: FeedbackRow) => {
         if (!row.submitted_at || !isRating(row.hospitality_rating) || !isRating(row.material_rating)) return [];
         const eventTitle = eventTitles.get(row.event_id);
         if (!eventTitle) return [];
@@ -78,14 +80,14 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
           suggestions: row.suggestions,
           submittedAt: row.submitted_at,
         }];
-      });
+      }));
     } catch (err) {
-      console.warn('[EventFeedback] listSubmitted failed gracefully:', err);
-      return [];
+      logRepositoryFailure("EventFeedback.listSubmitted", err);
+      return loadFailed();
     }
   }
 
-  async listSubmittedForEvent(eventId: string): Promise<readonly AdminEventFeedbackResponse[]> {
+  async listSubmittedForEvent(eventId: string): Promise<RepositoryResult<readonly AdminEventFeedbackResponse[]>> {
     try {
       const [
         { data: feedback, error: feedbackError },
@@ -96,10 +98,13 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
         this.client.from("events").select("id,title").eq("id", eventId).maybeSingle(),
         this.client.from("registrations").select("id,attendee_name").eq("event_id", eventId),
       ]);
-      if (feedbackError || eventError || registrationsError || !feedback || !event || !registrations) return [];
+      if (feedbackError || eventError || registrationsError || !feedback || !event || !registrations) {
+        logRepositoryFailure("EventFeedback.listSubmittedForEvent", feedbackError ?? eventError ?? registrationsError);
+        return loadFailed();
+      }
 
       const attendeeNames = new Map(registrations.map((registration) => [registration.id, registration.attendee_name]));
-      return feedback.flatMap((row: FeedbackRow) => {
+      return ok(feedback.flatMap((row: FeedbackRow) => {
         if (!row.submitted_at || !isRating(row.hospitality_rating) || !isRating(row.material_rating)) return [];
         return [{
           id: row.id,
@@ -111,10 +116,10 @@ export class SupabaseEventFeedbackRepository implements EventFeedbackService, Ad
           suggestions: row.suggestions,
           submittedAt: row.submitted_at,
         }];
-      });
+      }));
     } catch (error) {
-      console.warn("[EventFeedback] listSubmittedForEvent failed gracefully:", error);
-      return [];
+      logRepositoryFailure("EventFeedback.listSubmittedForEvent", error);
+      return loadFailed();
     }
   }
 }

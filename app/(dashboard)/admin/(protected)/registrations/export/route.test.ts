@@ -43,7 +43,7 @@ describe("registration export route", () => {
     mocks.list.mockReset();
     mocks.requireAdmin.mockReset();
     mocks.requireAdmin.mockResolvedValue({ id: "admin" });
-    mocks.list.mockResolvedValue([registration]);
+    mocks.list.mockResolvedValue({ ok: true, data: [registration] });
   });
 
   it("requires an administrator before reading registration data", async () => {
@@ -61,6 +61,15 @@ describe("registration export route", () => {
     expect(response.headers.get("content-disposition")).toContain("bayn-current-registrations.csv");
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(await response.text()).toContain("لقاء القراءة");
+  });
+
+  it("returns a distinct error response when the registrations query fails, instead of an empty CSV", async () => {
+    mocks.list.mockResolvedValueOnce({ ok: false, code: "load_failed" });
+
+    const response = await GET(new NextRequest("https://example.test/admin/registrations/export?scope=current"));
+
+    expect(response.status).toBe(502);
+    expect(await response.text()).not.toContain("لقاء القراءة");
   });
 
   it("rejects an unknown export scope before querying registrations", async () => {

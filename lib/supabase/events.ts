@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AdminEventRepository, EventCatalog } from "@/lib/data/contracts";
+import { loadFailed, ok, type RepositoryResult } from "@/lib/data/result";
+import { logRepositoryFailure } from "@/lib/observability/logger";
 import {
   isEventAudience,
   isEventKind,
@@ -155,7 +157,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
-  async list(): Promise<readonly Event[]> {
+  async list(): Promise<RepositoryResult<readonly Event[]>> {
     try {
       const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
         this.client.from("events").select("*").order("starts_at", { ascending: true }),
@@ -163,18 +165,18 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
       ]);
 
       if (error || statesError || !states || !data) {
-        console.warn('[Events] list failed or returned empty:', error ?? statesError);
-        return [];
+        logRepositoryFailure("Events.list", error ?? statesError);
+        return loadFailed();
       }
       const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
-      return data.flatMap((row) => {
+      return ok(data.flatMap((row) => {
         const state = stateByEvent.get(row.id);
         if (!state) return [];
         return [mapEventRow(row, state, getPosterUrl(this.client, row.poster_path))];
-      });
+      }));
     } catch (err) {
-      console.warn('[Events] list failed gracefully:', err);
-      return [];
+      logRepositoryFailure("Events.list", err);
+      return loadFailed();
     }
   }
 

@@ -660,19 +660,34 @@ relevant `docs/` entries need correcting as part of Phase 3. `requests/page.tsx`
 
 ---
 
-## 11. Recommended start
+## 11. Progress
 
-Everything is now unblocked. Phase 0 → 1 → 2 delivers most of the felt improvement:
+| Phase | Status | Delivers |
+| --- | --- | --- |
+| **0** | ✅ Done | Safety net — 58 new tests: every admin action (auth checks, validation, repository-throw paths), `AdminOverview`'s 8 attention categories, and a test pinning A1's inert-row defect. No behaviour change. |
+| **1** | ✅ Done | Failures stop rendering as empty states (A2) — see §11.1. |
+| **2** | Not started | Eleven destinations collapse to four; the dead registration selection (A1) is fixed by removal. |
+| **3** | Not started | One interaction model, waitlist replacement UI (A7), request status model (§10.2). |
+| **4** | Not started | Correctness and hygiene (A6, A10, A12) + verify the pg_cron retention jobs are live. |
+| **5** | Not started | Day-of mobile mode (Q5) and conflict warnings (Q3). |
+| **6** | Not started | Readability and the full RTL pass. |
 
-| Phase | Delivers |
-| --- | --- |
-| **0** | Safety net — characterisation tests, first-ever admin action tests. No behaviour change. |
-| **1** | Failures stop rendering as empty states (A2). |
-| **2** | Eleven destinations collapse to four; the dead registration selection (A1) is fixed by removal. |
-| **3** | One interaction model, waitlist replacement UI (A7), request status model (§10.2). |
-| **4** | Correctness and hygiene (A6, A10, A12) + verify the pg_cron retention jobs are live. |
-| **5** | Day-of mobile mode (Q5) and conflict warnings (Q3). |
-| **6** | Readability and the full RTL pass. |
+### 11.1 Phase 1 — what changed
 
-**Code changed so far:** the §10.1 cleanup only. No behavioural change to any reachable screen;
-lint, types, and tests all green.
+**New shared modules:**
+- `lib/data/result.ts` — `RepositoryResult<T>` (`{ ok: true; data: T } | { ok: false; code: "load_failed" }`) plus `ok()`/`loadFailed()` helpers.
+- `lib/observability/logger.ts` — `logRepositoryFailure(scope, error)` logs only the calling scope and the machine error code (e.g. a PostgREST/SQLSTATE code) — never the raw error object, which can embed row values in its message. Satisfies `AGENTS.md` §9 ahead of enabling Sentry.
+- `components/ui/LoadErrorNotice.tsx` — the error-state counterpart to `EmptyState`, rendered with `role="alert"`.
+- `app/(dashboard)/admin/(protected)/loading.tsx` — one shared skeleton for every protected admin route (Next.js `loading.tsx` cascades to all child segments), closing the "no loading state anywhere" gap noted in §5.3/§6.4.
+
+**Repository methods converted** from swallowing errors into `[]` (or, for `site-settings.get()`, silently falling back to defaults) to returning `RepositoryResult<T>`, with the genuine-empty vs. genuine-failure distinction preserved wherever the original code conflated them (e.g. `registrations.listPage()`'s "no events in this date range" branch stays a success with an empty list):
+
+`lib/supabase/events.ts` (`AdminEventRepository.list`) · `lib/supabase/registrations.ts` (`list`, `listForEvent`, `listPage`, `listManualMessagesForEvent`) · `lib/supabase/service-requests.ts` (`list`, `listPage`, `getConflicts`) · `lib/supabase/interested-contacts.ts` (`list`) · `lib/supabase/event-feedback.ts` (`listSubmitted`, `listSubmittedForEvent`). `lib/data/contracts.ts` updated to match.
+
+**Every call site updated** to branch on `.ok` and render `LoadErrorNotice` on failure instead of an empty table: the overview, calendar, events list, event workspace (registrations/waitlist/communications/feedback tabs — each fetch fails independently so one broken query no longer blanks the whole page), registrations list, requests list, interested-contacts list, surveys list, and the CSV export route (now returns `502` instead of an empty CSV).
+
+**Deliberately out of scope:** `SiteSettingsRepository.get()` still falls back to hardcoded defaults on failure. It is shared by the public site (header, footer, contact, literary-partner pages) and the admin content editor; converting its contract would touch public-rendering code this plan is not scoped to change. The specific admin risk — a failed read could make the content editor appear to load real settings when it actually shows fallback defaults, risking an accidental overwrite on save — is real but narrower than the admin-list problem A2 describes. Flagged for a future, narrowly-scoped fix rather than folded into this pass.
+
+**New regression tests** (the actual guarantee this phase promises): `lib/supabase/events.test.ts`, `lib/supabase/interested-contacts.test.ts`, `lib/supabase/service-requests.test.ts` each assert the repository returns `{ ok: false, code: "load_failed" }` — not `[]` — when the underlying query errors.
+
+**Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 50 files / 182 tests. `pnpm build` and `pnpm test:db` not run (no hosted Supabase environment available in this session).
