@@ -670,7 +670,7 @@ relevant `docs/` entries need correcting as part of Phase 3. `requests/page.tsx`
 | **3** | ✅ Done (scoped) | One interaction model for registrations (A4, A9, A11); A7 corrected, not built — see §11.3. Request status model (§10.2) and activity badges deferred: both need a migration and hosted-DB access unavailable this session. |
 | **4** | ✅ Done (scoped) | A6 fixed; A10 removed rather than fixed (product decision); A12 unified. Retention cron verification still needs hosted DB access — see §11.4. |
 | **5** | ✅ Done (scoped) | Day-of mobile check-in mode (Q5) and calendar conflict warnings (Q3) — see §11.5. |
-| **6** | Not started | Readability and the full RTL pass. |
+| **6** | ✅ Done (scoped) | Reformatting and component splitting done — see §11.6. The manual RTL pass on a live preview still needs a deployment this session doesn't have. |
 
 ### 11.1 Phase 1 — what changed
 
@@ -766,10 +766,29 @@ What genuinely was missing was *discoverability*: nothing pointed a waitlisted r
 
 **Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 55 files / 196 tests. `pnpm build` / `pnpm test:db` not run, same environment constraints as prior phases.
 
+### 11.6 Phase 6 — what changed
+
+**Reformatting** (finding A16), committed separately from the component split so the two kinds of change stay reviewable independently:
+- Added `prettier` as a dev dependency (`.prettierrc.json`: 160-column `printWidth`, wide enough for Tailwind-heavy JSX without inviting the single-line sprawl back; `.prettierignore` excludes generated output and SQL migrations), plus `pnpm format` / `pnpm format:check` scripts.
+- Ran it across every file under `app/(dashboard)`, `features/admin`, `features/surveys`, and the shared `components/layout|navigation|ui` directories — the admin surface plus the shared primitives this plan touched, not the whole repository. The worst offenders (`requests/page.tsx` at 3,016 characters on one line, `CalendarMonthGrid.tsx` at 2,880, `RegistrationTable.tsx` at 2,608, the event workspace page at 1,668) are now under 350 characters everywhere in that scope.
+- Formatting only — confirmed by an unchanged test result (55 files / 196 tests) and clean lint/typecheck before and after, and spot-checked the diffs directly.
+
+**Component splitting**, the other half of finding A16:
+- `EventCommunicationsWorkspace.tsx` (392 lines after reformatting) → extracted `MessageKindTabs.tsx`, `MessageRecipientQueue.tsx`, and `MessageHistoryLog.tsx` as presentational sub-components; state and the WhatsApp-preparation handlers stay in the parent (extracting those into a hook was judged higher-risk for the readability gained, given this is the one workflow the whole club depends on for guest communication). Main file: 337 lines.
+- `MfaManagementPanel.tsx` (387 lines) → extracted `MfaDeviceList.tsx` (the registered-devices list and its remove-confirmation) and `MfaEnrollmentForm.tsx` (the add-device form, covering both its enroll and verify-QR states). Main file: 252 lines, holding only the Supabase MFA calls and the state they mutate.
+- Both splits are pure extraction — no behavior changed. All four affected component test files pass unchanged (`EventCommunicationsWorkspace.test.tsx`, `MfaManagementPanel.test.tsx`, `MfaForms.test.tsx`).
+
+**Not done — needs a live deployment this session doesn't have:** the manual RTL check on a preview deployment at mobile and desktop widths (`AGENTS.md` §12). Every change across all six phases has been verified on lint, typecheck, and unit tests only; none of it has been looked at in a browser.
+
+**Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 55 files / 196 tests (unchanged from Phase 5 — this phase touched no behavior). `pnpm build` / `pnpm test:db` not run, same environment constraints as prior phases.
+
 ---
 
 ## 12. Where this leaves the plan
 
-Phases 0–5 are complete (Phase 3's request-status-model and activity-badges items, and Phase 5's undo control, remain explicitly deferred pending a migration this session can't apply). Only **Phase 6 — readability and the full RTL pass** — is outstanding: reformatting the dense single-line JSX inherited from before this plan (not introduced by it), splitting `EventCommunicationsWorkspace`/`MfaManagementPanel`, and a manual RTL check on a preview deployment at mobile and desktop widths, which requires a running deployment this session doesn't have.
+All six phases are complete to the extent this session's environment allows. Two categories of work remain explicitly deferred, both blocked on things unavailable here rather than on judgment calls:
 
-Before promoting any of this to production: run `pnpm build` and `pnpm test:db` in an environment with the hosted Supabase project linked (neither has run once in this entire effort — every phase validated on lint/typecheck/unit tests only), and verify the two pg_cron retention jobs are actually live (§2).
+- **Needs a database migration + hosted Supabase access**: the §10.2 request-status-model simplification, activity badges (§6.5), and the check-in undo control noted in §11.5. Each would mean writing UI against schema this session cannot create or verify.
+- **Needs a live deployment**: the manual RTL pass on mobile and desktop widths, and `pnpm build` itself — the local toolchain's `@next/swc` binary is `darwin-x64` against an `arm64` Node 24, a pre-existing mismatch this session didn't introduce and couldn't resolve.
+
+Before promoting any of this to production: run `pnpm build` and `pnpm test:db` in an environment with the hosted Supabase project linked (neither has run once in this entire effort — every phase validated on lint/typecheck/unit tests only), verify the two pg_cron retention jobs are actually live (§2), and do the RTL walkthrough on a preview deployment before merging to `main`.

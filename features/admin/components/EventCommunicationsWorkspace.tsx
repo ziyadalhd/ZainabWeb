@@ -3,9 +3,12 @@
 import { useMemo, useState, useTransition } from "react";
 import type { Event, ManualMessageKind, ManualMessageRecord, Registration } from "@/lib/domain/types";
 import { formatArabicDateTime, formatArabicEventDate, formatArabicNumber } from "@/lib/format/date";
-import { buildManualMessageContent, manualMessageKinds, manualMessageLabels } from "@/lib/messaging/manual-messages";
+import { buildManualMessageContent, manualMessageLabels } from "@/lib/messaging/manual-messages";
 import { buildWhatsAppMessageUrl } from "@/lib/messaging/registration-reminder";
 import { markManualMessageSentAction, openManualWhatsAppMessageAction } from "@/app/(dashboard)/admin/(protected)/events/[id]/message-actions";
+import { MessageKindTabs } from "@/features/admin/components/MessageKindTabs";
+import { MessageRecipientQueue } from "@/features/admin/components/MessageRecipientQueue";
+import { MessageHistoryLog } from "@/features/admin/components/MessageHistoryLog";
 
 interface EventCommunicationsWorkspaceProps {
   event: Event;
@@ -100,6 +103,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
     if (kind === "confirmation" && registration.confirmationSentAt) return true;
     return currentRecords.get(registration.id)?.sentAt != null;
   };
+  const isWaiting = (registration: Registration) => Boolean(drafts[recipientKey(registration.id, kind)]?.opened);
   const orderedRecipients = [...recipients].sort((first, second) => {
     const firstSent = isSent(first) ? 1 : 0;
     const secondSent = isSent(second) ? 1 : 0;
@@ -234,58 +238,20 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
         </div>
       </header>
 
-      <nav className="message-kind-tabs" aria-label="أنواع الرسائل">
-        {manualMessageKinds.map((messageKind) => {
-          const historical = messages.some((message) => message.kind === messageKind);
-          const enabled = historical || isCategoryActionable(event, messageKind, now);
-          return (
-            <button
-              key={messageKind}
-              type="button"
-              disabled={!enabled}
-              aria-pressed={kind === messageKind}
-              className={kind === messageKind ? "message-kind-tab message-kind-tab--active" : "message-kind-tab"}
-              onClick={() => selectKind(messageKind)}
-            >
-              {manualMessageLabels[messageKind]}
-            </button>
-          );
-        })}
-      </nav>
+      <MessageKindTabs event={event} messages={messages} activeKind={kind} isCategoryActionable={isCategoryActionable} now={now} onSelect={selectKind} />
 
       {!actionable && !messages.some((message) => message.kind === kind) ? <p className="notice-info mt-5">{unavailableMessage(kind)}</p> : null}
 
       {orderedRecipients.length ? (
         <div className="message-workspace mt-5">
-          <aside className="message-recipient-queue" aria-label="قائمة المستلمات">
-            <div className="message-recipient-queue__heading">
-              <strong>المستلمات</strong>
-              <span>{formatArabicNumber(orderedRecipients.length)}</span>
-            </div>
-            <div className="message-recipient-queue__items">
-              {orderedRecipients.map((registration) => {
-                const sent = isSent(registration);
-                const key = recipientKey(registration.id, kind);
-                const waiting = drafts[key]?.opened && !sent;
-                return (
-                  <button
-                    type="button"
-                    key={registration.id}
-                    className={selected?.id === registration.id ? "message-recipient message-recipient--active" : "message-recipient"}
-                    onClick={() => setSelectedId(registration.id)}
-                  >
-                    <span>
-                      <strong>{registration.attendeeName}</strong>
-                      <small dir="ltr">{registration.phoneE164}</small>
-                    </span>
-                    <small className={sent ? "message-state message-state--sent" : waiting ? "message-state message-state--waiting" : "message-state"}>
-                      {sent ? "أُرسلت يدويًا" : waiting ? "بانتظار التأكيد" : "تحتاج إرسالًا"}
-                    </small>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
+          <MessageRecipientQueue
+            recipients={orderedRecipients}
+            selectedId={selected?.id}
+            kind={kind}
+            isSent={isSent}
+            isWaiting={isWaiting}
+            onSelect={setSelectedId}
+          />
 
           {selected ? (
             <section className="message-composer" aria-labelledby="message-composer-heading">
@@ -365,28 +331,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
         </div>
       )}
 
-      {messages.length ? (
-        <details className="message-history mt-6">
-          <summary>سجل الرسائل لهذه الفعالية</summary>
-          <ul>
-            {messages.slice(0, 30).map((message) => {
-              const recipient = registrations.find((registration) => registration.id === message.registrationId);
-              return (
-                <li key={message.id}>
-                  <span>
-                    <strong>{recipient?.attendeeName ?? "تسجيل سابق"}</strong>
-                    <small>{manualMessageLabels[message.kind]}</small>
-                  </span>
-                  <span>
-                    <strong>{message.sentAt ? "أُرسلت يدويًا" : message.supersededAt ? "استُبدل الرابط" : "جُهزت ولم تُعلّم كمرسلة"}</strong>
-                    <small>{formatArabicDateTime(message.sentAt ?? message.supersededAt ?? message.preparedAt)}</small>
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </details>
-      ) : null}
+      <MessageHistoryLog messages={messages} registrations={registrations} />
     </div>
   );
 }

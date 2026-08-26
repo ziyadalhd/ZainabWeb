@@ -1,23 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState, type FormEvent } from "react";
 import { normalizeMfaCode } from "@/lib/auth/mfa";
-import { formatArabicDateTime, formatArabicNumber } from "@/lib/format/date";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-
-interface ManagedFactor {
-  id: string;
-  name: string;
-  createdAt: string;
-}
-
-interface Enrollment {
-  factorId: string;
-  name: string;
-  qrCode: string;
-  secret: string;
-}
+import { MfaDeviceList, type ManagedFactor } from "@/features/admin/components/MfaDeviceList";
+import { MfaEnrollmentForm, type Enrollment } from "@/features/admin/components/MfaEnrollmentForm";
 
 async function listVerifiedFactors(): Promise<ManagedFactor[]> {
   const supabase = createSupabaseBrowserClient();
@@ -236,150 +223,28 @@ export function MfaManagementPanel() {
         </p>
       ) : null}
 
-      <section className="card-surface p-5 sm:p-7" aria-labelledby="mfa-devices-heading">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 id="mfa-devices-heading" className="text-xl font-black text-[var(--brand-forest)]">
-              أجهزة التحقق المسجلة
-            </h2>
-            <p className="mt-2 text-sm leading-6 muted-copy">احتفظي بجهازين على الأقل حتى لا تفقدي الوصول عند تغيير الجوال.</p>
-          </div>
-          {!isLoading ? (
-            <span className="rounded-full bg-[var(--color-surface-muted)] px-3 py-1 text-sm font-bold">{formatArabicNumber(factors.length)} جهاز</span>
-          ) : null}
-        </div>
+      <MfaDeviceList
+        factors={factors}
+        isLoading={isLoading}
+        confirmingRemovalId={confirmingRemovalId}
+        busy={Boolean(busyAction)}
+        removing={busyAction === "remove"}
+        onRequestRemoval={setConfirmingRemovalId}
+        onConfirmRemoval={(factor) => void removeFactor(factor)}
+        onCancelRemoval={() => setConfirmingRemovalId(undefined)}
+      />
 
-        {isLoading ? (
-          <p role="status" className="notice-info mt-5">
-            جارٍ تحميل الأجهزة…
-          </p>
-        ) : null}
-        {!isLoading && factors.length === 0 ? (
-          <p role="alert" className="notice-error mt-5">
-            لا يوجد جهاز موثّق. سجلي الخروج وابدئي إعداد التحقق من جديد.
-          </p>
-        ) : null}
-
-        {factors.length > 0 ? (
-          <ul className="mt-6 grid gap-3">
-            {factors.map((factor) => (
-              <li key={factor.id} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 sm:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="font-extrabold text-[var(--brand-forest)]">{factor.name}</p>
-                    <p className="mt-1 text-xs muted-copy">أُضيف في {formatArabicDateTime(factor.createdAt)}</p>
-                  </div>
-                  {confirmingRemovalId !== factor.id ? (
-                    <button
-                      type="button"
-                      className="button-danger min-h-10 px-3 py-2 text-sm"
-                      disabled={factors.length <= 1 || Boolean(busyAction)}
-                      onClick={() => setConfirmingRemovalId(factor.id)}
-                      aria-describedby={factors.length <= 1 ? "last-factor-help" : undefined}
-                    >
-                      إزالة الجهاز
-                    </button>
-                  ) : (
-                    <div
-                      className="max-w-md rounded-xl border border-[var(--color-danger)] bg-white p-4"
-                      role="group"
-                      aria-label={`تأكيد إزالة ${factor.name}`}
-                    >
-                      <p className="text-sm font-bold">هل تريدين إزالة «{factor.name}»؟ لن تقبل رموزه بعد التأكيد.</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          className="button-danger min-h-10 px-3 py-2 text-sm"
-                          disabled={Boolean(busyAction)}
-                          onClick={() => void removeFactor(factor)}
-                        >
-                          {busyAction === "remove" ? "جارٍ الإزالة…" : "تأكيد الإزالة"}
-                        </button>
-                        <button
-                          type="button"
-                          className="button-quiet min-h-10 px-3 py-2 text-sm"
-                          disabled={Boolean(busyAction)}
-                          onClick={() => setConfirmingRemovalId(undefined)}
-                        >
-                          تراجع
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        {factors.length === 1 ? (
-          <p id="last-factor-help" className="notice-info mt-5">
-            هذا هو جهاز التحقق الوحيد. أضيفي جهازًا جديدًا وفعّليه قبل إزالة هذا الجهاز.
-          </p>
-        ) : null}
-      </section>
-
-      <section className="card-surface p-5 sm:p-7" aria-labelledby="add-mfa-device-heading">
-        <h2 id="add-mfa-device-heading" className="text-xl font-black text-[var(--brand-forest)]">
-          إضافة جهاز جديد
-        </h2>
-        <p className="mt-2 text-sm leading-6 muted-copy">سمّي الجهاز باسم واضح مثل «جوالي الجديد» أو «الجهاز الاحتياطي».</p>
-
-        {!enrollment ? (
-          <form onSubmit={beginEnrollment} className="mt-5 grid gap-4 sm:max-w-xl">
-            <label className="grid gap-2 font-bold">
-              اسم الجهاز
-              <input
-                className="field-control font-normal"
-                value={deviceName}
-                onChange={(event) => setDeviceName(event.target.value)}
-                maxLength={80}
-                autoComplete="off"
-                required
-              />
-            </label>
-            <button type="submit" className="button-primary min-h-12 px-6 py-3 sm:justify-self-start" disabled={Boolean(busyAction)}>
-              {busyAction === "enroll" ? "جارٍ تجهيز الجهاز…" : "متابعة إضافة الجهاز"}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={verifyEnrollment} className="mt-6 grid gap-5">
-            <p className="notice-info">امسحي الرمز من تطبيق المصادقة على «{enrollment.name}»، ثم اكتبي الرمز المؤقت للتأكد من نجاح الإعداد.</p>
-            <div className="mx-auto rounded-2xl border border-[var(--color-border)] bg-white p-3">
-              <Image src={enrollment.qrCode} alt={`رمز إعداد ${enrollment.name}`} width={224} height={224} unoptimized />
-            </div>
-            <details className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm">
-              <summary className="cursor-pointer font-bold text-[var(--brand-forest)]">تعذر مسح الرمز؟</summary>
-              <p className="mt-3 leading-6 muted-copy">أدخلي هذا المفتاح يدويًا، ولا تشاركيه مع أي شخص.</p>
-              <code dir="ltr" className="mt-3 block [overflow-wrap:anywhere] rounded-lg bg-white p-3 text-center font-mono text-sm text-[var(--color-text)]">
-                {enrollment.secret}
-              </code>
-            </details>
-            <label className="grid gap-2 font-bold sm:max-w-sm">
-              رمز الجهاز الجديد
-              <input
-                className="field-control text-center font-normal tracking-[0.35em]"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                dir="ltr"
-                value={code}
-                onChange={(event) => setCode(event.target.value)}
-                maxLength={6}
-                required
-              />
-            </label>
-            <div className="flex flex-wrap gap-3">
-              <button type="submit" className="button-primary min-h-12 px-6 py-3" disabled={Boolean(busyAction)}>
-                {busyAction === "verify" ? "جارٍ التحقق…" : "تفعيل الجهاز الجديد"}
-              </button>
-              <button type="button" className="button-quiet min-h-12 px-6 py-3" disabled={Boolean(busyAction)} onClick={() => void cancelEnrollment()}>
-                {busyAction === "cancel" ? "جارٍ الإلغاء…" : "إلغاء الإعداد"}
-              </button>
-            </div>
-          </form>
-        )}
-      </section>
+      <MfaEnrollmentForm
+        enrollment={enrollment}
+        deviceName={deviceName}
+        code={code}
+        busyAction={busyAction}
+        onDeviceNameChange={setDeviceName}
+        onCodeChange={setCode}
+        onBeginEnrollment={beginEnrollment}
+        onVerifyEnrollment={verifyEnrollment}
+        onCancelEnrollment={() => void cancelEnrollment()}
+      />
 
       <p className="notice-info">إذا فُقدت جميع الأجهزة، لا يوجد تجاوز من شاشة الدخول. يلزم استرداد يدوي موثوق من مالك مشروع Supabase، ثم تسجيل جهاز جديد.</p>
     </div>
