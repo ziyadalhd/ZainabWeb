@@ -40,4 +40,18 @@ describe("EventRegistrationRoster", () => {
     expect(screen.getByRole("link", { name: "فتح" })).toHaveAttribute("href", `/admin/registrations?event=${registration.eventId}&view=upcoming&id=${registration.id}`);
     expect(screen.getByRole("link", { name: "إدارة كل التسجيلات لهذه الفعالية" })).toHaveAttribute("href", `/admin/registrations?event=${registration.eventId}&view=upcoming`);
   });
+
+  it("links a waitlisted registrant straight to the communications tab where the invite is composed", () => {
+    const waitlisted: Registration = { ...registration, status: "waitlisted" };
+    render(<EventRegistrationRoster registrations={[waitlisted]} eventId={waitlisted.eventId} view="waitlist" emptyTitle="—" emptyDescription="—" />);
+
+    expect(screen.getByRole("link", { name: "دعوة للحضور" })).toHaveAttribute("href", `/admin/events/${waitlisted.eventId}?tab=communications`);
+  });
+
+  it("does not offer the invite shortcut for an already-invited registrant", () => {
+    const invited: Registration = { ...registration, status: "invited" };
+    render(<EventRegistrationRoster registrations={[invited]} eventId={invited.eventId} view="waitlist" emptyTitle="—" emptyDescription="—" />);
+
+    expect(screen.queryByRole("link", { name: "دعوة للحضور" })).not.toBeInTheDocument();
+  });
 });

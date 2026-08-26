@@ -38,7 +38,12 @@ export function EventRegistrationRoster({ registrations, eventId, view, emptyTit
                 <td data-label="الجوال" className="data-value px-5 py-4" dir="ltr">{registration.phoneE164}</td>
                 <td data-label="الحالة" className="px-5 py-4"><StatusBadge status={registration.status} /></td>
                 <td data-label="الإجراءات" className="px-5 py-4">
-                  <Link href={`/admin/registrations?event=${eventId}&view=${view}&id=${registration.id}`} className="button-secondary min-h-9 px-3 py-1.5 text-sm">فتح</Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/admin/registrations?event=${eventId}&view=${view}&id=${registration.id}`} className="button-secondary min-h-9 px-3 py-1.5 text-sm">فتح</Link>
+                    {view === "waitlist" && registration.status === "waitlisted" ? (
+                      <Link href={`/admin/events/${eventId}?tab=communications`} className="button-primary min-h-9 px-3 py-1.5 text-sm">دعوة للحضور</Link>
+                    ) : null}
+                  </div>
                 </td>
               </tr>
             ))}

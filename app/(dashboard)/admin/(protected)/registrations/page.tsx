@@ -10,7 +10,6 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
 import {
   cancelRegistrationAction,
-  cancelWaitlistedRegistrationAction,
   confirmAttendanceAction,
   recordCheckInAction,
   revokeInvitationAction,
@@ -31,18 +30,10 @@ const views: ReadonlyArray<{ id: RegistrationView; label: string; exportScope: "
 
 const registrationActions = {
   cancelRegistration: cancelRegistrationAction,
-  cancelWaitlistedRegistration: cancelWaitlistedRegistrationAction,
   confirmAttendance: confirmAttendanceAction,
   recordCheckIn: recordCheckInAction,
   revokeInvitation: revokeInvitationAction,
   setPaymentStatus: setRegistrationPaymentStatusAction,
-};
-
-const successMessages: Record<string, string> = {
-  cancel: "تم إلغاء التسجيل، ويمكن الآن اختيار بديلة من قائمة الانتظار.",
-  confirm: "تم تأكيد الحضور.",
-  "check-in": "تم حفظ حالة الحضور.",
-  revoke: "تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار.",
 };
 
 function getView(value: string | undefined): RegistrationView {
@@ -84,9 +75,9 @@ function viewHref(view: RegistrationView, query: string, eventId: string | null)
   return `/admin/registrations?${params.toString()}`;
 }
 
-export default async function RegistrationsPage({ searchParams }: { searchParams: Promise<{ view?: string; id?: string; q?: string; page?: string; event?: string; success?: string; error?: string }> }) {
+export default async function RegistrationsPage({ searchParams }: { searchParams: Promise<{ view?: string; id?: string; q?: string; page?: string; event?: string }> }) {
   await requireAdmin();
-  const { view: requestedView, id, q: requestedQuery, page: requestedPage, event: requestedEventId, success, error } = await searchParams;
+  const { view: requestedView, id, q: requestedQuery, page: requestedPage, event: requestedEventId } = await searchParams;
   const view = getView(requestedView);
   const query = requestedQuery?.trim() ?? "";
   const eventId = requestedEventId?.trim() || null;
@@ -103,8 +94,6 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
       <div className="flex flex-wrap items-end justify-between gap-5"><PageHeader eyebrow="التشغيل" title="التسجيلات" description="ابحثي في الحجوزات القادمة والانتظار والتسجيلات السابقة من مكان واحد." /><Link href={`/admin/registrations/export?scope=${activeView.exportScope}`} className="button-secondary">تنزيل القائمة المعروضة</Link></div>
       {eventId ? <p className="notice-info mt-5">تُعرض تسجيلات فعالية واحدة فقط{eventOutcome ? ` — «${eventOutcome.title}»` : ""}. <Link href={clearEventHref(view, query)} className="font-bold underline decoration-current underline-offset-4">عرض كل التسجيلات</Link></p> : null}
       <nav aria-label="حالات التسجيل" className="workspace-tabs mt-7">{views.map((item) => <Link key={item.id} href={viewHref(item.id, query, eventId)} aria-current={item.id === view ? "page" : undefined} className={item.id === view ? "workspace-tab workspace-tab--active" : "workspace-tab"}>{item.label}</Link>)}</nav>
-      {success && successMessages[success] ? <p role="status" className="notice-success mt-5">{successMessages[success]}</p> : null}
-      {error ? <p role="alert" className="notice-error mt-5">تعذر تنفيذ الإجراء. حدّثي الصفحة وحاولي مرة أخرى.</p> : null}
       {outcome.ok ? (
         <>
           <div className="mt-5 flex flex-wrap items-end justify-between gap-4"><form action="/admin/registrations" className="flex min-w-[min(100%,22rem)] flex-1 flex-wrap gap-2"><input type="hidden" name="view" value={view} />{eventId ? <input type="hidden" name="event" value={eventId} /> : null}<label className="sr-only" htmlFor="registration-search">ابحثي في التسجيلات</label><input id="registration-search" name="q" defaultValue={query} placeholder="الاسم أو الجوال أو الفعالية أو المرجع" className="min-h-11 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3" /><button type="submit" className="button-primary">بحث</button>{query ? <Link href={`/admin/registrations?view=${view}${eventId ? `&event=${eventId}` : ""}`} className="button-quiet">مسح</Link> : null}</form><p className="data-value text-sm font-bold muted-copy">{formatArabicNumber(outcome.data.total)} نتيجة</p></div>

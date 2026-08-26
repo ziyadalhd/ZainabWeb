@@ -1,10 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { idleActionResult } from "@/lib/data/action-result";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
-  redirect: vi.fn((url: string) => {
-    throw new Error(`REDIRECT:${url}`);
-  }),
   revalidatePath: vi.fn(),
   cancel: vi.fn(),
   revokeInvitation: vi.fn(),
@@ -14,7 +12,6 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth/require-admin", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/supabase/registrations", () => ({
   createAdminRegistrationRepository: vi.fn(async () => ({
@@ -28,7 +25,6 @@ vi.mock("@/lib/supabase/registrations", () => ({
 
 import {
   cancelRegistrationAction,
-  cancelWaitlistedRegistrationAction,
   confirmAttendanceAction,
   recordCheckInAction,
   revokeInvitationAction,
@@ -46,64 +42,65 @@ describe("cancelRegistrationAction", () => {
   it("requires an administrator before mutating a registration", async () => {
     mocks.requireAdmin.mockRejectedValueOnce(new Error("unauthorized"));
 
-    await expect(cancelRegistrationAction(validId)).rejects.toThrow("unauthorized");
+    await expect(cancelRegistrationAction(validId, idleActionResult, new FormData())).rejects.toThrow("unauthorized");
     expect(mocks.cancel).not.toHaveBeenCalled();
   });
 
   it("rejects a malformed id before touching the repository", async () => {
-    await expect(cancelRegistrationAction("not-a-uuid")).rejects.toThrow("REDIRECT:/admin/registrations?view=upcoming&error=invalid");
+    const result = await cancelRegistrationAction("not-a-uuid", idleActionResult, new FormData());
+    expect(result).toEqual({ status: "error", message: "معرف التسجيل غير صالح." });
     expect(mocks.cancel).not.toHaveBeenCalled();
   });
 
-  it("redirects with an error code when the repository throws", async () => {
+  it("returns an error result when the repository throws", async () => {
     mocks.cancel.mockRejectedValueOnce(new Error("db down"));
 
-    await expect(cancelRegistrationAction(validId)).rejects.toThrow("REDIRECT:/admin/registrations?view=upcoming&error=cancel");
+    const result = await cancelRegistrationAction(validId, idleActionResult, new FormData());
+    expect(result).toEqual({ status: "error" });
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
-  it("cancels, revalidates every registration view, and redirects with success", async () => {
-    await expect(cancelRegistrationAction(validId)).rejects.toThrow("REDIRECT:/admin/registrations?view=upcoming&success=cancel");
+  it("cancels, revalidates the registration views, and returns success without navigating", async () => {
+    const result = await cancelRegistrationAction(validId, idleActionResult, new FormData());
 
+    expect(result).toEqual({ status: "success" });
     expect(mocks.cancel).toHaveBeenCalledWith(validId);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/registrations");
   });
 });
 
-describe("cancelWaitlistedRegistrationAction", () => {
-  it("targets the waitlist view on success", async () => {
-    await expect(cancelWaitlistedRegistrationAction(validId)).rejects.toThrow("REDIRECT:/admin/registrations?view=waitlist&success=cancel");
-    expect(mocks.cancel).toHaveBeenCalledWith(validId);
-  });
-});
-
 describe("revokeInvitationAction", () => {
-  it("revokes and redirects to the waitlist view", async () => {
-    await expect(revokeInvitationAction(validId)).rejects.toThrow("REDIRECT:/admin/registrations?view=waitlist&success=revoke");
+  it("revokes and returns success", async () => {
+    const result = await revokeInvitationAction(validId, idleActionResult, new FormData());
+    expect(result).toEqual({ status: "success" });
     expect(mocks.revokeInvitation).toHaveBeenCalledWith(validId);
   });
 });
 
 describe("confirmAttendanceAction", () => {
-  it("confirms and redirects to the upcoming view", async () => {
-    await expect(confirmAttendanceAction(validId)).rejects.toThrow("REDIRECT:/admin/registrations?view=upcoming&success=confirm");
+  it("confirms and returns success", async () => {
+    const result = await confirmAttendanceAction(validId, idleActionResult, new FormData());
+    expect(result).toEqual({ status: "success" });
     expect(mocks.confirmAttendance).toHaveBeenCalledWith(validId);
   });
 });
 
 describe("recordCheckInAction", () => {
   it("rejects an outcome outside the allowed check-in states", async () => {
-    await expect(recordCheckInAction(validId, "pending")).rejects.toThrow("REDIRECT:/admin/registrations?view=upcoming&error=check-in");
+    const result = await recordCheckInAction(validId, "pending", idleActionResult, new FormData());
+    expect(result.status).toBe("error");
     expect(mocks.recordCheckIn).not.toHaveBeenCalled();
   });
 
   it("rejects an unrecognised outcome value", async () => {
-    await expect(recordCheckInAction(validId, "attended")).rejects.toThrow("REDIRECT:/admin/registrations?view=upcoming&error=check-in");
+    const result = await recordCheckInAction(validId, "attended", idleActionResult, new FormData());
+    expect(result.status).toBe("error");
     expect(mocks.recordCheckIn).not.toHaveBeenCalled();
   });
 
-  it("records a valid outcome and redirects with success", async () => {
-    await expect(recordCheckInAction(validId, "checked_in")).rejects.toThrow("REDIRECT:/admin/registrations?view=upcoming&success=check-in");
+  it("records a valid outcome and returns success", async () => {
+    const result = await recordCheckInAction(validId, "checked_in", idleActionResult, new FormData());
+    expect(result).toEqual({ status: "success" });
     expect(mocks.recordCheckIn).toHaveBeenCalledWith(validId, "checked_in");
   });
 });
@@ -133,6 +130,5 @@ describe("setRegistrationPaymentStatusAction", () => {
 
     expect(result).toEqual({ saved: true });
     expect(mocks.setPaymentStatus).toHaveBeenCalledWith(validId, "paid_in_full");
-    expect(mocks.redirect).not.toHaveBeenCalled();
   });
 });

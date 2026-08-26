@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { isRegistrationCheckInStatus, isRegistrationPaymentStatus } from "@/lib/domain/registration-input";
 import type { RegistrationPaymentStatus } from "@/lib/domain/types";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
+import type { ActionResult } from "@/lib/data/action-result";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -14,36 +14,39 @@ function revalidateRegistrationViews() {
   revalidatePath("/admin/registrations");
 }
 
-async function runRegistrationAction(
+async function runRegistrationMutation(
   id: string,
   operation: "cancel" | "revoke" | "confirm",
-  successPath: string,
-) {
+): Promise<ActionResult> {
   await requireAdmin();
-  const withResult = (key: "success" | "error", value: string) => `${successPath}${successPath.includes("?") ? "&" : "?"}${key}=${value}`;
-  if (!uuidPattern.test(id)) redirect(withResult("error", "invalid"));
+  if (!uuidPattern.test(id)) return { status: "error", message: "معرف التسجيل غير صالح." };
 
-  let failed = false;
   try {
     const repository = await createAdminRegistrationRepository();
     if (operation === "cancel") await repository.cancel(id);
     if (operation === "revoke") await repository.revokeInvitation(id);
     if (operation === "confirm") await repository.confirmAttendance(id);
   } catch {
-    failed = true;
+    return { status: "error" };
   }
 
-  if (failed) redirect(withResult("error", operation));
   revalidateRegistrationViews();
-  redirect(withResult("success", operation));
+  return { status: "success" };
 }
 
-export async function cancelRegistrationAction(id: string) {
-  await runRegistrationAction(id, "cancel", "/admin/registrations?view=upcoming");
+export async function cancelRegistrationAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
+  void _state; void _formData;
+  return runRegistrationMutation(id, "cancel");
 }
 
-export async function cancelWaitlistedRegistrationAction(id: string) {
-  await runRegistrationAction(id, "cancel", "/admin/registrations?view=waitlist");
+export async function revokeInvitationAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
+  void _state; void _formData;
+  return runRegistrationMutation(id, "revoke");
+}
+
+export async function confirmAttendanceAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
+  void _state; void _formData;
+  return runRegistrationMutation(id, "confirm");
 }
 
 export interface RegistrationPaymentActionState {
@@ -51,29 +54,22 @@ export interface RegistrationPaymentActionState {
   error?: "status" | "save";
 }
 
-export async function revokeInvitationAction(id: string) {
-  await runRegistrationAction(id, "revoke", "/admin/registrations?view=waitlist");
-}
-
-export async function confirmAttendanceAction(id: string) {
-  await runRegistrationAction(id, "confirm", "/admin/registrations?view=upcoming");
-}
-
-export async function recordCheckInAction(id: string, outcome: string) {
+export async function recordCheckInAction(id: string, outcome: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
+  void _state; void _formData;
   await requireAdmin();
   if (!uuidPattern.test(id) || !isRegistrationCheckInStatus(outcome) || outcome === "pending") {
-    redirect("/admin/registrations?view=upcoming&error=check-in");
+    return { status: "error", message: "تعذر حفظ حالة الحضور." };
   }
 
   try {
     const repository = await createAdminRegistrationRepository();
     await repository.recordCheckIn(id, outcome);
   } catch {
-    redirect("/admin/registrations?view=upcoming&error=check-in");
+    return { status: "error" };
   }
 
   revalidateRegistrationViews();
-  redirect("/admin/registrations?view=upcoming&success=check-in");
+  return { status: "success" };
 }
 
 export async function setRegistrationPaymentStatusAction(
