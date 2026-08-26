@@ -152,6 +152,12 @@ export function getRiyadhDateParts(value: string | Date): RiyadhDateParts {
   };
 }
 
+export function isSameRiyadhDate(first: string | Date, second: string | Date): boolean {
+  const a = getRiyadhDateParts(first);
+  const b = getRiyadhDateParts(second);
+  return a.year === b.year && a.month === b.month && a.day === b.day;
+}
+
 export function formatRiyadhDateTimeLocal(value: string | Date): string {
   const { year, month, day, hour, minute } = getRiyadhDateParts(value);
   const pad = (number: number) => String(number).padStart(2, "0");

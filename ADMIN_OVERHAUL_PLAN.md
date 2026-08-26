@@ -669,7 +669,7 @@ relevant `docs/` entries need correcting as part of Phase 3. `requests/page.tsx`
 | **2** | ✅ Done | Eleven destinations collapse to five; the dead registration selection (A1) is fixed by removal — see §11.2. |
 | **3** | ✅ Done (scoped) | One interaction model for registrations (A4, A9, A11); A7 corrected, not built — see §11.3. Request status model (§10.2) and activity badges deferred: both need a migration and hosted-DB access unavailable this session. |
 | **4** | ✅ Done (scoped) | A6 fixed; A10 removed rather than fixed (product decision); A12 unified. Retention cron verification still needs hosted DB access — see §11.4. |
-| **5** | Not started | Day-of mobile mode (Q5) and conflict warnings (Q3). |
+| **5** | ✅ Done (scoped) | Day-of mobile check-in mode (Q5) and calendar conflict warnings (Q3) — see §11.5. |
 | **6** | Not started | Readability and the full RTL pass. |
 
 ### 11.1 Phase 1 — what changed
@@ -750,3 +750,26 @@ What genuinely was missing was *discoverability*: nothing pointed a waitlisted r
 **Retention cron verification (§2, correction from Phase 1) still not done** — `select * from cron.job` requires the hosted Supabase project, which this session doesn't have access to. Recorded as an open operational check, not a code change.
 
 **Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 54 files / 193 tests (net -2 from Phase 3: -7 for the deleted export tests, +5 for new A6/A12/S4 regression tests). `pnpm build` / `pnpm test:db` not run, same environment constraints as prior phases.
+
+### 11.5 Phase 5 — what changed
+
+**Calendar conflict warnings (Q3)** shipped inside the Phase 4 commit rather than a separate one — landed while `requests/page.tsx` was already open for the `markServiceRequestContactedAction` → `ActionButton` conversion, so it went in the same edit rather than reopening the file twice. `getConflicts(id)` (implemented since the original codebase, never called before this) is now fetched in parallel for every `space_booking`/`celebration_booking` request on the list — not `workshop_application`, which has no requested date to conflict — and rendered as an advisory `ConflictWarning` banner per `AGENTS.md` §16 ("strong warning... intentionally advisory; no schedule check changes the request state automatically"). A conflict-check failure is swallowed to an empty list rather than surfaced: this is a non-critical enhancement layered on top of the request list, and letting a conflict-lookup failure block viewing requests entirely would be a worse failure mode than just not showing the (optional) warning that time.
+
+**Day-of-event mobile check-in mode (Q5)** — new route `/admin/events/[id]/live`:
+- Server page fetches the event and its `registered`-status registrations only (not waitlisted/cancelled — this mode is for marking who showed up, not managing the roster).
+- New `EventCheckInMode` client component: one search box (client-side, instant — filters by name or phone, no server round trip), a running "X من Y حضرن" count, and one large tap-target button per unarrived registrant reusing the same `ActionButton` from Phase 3 (so it's already non-blocking and toast-confirmed). Arrived registrants sort to the bottom and show a static "✓ حضرت" instead of a button.
+- Entry point: a "بدء وضع اليوم" button on the event workspace header, shown only when `isSameRiyadhDate(event.startsAt, now)` is true and the event isn't cancelled — a new `lib/format/date.ts` helper, added because the existing `getRiyadhDateParts` only extracts parts, not a day-equality comparison.
+- **No undo control**, despite the original design note ("undo via toast"): `recordCheckInAction` explicitly rejects `outcome === "pending"` — by design, from before this plan — so there is no supported path back from `checked_in` to unset. Building one would mean either weakening that existing guard (not decided here) or adding a new domain state; out of scope for this pass. A mistaken check-in can still be corrected via the registration's full detail view (mark absent is available there), reached from the roster's "فتح" link.
+- Nothing else is on this screen by design — no editing, no publishing, no settings — matching the target design's "nothing operationally routine stays hidden, but this screen shows nothing except what a person at the door needs."
+
+**New tests**: `lib/format/date.test.ts` gains a case for `isSameRiyadhDate` (a UTC instant just after 21:00 is already the next Riyadh day); `EventCheckInMode.test.tsx` covers the arrived count, one-tap check-in, and the search filter.
+
+**Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 55 files / 196 tests. `pnpm build` / `pnpm test:db` not run, same environment constraints as prior phases.
+
+---
+
+## 12. Where this leaves the plan
+
+Phases 0–5 are complete (Phase 3's request-status-model and activity-badges items, and Phase 5's undo control, remain explicitly deferred pending a migration this session can't apply). Only **Phase 6 — readability and the full RTL pass** — is outstanding: reformatting the dense single-line JSX inherited from before this plan (not introduced by it), splitting `EventCommunicationsWorkspace`/`MfaManagementPanel`, and a manual RTL check on a preview deployment at mobile and desktop widths, which requires a running deployment this session doesn't have.
+
+Before promoting any of this to production: run `pnpm build` and `pnpm test:db` in an environment with the hosted Supabase project linked (neither has run once in this entire effort — every phase validated on lint/typecheck/unit tests only), and verify the two pg_cron retention jobs are actually live (§2).

@@ -8,7 +8,7 @@ import { EventRegistrationRoster } from "@/features/admin/components/EventRegist
 import { EventCommunicationsWorkspace } from "@/features/admin/components/EventCommunicationsWorkspace";
 import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEventFeedbackTable";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { formatArabicEventDate, formatArabicEventTimeRange, formatArabicNumber, formatEventPrice } from "@/lib/format/date";
+import { formatArabicEventDate, formatArabicEventTimeRange, formatArabicNumber, formatEventPrice, isSameRiyadhDate } from "@/lib/format/date";
 import { createAdminEventFeedbackRepository } from "@/lib/supabase/event-feedback";
 import { createAdminEventRepository } from "@/lib/supabase/events";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
@@ -77,11 +77,12 @@ export default async function EventWorkspacePage({ params, searchParams }: { par
       ])
     : [null, null, { ok: true as const, data: [] }];
   const manualMessages = manualMessagesOutcome.ok ? manualMessagesOutcome.data : null;
+  const isEventDay = isSameRiyadhDate(event.startsAt, new Date()) && event.publicationStatus !== "cancelled";
 
   return (
     <main className="admin-page">
       <nav aria-label="مسار التنقل" className="mb-5 text-sm font-bold muted-copy"><Link href="/admin/events" className="underline decoration-[var(--brand-olive)] underline-offset-4">الفعاليات</Link><span aria-hidden="true"> / </span><span>{event.title}</span></nav>
-      <div className="flex flex-wrap items-end justify-between gap-5"><PageHeader eyebrow="مساحة الفعالية" title={event.title} description={`${formatArabicEventDate(event.startsAt)} · ${formatArabicEventTimeRange(event.startsAt, event.endsAt)}`} /><Link href={`/admin/events/${event.id}/edit`} className="button-primary">تعديل الفعالية</Link></div>
+      <div className="flex flex-wrap items-end justify-between gap-5"><PageHeader eyebrow="مساحة الفعالية" title={event.title} description={`${formatArabicEventDate(event.startsAt)} · ${formatArabicEventTimeRange(event.startsAt, event.endsAt)}`} /><div className="flex flex-wrap gap-2">{isEventDay ? <Link href={`/admin/events/${event.id}/live`} className="button-primary">بدء وضع اليوم</Link> : null}<Link href={`/admin/events/${event.id}/edit`} className="button-secondary">تعديل الفعالية</Link></div></div>
       <div className="workspace-status mt-6"><StatusBadge status={event.publicationStatus} /><StatusBadge status={event.registrationStatus} /><span>{formatArabicNumber(event.activeReservationCount)} / {formatArabicNumber(event.capacity)} مقاعد محجوزة</span><span>{formatEventPrice(event.priceHalalas)}</span></div>
       <nav aria-label="أقسام الفعالية" className="workspace-tabs mt-7">{tabs.map((item) => <Link key={item.id} href={`/admin/events/${event.id}?tab=${item.id}`} aria-current={item.id === tab ? "page" : undefined} className={item.id === tab ? "workspace-tab workspace-tab--active" : "workspace-tab"}>{item.label}</Link>)}</nav>
       <section className="mt-7" aria-labelledby="workspace-content-heading">

@@ -14,6 +14,7 @@ import {
   formatRiyadhDateTimeLocal,
   formatRiyadhTimeInput,
   getRiyadhDateParts,
+  isSameRiyadhDate,
 } from "@/lib/format/date";
 
 describe("Arabic formatting", () => {
@@ -67,6 +68,12 @@ describe("Arabic formatting", () => {
     expect(formatRiyadhDateTimeLocal("2026-08-10T15:00:00.000Z")).toBe("2026-08-10T18:00");
     expect(formatRiyadhDateInput("2026-08-10T15:00:00.000Z")).toBe("2026-08-10");
     expect(formatRiyadhTimeInput("2026-08-10T15:00:00.000Z")).toBe("18:00");
+  });
+
+  it("compares two instants by their Riyadh calendar date, not UTC date", () => {
+    // 2026-08-10T21:30:00Z is already 2026-08-11 in Riyadh (UTC+3).
+    expect(isSameRiyadhDate("2026-08-10T21:30:00.000Z", "2026-08-11T05:00:00.000Z")).toBe(true);
+    expect(isSameRiyadhDate("2026-08-10T21:30:00.000Z", "2026-08-10T05:00:00.000Z")).toBe(false);
   });
 
   it("formats event prices without inventing a missing value", () => {
