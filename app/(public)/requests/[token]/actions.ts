@@ -15,19 +15,3 @@ export async function cancelServiceRequestAction(token: string): Promise<{ error
     return { error: "تعذر إلغاء الطلب الآن." };
   }
 }
-
-export async function respondToServiceRequestOfferAction(
-  token: string,
-  response: "accepted" | "rejected",
-): Promise<{ error?: string; responded?: "accepted" | "rejected" }> {
-  try {
-    const service = await createServiceRequestService();
-    await service.respondToOfferByToken(token, response);
-    revalidatePath(`/requests/${token}`);
-    revalidatePath("/admin");
-    revalidatePath("/admin/requests");
-    return { responded: response };
-  } catch {
-    return { error: "تعذر تسجيل ردك على العرض الآن. قد تكون صلاحيته انتهت." };
-  }
-}

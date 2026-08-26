@@ -250,38 +250,6 @@ implements ServiceRequestService, AdminServiceRequestRepository {
     if (error) throw mapFailure(error.message);
   }
 
-  async respondToOfferByToken(token: string, response: "accepted" | "rejected"): Promise<void> {
-    if (!isSecureToken(token)) throw new ServiceRequestFailure("invalid");
-    const { error } = await this.client.rpc("respond_to_service_request_offer", {
-      p_management_token_hash: hashSecureToken(token),
-      p_response: response,
-    });
-    if (error) throw mapFailure(error.message);
-  }
-
-  async startReview(id: string): Promise<void> {
-    const { error } = await this.client.rpc("start_service_request_review", { p_request_id: id });
-    if (error) throw mapFailure(error.message);
-  }
-
-  async createOffer(id: string, priceHalalas: number, terms: string, expiresAt: string | null): Promise<void> {
-    const { error } = await this.client.rpc("create_service_request_offer", {
-      p_request_id: id,
-      p_price_halalas: priceHalalas,
-      p_terms: terms,
-      p_expires_at: expiresAt ?? undefined,
-    });
-    if (error) throw mapFailure(error.message);
-  }
-
-  async setPaymentStatus(id: string, status: ServiceRequestPaymentStatus): Promise<void> {
-    const { error } = await this.client.rpc("set_service_request_payment_status", {
-      p_request_id: id,
-      p_payment_status: status,
-    });
-    if (error) throw mapFailure(error.message);
-  }
-
   async getConflicts(id: string): Promise<readonly ServiceRequestConflict[]> {
     try {
       const { data, error } = await this.client.rpc("get_service_request_conflicts", { p_request_id: id });

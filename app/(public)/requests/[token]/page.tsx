@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { cancelServiceRequestAction, respondToServiceRequestOfferAction } from "@/app/(public)/requests/[token]/actions";
+import { cancelServiceRequestAction } from "@/app/(public)/requests/[token]/actions";
 import { ServiceRequestCancelAction } from "@/features/requests/components/ServiceRequestCancelAction";
-import { ServiceRequestOfferResponseAction } from "@/features/requests/components/ServiceRequestOfferResponseAction";
-import { formatArabicDateTime, formatArabicNumber, formatArabicRequestedSchedule, formatEventPrice } from "@/lib/format/date";
+import { formatArabicNumber, formatArabicRequestedSchedule } from "@/lib/format/date";
 import { createServiceRequestService } from "@/lib/supabase/service-requests";
 
 interface ServiceRequestManagementPageProps {
@@ -22,12 +21,6 @@ export default async function ServiceRequestManagementPage({ params }: ServiceRe
   const request = await service.getByToken(token);
   if (!request) notFound();
   const booking = request.kind !== "workshop_application";
-  const hasActiveOffer = booking
-    && request.status === "under_review"
-    && request.offerPriceHalalas !== null
-    && request.offerTerms !== null
-    && request.offerExpiresAt !== null
-    && new Date(request.offerExpiresAt) > new Date();
   return (
     <main className="page-shell section-space">
       <PageHeader eyebrow="متابعة الطلب" title={labels[request.kind]} description="هنا تلقين حالة طلبك وأي تحديث يخصه." />
@@ -39,18 +32,6 @@ export default async function ServiceRequestManagementPage({ params }: ServiceRe
           {booking ? <><div><dt className="muted-copy">الاستخدام أو المناسبة</dt><dd className="mt-1 font-bold">{request.useOrOccasionType}</dd></div><div className="sm:col-span-2"><dt className="muted-copy">الموعد</dt><dd className="mt-1 font-bold">{formatArabicRequestedSchedule(request.requestedDate, request.requestedStartTime, request.requestedEndTime)}</dd></div><div><dt className="muted-copy">عدد الحاضرات</dt><dd className="mt-1 font-bold">{request.attendeeCount === null ? "—" : formatArabicNumber(request.attendeeCount)}</dd></div></> : <><div><dt className="muted-copy">عنوان الورشة</dt><dd className="mt-1 font-bold">{request.workshopTitle}</dd></div><div><dt className="muted-copy">الفئة المستهدفة</dt><dd className="mt-1 font-bold">{request.workshopTargetAudience}</dd></div><div><dt className="muted-copy">المدة</dt><dd className="mt-1 font-bold">{request.workshopDuration}</dd></div><div><dt className="muted-copy">الحضور المتوقع</dt><dd className="mt-1 font-bold">{request.workshopExpectedAttendance}</dd></div></>}
         </dl>
         {request.notes ? <p className="mt-5 border-r-4 border-[var(--brand-olive)] bg-[var(--color-surface-muted)] p-4 text-sm">{request.notes}</p> : null}
-        {hasActiveOffer ? (
-          <section className="mt-7 border border-[var(--brand-olive)] bg-[var(--color-surface-muted)] p-5" aria-labelledby="offer-title">
-            <h2 id="offer-title" className="text-xl font-extrabold text-[var(--brand-green-deep)]">عرض النادي</h2>
-            <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
-              <div><dt className="muted-copy">السعر</dt><dd className="mt-1 font-extrabold">{formatEventPrice(request.offerPriceHalalas)}</dd></div>
-              <div><dt className="muted-copy">صالح حتى</dt><dd className="mt-1 font-extrabold">{formatArabicDateTime(request.offerExpiresAt!)}</dd></div>
-            </dl>
-            <div className="mt-4 whitespace-pre-wrap border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-sm leading-7">{request.offerTerms}</div>
-            <div className="mt-5"><ServiceRequestOfferResponseAction acceptAction={respondToServiceRequestOfferAction.bind(null, token, "accepted")} rejectAction={respondToServiceRequestOfferAction.bind(null, token, "rejected")} /></div>
-          </section>
-        ) : null}
-        {booking && request.status === "under_review" && request.offerExpiresAt && new Date(request.offerExpiresAt) <= new Date() ? <p className="notice-error mt-6 text-sm">انتهت صلاحية العرض. يمكن للإدارة إصدار عرض جديد من رابط المتابعة نفسه.</p> : null}
         {request.status !== "cancelled" ? <div className="mt-7 border-t border-[var(--border)] pt-5"><ServiceRequestCancelAction action={cancelServiceRequestAction.bind(null, token)} /></div> : null}
       </section>
     </main>

@@ -30,7 +30,6 @@ import type {
   ServiceRequestReceipt,
   ServiceRequestDetails,
   ServiceRequestConflict,
-  ServiceRequestPaymentStatus,
 } from "@/lib/domain/types";
 
 export interface EventCatalog {
@@ -103,15 +102,11 @@ export interface ServiceRequestService {
   submit(kind: ServiceRequestKind, input: ServiceRequestInput): Promise<ServiceRequestReceipt>;
   getByToken(token: string): Promise<ServiceRequestDetails | null>;
   cancelByToken(token: string): Promise<void>;
-  respondToOfferByToken(token: string, response: "accepted" | "rejected"): Promise<void>;
 }
 
 export interface AdminServiceRequestRepository {
   list(): Promise<readonly AdminServiceRequest[]>;
   listPage(filter: AdminServiceRequestListFilter): Promise<PaginatedResult<AdminServiceRequest>>;
-  startReview(id: string): Promise<void>;
-  createOffer(id: string, priceHalalas: number, terms: string, expiresAt: string | null): Promise<void>;
-  setPaymentStatus(id: string, status: ServiceRequestPaymentStatus): Promise<void>;
   getConflicts(id: string): Promise<readonly ServiceRequestConflict[]>;
   markContacted(id: string): Promise<void>;
 }
