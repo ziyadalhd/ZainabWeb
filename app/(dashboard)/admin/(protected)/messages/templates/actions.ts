@@ -25,8 +25,13 @@ export async function saveGlobalReminderTemplateAction(formData: FormData) {
 export async function saveEventReminderTemplateAction(eventId: string, formData: FormData) {
   await requireAdmin();
   const body = String(formData.get("body") ?? "").trim();
-  if (!isEntityId(eventId) || body.length < 1 || body.length > 2000 || registrationReminderTemplateTokens.some((token) => !body.includes(token))) redirect(`/admin/events/${eventId}?tab=communications&error=template`);
-  try { await saveRegistrationReminderTemplate(body, eventId); } catch { redirect(`/admin/events/${eventId}?tab=communications&error=template`); }
+  if (!isEntityId(eventId) || body.length < 1 || body.length > 2000 || registrationReminderTemplateTokens.some((token) => !body.includes(token)))
+    redirect(`/admin/events/${eventId}?tab=communications&error=template`);
+  try {
+    await saveRegistrationReminderTemplate(body, eventId);
+  } catch {
+    redirect(`/admin/events/${eventId}?tab=communications&error=template`);
+  }
   revalidatePath(`/admin/events/${eventId}`);
   redirect(`/admin/events/${eventId}?tab=communications&success=template`);
 }

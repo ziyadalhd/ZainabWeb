@@ -31,12 +31,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: mocks.createSupabaseServerClient,
 }));
 
-import {
-  changeEventStatusAction,
-  createEventAction,
-  updateEventAction,
-  uploadEventPosterAction,
-} from "@/app/(dashboard)/admin/(protected)/events/actions";
+import { changeEventStatusAction, createEventAction, updateEventAction, uploadEventPosterAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
 
 const validId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 

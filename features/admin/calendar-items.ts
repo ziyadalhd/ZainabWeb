@@ -22,26 +22,42 @@ function requestDateTime(date: string | null, time: string | null): string | nul
 
 function overlaps(first: CalendarItem, second: CalendarItem): boolean {
   if (!first.endsAt || !second.endsAt) return false;
-  return new Date(first.startsAt).getTime() < new Date(second.endsAt).getTime()
-    && new Date(second.startsAt).getTime() < new Date(first.endsAt).getTime();
+  return new Date(first.startsAt).getTime() < new Date(second.endsAt).getTime() && new Date(second.startsAt).getTime() < new Date(first.endsAt).getTime();
 }
 
 export function buildCalendarItems(events: readonly Event[], requests: readonly AdminServiceRequest[]): readonly CalendarItem[] {
   const items: CalendarItem[] = [
-    ...events.filter((event) => event.publicationStatus === "draft" || event.publicationStatus === "published").map((event) => ({
-      id: `event-${event.id}`, kind: "event" as const, title: event.title, startsAt: event.startsAt, endsAt: event.endsAt,
-      href: `/admin/events/${event.id}`, status: event.publicationStatus, conflictCount: 0,
-    })),
-    ...requests.filter((request) => request.kind !== "workshop_application" && scheduledRequestStatuses.includes(request.status)).flatMap((request) => {
-      const startsAt = requestDateTime(request.requestedDate, request.requestedStartTime);
-      const endsAt = requestDateTime(request.requestedDate, request.requestedEndTime);
-      if (!startsAt || !endsAt || new Date(endsAt).getTime() <= new Date(startsAt).getTime()) return [];
-      return [{
-        id: `request-${request.id}`, kind: request.status === "accepted" ? "booking" as const : "request" as const,
-        title: request.useOrOccasionType ?? "طلب حجز", startsAt, endsAt,
-        href: `/admin/requests?id=${encodeURIComponent(request.id)}`, status: request.status, conflictCount: 0,
-      }];
-    }),
+    ...events
+      .filter((event) => event.publicationStatus === "draft" || event.publicationStatus === "published")
+      .map((event) => ({
+        id: `event-${event.id}`,
+        kind: "event" as const,
+        title: event.title,
+        startsAt: event.startsAt,
+        endsAt: event.endsAt,
+        href: `/admin/events/${event.id}`,
+        status: event.publicationStatus,
+        conflictCount: 0,
+      })),
+    ...requests
+      .filter((request) => request.kind !== "workshop_application" && scheduledRequestStatuses.includes(request.status))
+      .flatMap((request) => {
+        const startsAt = requestDateTime(request.requestedDate, request.requestedStartTime);
+        const endsAt = requestDateTime(request.requestedDate, request.requestedEndTime);
+        if (!startsAt || !endsAt || new Date(endsAt).getTime() <= new Date(startsAt).getTime()) return [];
+        return [
+          {
+            id: `request-${request.id}`,
+            kind: request.status === "accepted" ? ("booking" as const) : ("request" as const),
+            title: request.useOrOccasionType ?? "طلب حجز",
+            startsAt,
+            endsAt,
+            href: `/admin/requests?id=${encodeURIComponent(request.id)}`,
+            status: request.status,
+            conflictCount: 0,
+          },
+        ];
+      }),
   ].sort((first, second) => new Date(first.startsAt).getTime() - new Date(second.startsAt).getTime());
 
   return items.map((item) => ({ ...item, conflictCount: items.filter((candidate) => candidate.id !== item.id && overlaps(item, candidate)).length }));

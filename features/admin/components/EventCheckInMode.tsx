@@ -25,8 +25,7 @@ export function EventCheckInMode({ registrations, recordCheckIn }: EventCheckInM
   const ordered = useMemo(() => {
     const term = normalize(search);
     const filtered = term
-      ? registrations.filter((registration) =>
-          normalize(registration.attendeeName).includes(term) || registration.phoneE164.includes(term))
+      ? registrations.filter((registration) => normalize(registration.attendeeName).includes(term) || registration.phoneE164.includes(term))
       : registrations;
     return [...filtered].sort((first, second) => {
       const firstArrived = first.checkInStatus === "checked_in" ? 1 : 0;
@@ -43,7 +42,9 @@ export function EventCheckInMode({ registrations, recordCheckIn }: EventCheckInM
         <span>من {formatArabicNumber(registrations.length)} حضرن</span>
       </div>
 
-      <label className="sr-only" htmlFor="check-in-search">ابحثي بالاسم أو الجوال</label>
+      <label className="sr-only" htmlFor="check-in-search">
+        ابحثي بالاسم أو الجوال
+      </label>
       <input
         id="check-in-search"
         type="search"
@@ -64,7 +65,9 @@ export function EventCheckInMode({ registrations, recordCheckIn }: EventCheckInM
               <li key={registration.id} className={arrived ? "check-in-row check-in-row--arrived" : "check-in-row"}>
                 <span className="min-w-0">
                   <strong className="block truncate text-lg">{registration.attendeeName}</strong>
-                  <small className="data-value" dir="ltr">{registration.phoneE164}</small>
+                  <small className="data-value" dir="ltr">
+                    {registration.phoneE164}
+                  </small>
                 </span>
                 {arrived ? (
                   <span className="check-in-row__done">✓ حضرت</span>

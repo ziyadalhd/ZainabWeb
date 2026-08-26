@@ -10,5 +10,10 @@ export const revalidate = 0;
 
 export default async function NewEventPage() {
   await requireAdmin();
-  return <main className="admin-page"><PageHeader eyebrow="إدارة الفعاليات" title="فعالية جديدة" description="أدخل تفاصيل الفعالية، ثم احفظها كمسودة لمراجعتها قبل النشر." /><EventForm action={createEventAction} submitLabel="حفظ المسودة" /></main>;
+  return (
+    <main className="admin-page">
+      <PageHeader eyebrow="إدارة الفعاليات" title="فعالية جديدة" description="أدخل تفاصيل الفعالية، ثم احفظها كمسودة لمراجعتها قبل النشر." />
+      <EventForm action={createEventAction} submitLabel="حفظ المسودة" />
+    </main>
+  );
 }

@@ -4,11 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { isEntityId } from "@/lib/domain/entity-id";
-import {
-  canChangeEventStatus,
-  isEventPublicationStatus,
-  validateEventInput,
-} from "@/lib/domain/event-input";
+import { canChangeEventStatus, isEventPublicationStatus, validateEventInput } from "@/lib/domain/event-input";
 import type { EventPublicationStatus } from "@/lib/domain/types";
 import { createAdminEventRepository } from "@/lib/supabase/events";
 import { validateEventPoster } from "@/lib/domain/event-poster-input";
@@ -16,16 +12,7 @@ import { SupabaseEventPosterStorage } from "@/lib/supabase/event-posters";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type EventFormActionError =
-  | "title"
-  | "audience"
-  | "kind"
-  | "eventTypeLabel"
-  | "startsAt"
-  | "endsAt"
-  | "capacity"
-  | "priceHalalas"
-  | "registrationStatus"
-  | "save";
+  "title" | "audience" | "kind" | "eventTypeLabel" | "startsAt" | "endsAt" | "capacity" | "priceHalalas" | "registrationStatus" | "save";
 
 export interface EventFormActionState {
   error?: EventFormActionError;
@@ -38,10 +25,7 @@ function revalidateEventViews() {
   revalidatePath("/admin/events/[id]", "page");
 }
 
-export async function createEventAction(
-  _previousState: EventFormActionState,
-  formData: FormData,
-): Promise<EventFormActionState> {
+export async function createEventAction(_previousState: EventFormActionState, formData: FormData): Promise<EventFormActionState> {
   await requireAdmin();
   const input = validateEventInput(formData);
   if (!input.ok) return { error: input.error };
@@ -74,11 +58,7 @@ export async function createEventAction(
   redirect("/admin/events?success=created");
 }
 
-export async function updateEventAction(
-  id: string,
-  _previousState: EventFormActionState,
-  formData: FormData,
-): Promise<EventFormActionState> {
+export async function updateEventAction(id: string, _previousState: EventFormActionState, formData: FormData): Promise<EventFormActionState> {
   await requireAdmin();
   if (!isEntityId(id)) return { error: "save" };
   const input = validateEventInput(formData);
@@ -126,10 +106,7 @@ export async function changeEventStatusAction(id: string, requestedStatus: Event
     const event = await repository.get(id);
     if (!event || !canChangeEventStatus(event.publicationStatus, requestedStatus)) {
       failure = "status";
-    } else if (
-      requestedStatus === "published"
-      && (event.endsAt === null || event.priceHalalas === null)
-    ) {
+    } else if (requestedStatus === "published" && (event.endsAt === null || event.priceHalalas === null)) {
       failure = "incomplete";
     } else {
       await repository.changeStatus(id, requestedStatus);
@@ -148,11 +125,7 @@ export interface EventPosterActionState {
   error?: "file" | "type" | "save";
 }
 
-export async function uploadEventPosterAction(
-  id: string,
-  _previousState: EventPosterActionState,
-  formData: FormData,
-): Promise<EventPosterActionState> {
+export async function uploadEventPosterAction(id: string, _previousState: EventPosterActionState, formData: FormData): Promise<EventPosterActionState> {
   void _previousState;
   await requireAdmin();
   if (!isEntityId(id)) return { error: "save" };

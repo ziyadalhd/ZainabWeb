@@ -16,10 +16,7 @@ vi.mock("@/lib/supabase/message-templates", () => ({
   saveRegistrationReminderTemplate: mocks.saveRegistrationReminderTemplate,
 }));
 
-import {
-  saveEventReminderTemplateAction,
-  saveGlobalReminderTemplateAction,
-} from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
+import { saveEventReminderTemplateAction, saveGlobalReminderTemplateAction } from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
 
 const validEventId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const validBody = "مرحبًا {{attendee_name}}، فعالية {{event_title}} — {{management_url}}";
@@ -60,7 +57,9 @@ describe("saveEventReminderTemplateAction", () => {
     const formData = new FormData();
     formData.set("body", validBody);
 
-    await expect(saveEventReminderTemplateAction("not-a-uuid", formData)).rejects.toThrow("REDIRECT:/admin/events/not-a-uuid?tab=communications&error=template");
+    await expect(saveEventReminderTemplateAction("not-a-uuid", formData)).rejects.toThrow(
+      "REDIRECT:/admin/events/not-a-uuid?tab=communications&error=template",
+    );
     expect(mocks.saveRegistrationReminderTemplate).not.toHaveBeenCalled();
   });
 
@@ -68,7 +67,9 @@ describe("saveEventReminderTemplateAction", () => {
     const formData = new FormData();
     formData.set("body", validBody);
 
-    await expect(saveEventReminderTemplateAction(validEventId, formData)).rejects.toThrow(`REDIRECT:/admin/events/${validEventId}?tab=communications&success=template`);
+    await expect(saveEventReminderTemplateAction(validEventId, formData)).rejects.toThrow(
+      `REDIRECT:/admin/events/${validEventId}?tab=communications&success=template`,
+    );
     expect(mocks.saveRegistrationReminderTemplate).toHaveBeenCalledWith(validBody, validEventId);
   });
 });

@@ -24,11 +24,7 @@ function refreshEventCommunications(eventId: string) {
   revalidatePath("/admin");
 }
 
-export async function openManualWhatsAppMessageAction(
-  eventId: string,
-  registrationId: string,
-  kind: string,
-): Promise<OpenManualMessageResult> {
+export async function openManualWhatsAppMessageAction(eventId: string, registrationId: string, kind: string): Promise<OpenManualMessageResult> {
   await requireAdmin();
   if (!isEntityId(eventId) || !isEntityId(registrationId) || !isManualMessageKind(kind)) {
     return { error: "invalid" };
@@ -48,10 +44,7 @@ export async function openManualWhatsAppMessageAction(
   }
 }
 
-export async function markManualMessageSentAction(
-  eventId: string,
-  messageId: string,
-): Promise<MarkManualMessageSentResult> {
+export async function markManualMessageSentAction(eventId: string, messageId: string): Promise<MarkManualMessageSentResult> {
   await requireAdmin();
   if (!isEntityId(eventId) || !isEntityId(messageId)) return { error: "invalid" };
 

@@ -20,9 +20,7 @@ export function MfaPageShell({
         </Link>
         <div className="max-w-sm border-r-4 border-[var(--brand-amber)] pr-5">
           <p className="text-4xl font-black leading-tight">حماية إضافية للوحة الإدارة</p>
-          <p className="mt-4 text-sm leading-7 text-white/75">
-            رمز مؤقت من تطبيق المصادقة يحمي بيانات التسجيلات وطلبات النادي.
-          </p>
+          <p className="mt-4 text-sm leading-7 text-white/75">رمز مؤقت من تطبيق المصادقة يحمي بيانات التسجيلات وطلبات النادي.</p>
         </div>
       </aside>
 

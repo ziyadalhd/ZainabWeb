@@ -13,11 +13,15 @@ export default async function ProtectedAdminLayout({ children }: Readonly<{ chil
   return (
     <ToastProvider>
       <div className="min-h-screen bg-[var(--color-page)] lg:grid lg:grid-cols-[18rem_1fr]">
-        <a className="skip-link" href="#admin-content">تخطي إلى المحتوى</a>
+        <a className="skip-link" href="#admin-content">
+          تخطي إلى المحتوى
+        </a>
         <AdminSidebar />
         <div className="min-w-0">
           <AdminHeader />
-          <div id="admin-content" tabIndex={-1}>{children}</div>
+          <div id="admin-content" tabIndex={-1}>
+            {children}
+          </div>
         </div>
       </div>
     </ToastProvider>

@@ -7,7 +7,11 @@ import type { Registration } from "@/lib/domain/types";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 function renderTable(props: React.ComponentProps<typeof RegistrationTable>) {
-  return render(<ToastProvider><RegistrationTable {...props} /></ToastProvider>);
+  return render(
+    <ToastProvider>
+      <RegistrationTable {...props} />
+    </ToastProvider>,
+  );
 }
 
 const actions: RegistrationTableActions = {
@@ -76,7 +80,10 @@ describe("RegistrationTable", () => {
     const secondRegistration: Registration = { ...registration, id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", attendeeName: "مشاركة أخرى" };
     renderTable({ registrations: [registration, secondRegistration], mode: "current", registrationHref: href, actions });
 
-    const rosterHrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href")).filter((value) => value?.startsWith("/admin/registrations?id="));
+    const rosterHrefs = screen
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"))
+      .filter((value) => value?.startsWith("/admin/registrations?id="));
     expect(rosterHrefs).toEqual([href(registration), href(secondRegistration)]);
   });
 });

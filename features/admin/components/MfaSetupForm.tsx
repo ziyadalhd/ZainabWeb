@@ -33,18 +33,14 @@ export function MfaSetupForm() {
         return;
       }
 
-      const verifiedFactors = factors.data.totp.filter(
-        (factor) => factor.status === "verified",
-      );
+      const verifiedFactors = factors.data.totp.filter((factor) => factor.status === "verified");
 
       if (verifiedFactors.length > 0) {
         window.location.replace("/admin/mfa/verify");
         return;
       }
 
-      const unfinishedFactors = factors.data.all.filter(
-        (factor) => factor.factor_type === "totp" && factor.status === "unverified",
-      );
+      const unfinishedFactors = factors.data.all.filter((factor) => factor.factor_type === "totp" && factor.status === "unverified");
 
       for (const factor of unfinishedFactors) {
         const removal = await supabase.auth.mfa.unenroll({ factorId: factor.id });
@@ -116,26 +112,33 @@ export function MfaSetupForm() {
 
   return (
     <form onSubmit={verifyEnrollment} className="form-surface mt-8 grid gap-5 p-5 sm:p-7">
-      {errorMessage ? <p role="alert" className="notice-error">{errorMessage}</p> : null}
-      {!enrollment && !errorMessage ? <p role="status" className="notice-info">جارٍ تجهيز رمز الإعداد…</p> : null}
+      {errorMessage ? (
+        <p role="alert" className="notice-error">
+          {errorMessage}
+        </p>
+      ) : null}
+      {!enrollment && !errorMessage ? (
+        <p role="status" className="notice-info">
+          جارٍ تجهيز رمز الإعداد…
+        </p>
+      ) : null}
 
       {enrollment ? (
         <>
           <ol className="grid gap-3 text-sm leading-7 text-[var(--color-text)]">
-            <li><strong>١.</strong> افتحي تطبيق المصادقة على جوالك.</li>
-            <li><strong>٢.</strong> امسحي الرمز المربع الظاهر أدناه.</li>
-            <li><strong>٣.</strong> اكتبي الرمز المؤقت المكوّن من 6 أرقام.</li>
+            <li>
+              <strong>١.</strong> افتحي تطبيق المصادقة على جوالك.
+            </li>
+            <li>
+              <strong>٢.</strong> امسحي الرمز المربع الظاهر أدناه.
+            </li>
+            <li>
+              <strong>٣.</strong> اكتبي الرمز المؤقت المكوّن من 6 أرقام.
+            </li>
           </ol>
 
           <div className="mx-auto rounded-2xl border border-[var(--color-border)] bg-white p-3">
-            <Image
-              src={enrollment.qrCode}
-              alt="رمز إعداد التحقق بخطوتين"
-              width={224}
-              height={224}
-              unoptimized
-              priority
-            />
+            <Image src={enrollment.qrCode} alt="رمز إعداد التحقق بخطوتين" width={224} height={224} unoptimized priority />
           </div>
 
           <details className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm">
@@ -161,7 +164,9 @@ export function MfaSetupForm() {
               aria-describedby="mfa-code-help"
             />
           </label>
-          <p id="mfa-code-help" className="text-sm muted-copy">يتغير الرمز تلقائيًا كل فترة قصيرة.</p>
+          <p id="mfa-code-help" className="text-sm muted-copy">
+            يتغير الرمز تلقائيًا كل فترة قصيرة.
+          </p>
           <button type="submit" className="button-primary min-h-12 px-6 py-3" disabled={isSubmitting}>
             {isSubmitting ? "جارٍ التحقق…" : "تفعيل التحقق بخطوتين"}
           </button>

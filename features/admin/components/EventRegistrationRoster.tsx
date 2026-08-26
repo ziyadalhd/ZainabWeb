@@ -34,14 +34,27 @@ export function EventRegistrationRoster({ registrations, eventId, view, emptyTit
           <tbody>
             {registrations.map((registration) => (
               <tr key={registration.id} className="border-t border-[var(--color-border)]">
-                <td data-label="الاسم" className="px-5 py-4 font-bold">{registration.attendeeName}</td>
-                <td data-label="الجوال" className="data-value px-5 py-4" dir="ltr">{registration.phoneE164}</td>
-                <td data-label="الحالة" className="px-5 py-4"><StatusBadge status={registration.status} /></td>
+                <td data-label="الاسم" className="px-5 py-4 font-bold">
+                  {registration.attendeeName}
+                </td>
+                <td data-label="الجوال" className="data-value px-5 py-4" dir="ltr">
+                  {registration.phoneE164}
+                </td>
+                <td data-label="الحالة" className="px-5 py-4">
+                  <StatusBadge status={registration.status} />
+                </td>
                 <td data-label="الإجراءات" className="px-5 py-4">
                   <div className="flex flex-wrap gap-2">
-                    <Link href={`/admin/registrations?event=${eventId}&view=${view}&id=${registration.id}`} className="button-secondary min-h-9 px-3 py-1.5 text-sm">فتح</Link>
+                    <Link
+                      href={`/admin/registrations?event=${eventId}&view=${view}&id=${registration.id}`}
+                      className="button-secondary min-h-9 px-3 py-1.5 text-sm"
+                    >
+                      فتح
+                    </Link>
                     {view === "waitlist" && registration.status === "waitlisted" ? (
-                      <Link href={`/admin/events/${eventId}?tab=communications`} className="button-primary min-h-9 px-3 py-1.5 text-sm">دعوة للحضور</Link>
+                      <Link href={`/admin/events/${eventId}?tab=communications`} className="button-primary min-h-9 px-3 py-1.5 text-sm">
+                        دعوة للحضور
+                      </Link>
                     ) : null}
                   </div>
                 </td>
@@ -50,7 +63,9 @@ export function EventRegistrationRoster({ registrations, eventId, view, emptyTit
           </tbody>
         </table>
       </div>
-      <Link href={manageAllHref} className="mt-4 inline-block text-sm font-bold underline decoration-[var(--brand-amber)] underline-offset-4">إدارة كل التسجيلات لهذه الفعالية</Link>
+      <Link href={manageAllHref} className="mt-4 inline-block text-sm font-bold underline decoration-[var(--brand-amber)] underline-offset-4">
+        إدارة كل التسجيلات لهذه الفعالية
+      </Link>
     </div>
   );
 }

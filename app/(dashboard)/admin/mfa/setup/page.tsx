@@ -16,10 +16,7 @@ export default async function AdminMfaSetupPage() {
   if (destination !== "/admin/mfa/setup") redirect(destination);
 
   return (
-    <MfaPageShell
-      title="إعداد تطبيق المصادقة"
-      description="هذه الخطوة مطلوبة مرة واحدة لحماية لوحة الإدارة حتى لو عُرفت كلمة المرور."
-    >
+    <MfaPageShell title="إعداد تطبيق المصادقة" description="هذه الخطوة مطلوبة مرة واحدة لحماية لوحة الإدارة حتى لو عُرفت كلمة المرور.">
       <MfaSetupForm />
     </MfaPageShell>
   );

@@ -15,10 +15,7 @@ export const revalidate = 0;
 export default async function EventLiveCheckInPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const [eventRepository, registrationRepository] = await Promise.all([
-    createAdminEventRepository(),
-    createAdminRegistrationRepository(),
-  ]);
+  const [eventRepository, registrationRepository] = await Promise.all([createAdminEventRepository(), createAdminRegistrationRepository()]);
   const event = await eventRepository.get(id);
   if (!event) notFound();
 
@@ -31,7 +28,9 @@ export default async function EventLiveCheckInPage({ params }: { params: Promise
           <p className="eyebrow">وضع اليوم</p>
           <h1 className="page-title mt-1">{event.title}</h1>
         </div>
-        <Link href={`/admin/events/${event.id}`} className="button-quiet">إنهاء وضع اليوم</Link>
+        <Link href={`/admin/events/${event.id}`} className="button-quiet">
+          إنهاء وضع اليوم
+        </Link>
       </div>
       <div className="mt-6">
         {registrationsOutcome.ok ? (
@@ -39,7 +38,9 @@ export default async function EventLiveCheckInPage({ params }: { params: Promise
             registrations={registrationsOutcome.data.filter((registration) => registration.status === "registered")}
             recordCheckIn={recordCheckInAction}
           />
-        ) : <LoadErrorNotice description="تعذر تحميل قائمة المسجلات. حدّثي الصفحة وحاولي مرة أخرى." />}
+        ) : (
+          <LoadErrorNotice description="تعذر تحميل قائمة المسجلات. حدّثي الصفحة وحاولي مرة أخرى." />
+        )}
       </div>
     </main>
   );

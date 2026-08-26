@@ -83,9 +83,7 @@ export function MfaManagementPanel() {
       return;
     }
 
-    const unfinishedFactors = existing.data.all.filter(
-      (factor) => factor.factor_type === "totp" && factor.status === "unverified",
-    );
+    const unfinishedFactors = existing.data.all.filter((factor) => factor.factor_type === "totp" && factor.status === "unverified");
 
     for (const factor of unfinishedFactors) {
       const removal = await supabase.auth.mfa.unenroll({ factorId: factor.id });
@@ -227,20 +225,40 @@ export function MfaManagementPanel() {
 
   return (
     <div className="mt-8 grid max-w-4xl gap-6">
-      {errorMessage ? <p role="alert" className="notice-error">{errorMessage}</p> : null}
-      {successMessage ? <p role="status" className="notice-success">{successMessage}</p> : null}
+      {errorMessage ? (
+        <p role="alert" className="notice-error">
+          {errorMessage}
+        </p>
+      ) : null}
+      {successMessage ? (
+        <p role="status" className="notice-success">
+          {successMessage}
+        </p>
+      ) : null}
 
       <section className="card-surface p-5 sm:p-7" aria-labelledby="mfa-devices-heading">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 id="mfa-devices-heading" className="text-xl font-black text-[var(--brand-forest)]">أجهزة التحقق المسجلة</h2>
+            <h2 id="mfa-devices-heading" className="text-xl font-black text-[var(--brand-forest)]">
+              أجهزة التحقق المسجلة
+            </h2>
             <p className="mt-2 text-sm leading-6 muted-copy">احتفظي بجهازين على الأقل حتى لا تفقدي الوصول عند تغيير الجوال.</p>
           </div>
-          {!isLoading ? <span className="rounded-full bg-[var(--color-surface-muted)] px-3 py-1 text-sm font-bold">{formatArabicNumber(factors.length)} جهاز</span> : null}
+          {!isLoading ? (
+            <span className="rounded-full bg-[var(--color-surface-muted)] px-3 py-1 text-sm font-bold">{formatArabicNumber(factors.length)} جهاز</span>
+          ) : null}
         </div>
 
-        {isLoading ? <p role="status" className="notice-info mt-5">جارٍ تحميل الأجهزة…</p> : null}
-        {!isLoading && factors.length === 0 ? <p role="alert" className="notice-error mt-5">لا يوجد جهاز موثّق. سجلي الخروج وابدئي إعداد التحقق من جديد.</p> : null}
+        {isLoading ? (
+          <p role="status" className="notice-info mt-5">
+            جارٍ تحميل الأجهزة…
+          </p>
+        ) : null}
+        {!isLoading && factors.length === 0 ? (
+          <p role="alert" className="notice-error mt-5">
+            لا يوجد جهاز موثّق. سجلي الخروج وابدئي إعداد التحقق من جديد.
+          </p>
+        ) : null}
 
         {factors.length > 0 ? (
           <ul className="mt-6 grid gap-3">
@@ -262,13 +280,29 @@ export function MfaManagementPanel() {
                       إزالة الجهاز
                     </button>
                   ) : (
-                    <div className="max-w-md rounded-xl border border-[var(--color-danger)] bg-white p-4" role="group" aria-label={`تأكيد إزالة ${factor.name}`}>
+                    <div
+                      className="max-w-md rounded-xl border border-[var(--color-danger)] bg-white p-4"
+                      role="group"
+                      aria-label={`تأكيد إزالة ${factor.name}`}
+                    >
                       <p className="text-sm font-bold">هل تريدين إزالة «{factor.name}»؟ لن تقبل رموزه بعد التأكيد.</p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <button type="button" className="button-danger min-h-10 px-3 py-2 text-sm" disabled={Boolean(busyAction)} onClick={() => void removeFactor(factor)}>
+                        <button
+                          type="button"
+                          className="button-danger min-h-10 px-3 py-2 text-sm"
+                          disabled={Boolean(busyAction)}
+                          onClick={() => void removeFactor(factor)}
+                        >
                           {busyAction === "remove" ? "جارٍ الإزالة…" : "تأكيد الإزالة"}
                         </button>
-                        <button type="button" className="button-quiet min-h-10 px-3 py-2 text-sm" disabled={Boolean(busyAction)} onClick={() => setConfirmingRemovalId(undefined)}>تراجع</button>
+                        <button
+                          type="button"
+                          className="button-quiet min-h-10 px-3 py-2 text-sm"
+                          disabled={Boolean(busyAction)}
+                          onClick={() => setConfirmingRemovalId(undefined)}
+                        >
+                          تراجع
+                        </button>
                       </div>
                     </div>
                   )}
@@ -278,11 +312,17 @@ export function MfaManagementPanel() {
           </ul>
         ) : null}
 
-        {factors.length === 1 ? <p id="last-factor-help" className="notice-info mt-5">هذا هو جهاز التحقق الوحيد. أضيفي جهازًا جديدًا وفعّليه قبل إزالة هذا الجهاز.</p> : null}
+        {factors.length === 1 ? (
+          <p id="last-factor-help" className="notice-info mt-5">
+            هذا هو جهاز التحقق الوحيد. أضيفي جهازًا جديدًا وفعّليه قبل إزالة هذا الجهاز.
+          </p>
+        ) : null}
       </section>
 
       <section className="card-surface p-5 sm:p-7" aria-labelledby="add-mfa-device-heading">
-        <h2 id="add-mfa-device-heading" className="text-xl font-black text-[var(--brand-forest)]">إضافة جهاز جديد</h2>
+        <h2 id="add-mfa-device-heading" className="text-xl font-black text-[var(--brand-forest)]">
+          إضافة جهاز جديد
+        </h2>
         <p className="mt-2 text-sm leading-6 muted-copy">سمّي الجهاز باسم واضح مثل «جوالي الجديد» أو «الجهاز الاحتياطي».</p>
 
         {!enrollment ? (
@@ -311,7 +351,9 @@ export function MfaManagementPanel() {
             <details className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 text-sm">
               <summary className="cursor-pointer font-bold text-[var(--brand-forest)]">تعذر مسح الرمز؟</summary>
               <p className="mt-3 leading-6 muted-copy">أدخلي هذا المفتاح يدويًا، ولا تشاركيه مع أي شخص.</p>
-              <code dir="ltr" className="mt-3 block [overflow-wrap:anywhere] rounded-lg bg-white p-3 text-center font-mono text-sm text-[var(--color-text)]">{enrollment.secret}</code>
+              <code dir="ltr" className="mt-3 block [overflow-wrap:anywhere] rounded-lg bg-white p-3 text-center font-mono text-sm text-[var(--color-text)]">
+                {enrollment.secret}
+              </code>
             </details>
             <label className="grid gap-2 font-bold sm:max-w-sm">
               رمز الجهاز الجديد

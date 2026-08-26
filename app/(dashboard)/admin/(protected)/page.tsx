@@ -14,15 +14,21 @@ export const revalidate = 0;
 
 export default async function AdminOverviewPage() {
   await requireAdmin();
-  const [eventRepository, registrationRepository, requestRepository] = await Promise.all([createAdminEventRepository(), createAdminRegistrationRepository(), createAdminServiceRequestRepository()]);
+  const [eventRepository, registrationRepository, requestRepository] = await Promise.all([
+    createAdminEventRepository(),
+    createAdminRegistrationRepository(),
+    createAdminServiceRequestRepository(),
+  ]);
   const [events, registrations, requests] = await Promise.all([eventRepository.list(), registrationRepository.list(), requestRepository.list()]);
 
   return (
     <main className="admin-page">
       <PageHeader eyebrow="لوحة الإدارة" title="اليوم" description="ابدئي بما يحتاج انتباهك الآن، ثم انتقلي إلى الفعالية أو الطلب المرتبط." />
-      {events.ok && registrations.ok && requests.ok
-        ? <AdminOverview events={events.data} registrations={registrations.data} requests={requests.data} now={getCurrentTimestamp()} />
-        : <LoadErrorNotice />}
+      {events.ok && registrations.ok && requests.ok ? (
+        <AdminOverview events={events.data} registrations={registrations.data} requests={requests.data} now={getCurrentTimestamp()} />
+      ) : (
+        <LoadErrorNotice />
+      )}
     </main>
   );
 }

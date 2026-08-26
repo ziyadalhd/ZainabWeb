@@ -119,9 +119,7 @@ describe("MfaVerifyForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "التحقق والدخول" }));
 
-    expect(
-      await screen.findByText("الرمز غير صحيح أو انتهت صلاحيته. اكتبي الرمز الحالي من التطبيق."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("الرمز غير صحيح أو انتهت صلاحيته. اكتبي الرمز الحالي من التطبيق.")).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
   });
 

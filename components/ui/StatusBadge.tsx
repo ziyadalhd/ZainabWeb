@@ -58,10 +58,10 @@ const toneClass = {
 export function StatusBadge({ status }: { status: StatusBadgeValue }) {
   const tone = statusTone[status];
   return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-sm border px-2.5 py-1 text-xs font-extrabold ${toneClass[tone]}`}
-    >
-      <span aria-hidden="true" className="font-black">{tone === "danger" ? "!" : tone === "warning" ? "•" : tone === "positive" ? "✓" : "—"}</span>
+    <span className={`inline-flex items-center gap-2 rounded-sm border px-2.5 py-1 text-xs font-extrabold ${toneClass[tone]}`}>
+      <span aria-hidden="true" className="font-black">
+        {tone === "danger" ? "!" : tone === "warning" ? "•" : tone === "positive" ? "✓" : "—"}
+      </span>
       {labels[status]}
     </span>
   );

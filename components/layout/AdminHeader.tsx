@@ -12,7 +12,11 @@ export function AdminHeader() {
           <span className="hidden font-extrabold text-[var(--brand-forest)] sm:inline">لوحة الإدارة</span>
         </div>
         <div className="flex items-center gap-2">
-          <form action={logoutAction}><button type="submit" className="button-quiet text-xs">خروج</button></form>
+          <form action={logoutAction}>
+            <button type="submit" className="button-quiet text-xs">
+              خروج
+            </button>
+          </form>
           <AdminMobileNavigation />
         </div>
       </div>

@@ -19,11 +19,7 @@ export async function loginAction(formData: FormData) {
   let authorized = false;
 
   if (!claimsError && subject) {
-    const { data: admin } = await supabase
-      .from("admin_users")
-      .select("user_id")
-      .eq("user_id", subject)
-      .maybeSingle();
+    const { data: admin } = await supabase.from("admin_users").select("user_id").eq("user_id", subject).maybeSingle();
     authorized = Boolean(admin);
   }
 
@@ -32,8 +28,7 @@ export async function loginAction(formData: FormData) {
     redirect("/admin/login?error=unauthorized");
   }
 
-  const { data: assurance, error: assuranceError } =
-    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
   if (assuranceError || !assurance.currentLevel || !assurance.nextLevel) {
     await supabase.auth.signOut();

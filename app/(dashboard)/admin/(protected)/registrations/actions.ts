@@ -13,10 +13,7 @@ function revalidateRegistrationViews() {
   revalidatePath("/admin/registrations");
 }
 
-async function runRegistrationMutation(
-  id: string,
-  operation: "cancel" | "revoke" | "confirm",
-): Promise<ActionResult> {
+async function runRegistrationMutation(id: string, operation: "cancel" | "revoke" | "confirm"): Promise<ActionResult> {
   await requireAdmin();
   if (!isEntityId(id)) return { status: "error", message: "معرف التسجيل غير صالح." };
 
@@ -34,17 +31,20 @@ async function runRegistrationMutation(
 }
 
 export async function cancelRegistrationAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
-  void _state; void _formData;
+  void _state;
+  void _formData;
   return runRegistrationMutation(id, "cancel");
 }
 
 export async function revokeInvitationAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
-  void _state; void _formData;
+  void _state;
+  void _formData;
   return runRegistrationMutation(id, "revoke");
 }
 
 export async function confirmAttendanceAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
-  void _state; void _formData;
+  void _state;
+  void _formData;
   return runRegistrationMutation(id, "confirm");
 }
 
@@ -54,7 +54,8 @@ export interface RegistrationPaymentActionState {
 }
 
 export async function recordCheckInAction(id: string, outcome: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
-  void _state; void _formData;
+  void _state;
+  void _formData;
   await requireAdmin();
   if (!isEntityId(id) || !isRegistrationCheckInStatus(outcome) || outcome === "pending") {
     return { status: "error", message: "تعذر حفظ حالة الحضور." };

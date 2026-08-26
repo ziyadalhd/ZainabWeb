@@ -90,13 +90,24 @@ export function MfaVerifyForm() {
 
   return (
     <form onSubmit={verifyCode} className="form-surface mt-8 grid gap-5 p-5 sm:p-7">
-      {errorMessage ? <p role="alert" className="notice-error">{errorMessage}</p> : null}
-      {isLoading ? <p role="status" className="notice-info">جارٍ تحميل أجهزة التحقق…</p> : null}
+      {errorMessage ? (
+        <p role="alert" className="notice-error">
+          {errorMessage}
+        </p>
+      ) : null}
+      {isLoading ? (
+        <p role="status" className="notice-info">
+          جارٍ تحميل أجهزة التحقق…
+        </p>
+      ) : null}
       {factors.length > 1 ? (
         <fieldset className="grid gap-3">
           <legend className="font-bold">اختاري جهاز التحقق</legend>
           {factors.map((factor) => (
-            <label key={factor.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-3 font-bold">
+            <label
+              key={factor.id}
+              className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-3 font-bold"
+            >
               <input
                 type="radio"
                 name="mfa-factor"

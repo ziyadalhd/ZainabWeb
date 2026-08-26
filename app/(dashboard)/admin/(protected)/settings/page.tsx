@@ -30,7 +30,7 @@ const tabs: ReadonlyArray<{ id: SettingsTab; label: string }> = [
 ];
 
 function getTab(value: string | undefined): SettingsTab {
-  return tabs.some((tab) => tab.id === value) ? value as SettingsTab : "content";
+  return tabs.some((tab) => tab.id === value) ? (value as SettingsTab) : "content";
 }
 
 async function ContentTab() {
@@ -43,14 +43,29 @@ async function TemplatesTab({ success, error }: { success?: string; error?: stri
   const template = await getRegistrationReminderTemplate();
   return (
     <div className="max-w-3xl">
-      <p className="muted-copy">هذا هو النص الافتراضي لتذكير التسجيلات. تُستبدل المتغيرات تلقائيًا عند تجهيز كل رسالة. لتخصيص القالب لفعالية معينة، افتحي تبويب «التواصل» داخل مساحة تلك الفعالية.</p>
-      {success === "saved" ? <p role="status" className="notice-success mt-4">تم حفظ القالب الافتراضي.</p> : null}
-      {error ? <p role="alert" className="notice-error mt-4">تحققي من النص ومن وجود جميع المتغيرات المطلوبة.</p> : null}
+      <p className="muted-copy">
+        هذا هو النص الافتراضي لتذكير التسجيلات. تُستبدل المتغيرات تلقائيًا عند تجهيز كل رسالة. لتخصيص القالب لفعالية معينة، افتحي تبويب «التواصل» داخل مساحة تلك
+        الفعالية.
+      </p>
+      {success === "saved" ? (
+        <p role="status" className="notice-success mt-4">
+          تم حفظ القالب الافتراضي.
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="notice-error mt-4">
+          تحققي من النص ومن وجود جميع المتغيرات المطلوبة.
+        </p>
+      ) : null}
       <form action={saveGlobalReminderTemplateAction} className="form-surface mt-5 p-5 sm:p-7">
-        <label htmlFor="template-body" className="font-black">قالب تذكير التسجيل</label>
+        <label htmlFor="template-body" className="font-black">
+          قالب تذكير التسجيل
+        </label>
         <textarea id="template-body" name="body" defaultValue={template ?? ""} rows={10} className="field-control mt-3 w-full" required />
         <p className="mt-3 text-sm muted-copy">المتغيرات المطلوبة: {registrationReminderTemplateTokens.join("، ")}</p>
-        <button type="submit" className="button-primary mt-5">حفظ القالب</button>
+        <button type="submit" className="button-primary mt-5">
+          حفظ القالب
+        </button>
       </form>
     </div>
   );
@@ -77,9 +92,22 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
   return (
     <main className="admin-page">
       <PageHeader eyebrow="لوحة الإدارة" title="الإعدادات" description="محتوى الموقع، قوالب الرسائل، الأمان، والمهتمات والاستبيانات — كلها من مكان واحد." />
-      <nav aria-label="أقسام الإعدادات" className="workspace-tabs mt-7">{tabs.map((item) => <Link key={item.id} href={`/admin/settings?tab=${item.id}`} aria-current={item.id === tab ? "page" : undefined} className={item.id === tab ? "workspace-tab workspace-tab--active" : "workspace-tab"}>{item.label}</Link>)}</nav>
+      <nav aria-label="أقسام الإعدادات" className="workspace-tabs mt-7">
+        {tabs.map((item) => (
+          <Link
+            key={item.id}
+            href={`/admin/settings?tab=${item.id}`}
+            aria-current={item.id === tab ? "page" : undefined}
+            className={item.id === tab ? "workspace-tab workspace-tab--active" : "workspace-tab"}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
       <section className="mt-7" aria-labelledby="settings-content-heading">
-        <h2 id="settings-content-heading" className="sr-only">{activeTab.label}</h2>
+        <h2 id="settings-content-heading" className="sr-only">
+          {activeTab.label}
+        </h2>
         {tab === "content" ? <ContentTab /> : null}
         {tab === "templates" ? <TemplatesTab success={success} error={error} /> : null}
         {tab === "security" ? <MfaManagementPanel /> : null}

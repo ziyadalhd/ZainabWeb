@@ -12,7 +12,8 @@ function revalidateRequestViews() {
 }
 
 export async function markServiceRequestContactedAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
-  void _state; void _formData;
+  void _state;
+  void _formData;
   await requireAdmin();
   if (!isEntityId(id)) return { status: "error", message: "معرف الطلب غير صالح." };
 

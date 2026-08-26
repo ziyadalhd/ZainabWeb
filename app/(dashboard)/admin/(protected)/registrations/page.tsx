@@ -37,7 +37,7 @@ const registrationActions = {
 };
 
 function getView(value: string | undefined): RegistrationView {
-  return views.some((view) => view.id === value) ? value as RegistrationView : "upcoming";
+  return views.some((view) => view.id === value) ? (value as RegistrationView) : "upcoming";
 }
 
 const pageSize = 25;
@@ -75,7 +75,11 @@ function viewHref(view: RegistrationView, query: string, eventId: string | null)
   return `/admin/registrations?${params.toString()}`;
 }
 
-export default async function RegistrationsPage({ searchParams }: { searchParams: Promise<{ view?: string; id?: string; q?: string; page?: string; event?: string }> }) {
+export default async function RegistrationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; id?: string; q?: string; page?: string; event?: string }>;
+}) {
   await requireAdmin();
   const { view: requestedView, id, q: requestedQuery, page: requestedPage, event: requestedEventId } = await searchParams;
   const view = getView(requestedView);
@@ -91,15 +95,85 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
   return (
     <main className="admin-page">
       <PageHeader eyebrow="التشغيل" title="التسجيلات" description="ابحثي في الحجوزات القادمة والانتظار والتسجيلات السابقة من مكان واحد." />
-      {eventId ? <p className="notice-info mt-5">تُعرض تسجيلات فعالية واحدة فقط{eventOutcome ? ` — «${eventOutcome.title}»` : ""}. <Link href={clearEventHref(view, query)} className="font-bold underline decoration-current underline-offset-4">عرض كل التسجيلات</Link></p> : null}
-      <nav aria-label="حالات التسجيل" className="workspace-tabs mt-7">{views.map((item) => <Link key={item.id} href={viewHref(item.id, query, eventId)} aria-current={item.id === view ? "page" : undefined} className={item.id === view ? "workspace-tab workspace-tab--active" : "workspace-tab"}>{item.label}</Link>)}</nav>
+      {eventId ? (
+        <p className="notice-info mt-5">
+          تُعرض تسجيلات فعالية واحدة فقط{eventOutcome ? ` — «${eventOutcome.title}»` : ""}.{" "}
+          <Link href={clearEventHref(view, query)} className="font-bold underline decoration-current underline-offset-4">
+            عرض كل التسجيلات
+          </Link>
+        </p>
+      ) : null}
+      <nav aria-label="حالات التسجيل" className="workspace-tabs mt-7">
+        {views.map((item) => (
+          <Link
+            key={item.id}
+            href={viewHref(item.id, query, eventId)}
+            aria-current={item.id === view ? "page" : undefined}
+            className={item.id === view ? "workspace-tab workspace-tab--active" : "workspace-tab"}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
       {outcome.ok ? (
         <>
-          <div className="mt-5 flex flex-wrap items-end justify-between gap-4"><form action="/admin/registrations" className="flex min-w-[min(100%,22rem)] flex-1 flex-wrap gap-2"><input type="hidden" name="view" value={view} />{eventId ? <input type="hidden" name="event" value={eventId} /> : null}<label className="sr-only" htmlFor="registration-search">ابحثي في التسجيلات</label><input id="registration-search" name="q" defaultValue={query} placeholder="الاسم أو الجوال أو الفعالية أو المرجع" className="min-h-11 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3" /><button type="submit" className="button-primary">بحث</button>{query ? <Link href={`/admin/registrations?view=${view}${eventId ? `&event=${eventId}` : ""}`} className="button-quiet">مسح</Link> : null}</form><p className="data-value text-sm font-bold muted-copy">{formatArabicNumber(outcome.data.total)} نتيجة</p></div>
-          <div className="mt-6"><RegistrationTable registrations={outcome.data.items} mode={actionMode} selectedId={id} registrationHref={(registration) => registrationHref(registration, view, query, eventId, outcome.data.page)} actions={registrationActions} /></div>
-          {outcome.data.total > pageSize ? <nav aria-label="ترقيم صفحات التسجيلات" className="mt-6 flex items-center justify-between gap-3"><p className="text-sm muted-copy">صفحة {formatArabicNumber(outcome.data.page)} من {formatArabicNumber(Math.ceil(outcome.data.total / pageSize))}</p><div className="flex gap-2">{outcome.data.page > 1 ? <Link className="button-secondary" href={pageHref(view, query, eventId, outcome.data.page - 1)}>السابقة</Link> : null}{outcome.data.page * pageSize < outcome.data.total ? <Link className="button-secondary" href={pageHref(view, query, eventId, outcome.data.page + 1)}>التالية</Link> : null}</div></nav> : null}
+          <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
+            <form action="/admin/registrations" className="flex min-w-[min(100%,22rem)] flex-1 flex-wrap gap-2">
+              <input type="hidden" name="view" value={view} />
+              {eventId ? <input type="hidden" name="event" value={eventId} /> : null}
+              <label className="sr-only" htmlFor="registration-search">
+                ابحثي في التسجيلات
+              </label>
+              <input
+                id="registration-search"
+                name="q"
+                defaultValue={query}
+                placeholder="الاسم أو الجوال أو الفعالية أو المرجع"
+                className="min-h-11 min-w-0 flex-1 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3"
+              />
+              <button type="submit" className="button-primary">
+                بحث
+              </button>
+              {query ? (
+                <Link href={`/admin/registrations?view=${view}${eventId ? `&event=${eventId}` : ""}`} className="button-quiet">
+                  مسح
+                </Link>
+              ) : null}
+            </form>
+            <p className="data-value text-sm font-bold muted-copy">{formatArabicNumber(outcome.data.total)} نتيجة</p>
+          </div>
+          <div className="mt-6">
+            <RegistrationTable
+              registrations={outcome.data.items}
+              mode={actionMode}
+              selectedId={id}
+              registrationHref={(registration) => registrationHref(registration, view, query, eventId, outcome.data.page)}
+              actions={registrationActions}
+            />
+          </div>
+          {outcome.data.total > pageSize ? (
+            <nav aria-label="ترقيم صفحات التسجيلات" className="mt-6 flex items-center justify-between gap-3">
+              <p className="text-sm muted-copy">
+                صفحة {formatArabicNumber(outcome.data.page)} من {formatArabicNumber(Math.ceil(outcome.data.total / pageSize))}
+              </p>
+              <div className="flex gap-2">
+                {outcome.data.page > 1 ? (
+                  <Link className="button-secondary" href={pageHref(view, query, eventId, outcome.data.page - 1)}>
+                    السابقة
+                  </Link>
+                ) : null}
+                {outcome.data.page * pageSize < outcome.data.total ? (
+                  <Link className="button-secondary" href={pageHref(view, query, eventId, outcome.data.page + 1)}>
+                    التالية
+                  </Link>
+                ) : null}
+              </div>
+            </nav>
+          ) : null}
         </>
-      ) : <LoadErrorNotice />}
+      ) : (
+        <LoadErrorNotice />
+      )}
     </main>
   );
 }

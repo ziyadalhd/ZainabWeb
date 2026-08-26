@@ -4,13 +4,7 @@ import { ConfirmActionForm } from "@/features/admin/components/ConfirmActionForm
 
 describe("ConfirmActionForm", () => {
   it("requires an explicit confirmation before showing the submit action", () => {
-    render(
-      <ConfirmActionForm
-        action={vi.fn()}
-        label="إلغاء التسجيل"
-        confirmation="هل تريدين إلغاء التسجيل؟"
-      />,
-    );
+    render(<ConfirmActionForm action={vi.fn()} label="إلغاء التسجيل" confirmation="هل تريدين إلغاء التسجيل؟" />);
 
     expect(screen.queryByRole("button", { name: "تأكيد" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "إلغاء التسجيل" }));

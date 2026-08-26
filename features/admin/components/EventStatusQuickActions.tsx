@@ -2,10 +2,7 @@ import Link from "next/link";
 import { ConfirmActionForm } from "@/features/admin/components/ConfirmActionForm";
 import type { Event, EventPublicationStatus } from "@/lib/domain/types";
 
-export type EventStatusAction = (
-  id: string,
-  requestedStatus: EventPublicationStatus,
-) => Promise<void>;
+export type EventStatusAction = (id: string, requestedStatus: EventPublicationStatus) => Promise<void>;
 
 function DirectStatusAction({
   action,
@@ -22,23 +19,14 @@ function DirectStatusAction({
 }) {
   return (
     <form action={action.bind(null, eventId, status)}>
-      <button
-        type="submit"
-        className={`${primary ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
-      >
+      <button type="submit" className={`${primary ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}>
         {label}
       </button>
     </form>
   );
 }
 
-export function EventStatusQuickActions({
-  event,
-  action,
-}: {
-  event: Event;
-  action: EventStatusAction;
-}) {
+export function EventStatusQuickActions({ event, action }: { event: Event; action: EventStatusAction }) {
   if (event.publicationStatus === "cancelled") {
     return <p className="text-xs muted-copy">الإلغاء حالة نهائية.</p>;
   }
@@ -52,13 +40,7 @@ export function EventStatusQuickActions({
         {event.publicationStatus === "draft" ? (
           <>
             {readyToPublish ? (
-              <DirectStatusAction
-                action={action}
-                eventId={event.id}
-                status="published"
-                label="نشر الفعالية"
-                primary
-              />
+              <DirectStatusAction action={action} eventId={event.id} status="published" label="نشر الفعالية" primary />
             ) : (
               <div>
                 <p className="text-sm font-bold">يلزم إكمال وقت النهاية والسعر قبل النشر.</p>
@@ -92,14 +74,7 @@ export function EventStatusQuickActions({
           </>
         ) : null}
 
-        {event.publicationStatus === "archived" ? (
-          <DirectStatusAction
-            action={action}
-            eventId={event.id}
-            status="draft"
-            label="إعادة إلى مسودة"
-          />
-        ) : null}
+        {event.publicationStatus === "archived" ? <DirectStatusAction action={action} eventId={event.id} status="draft" label="إعادة إلى مسودة" /> : null}
       </div>
     </details>
   );

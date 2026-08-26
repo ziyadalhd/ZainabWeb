@@ -28,9 +28,12 @@ export function EventPosterForm({
     if (state.saved) router.refresh();
   }, [router, state.saved]);
 
-  useEffect(() => () => {
-    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
-  }, [localPreviewUrl]);
+  useEffect(
+    () => () => {
+      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    },
+    [localPreviewUrl],
+  );
 
   const previewUrl = localPreviewUrl ?? posterUrl;
 
@@ -68,8 +71,16 @@ export function EventPosterForm({
             required
           />
         </label>
-        {state.error ? <p role="alert" className="font-bold text-[var(--color-error-text)]">{errorMessages[state.error]}</p> : null}
-        {state.saved ? <p role="status" className="font-bold text-[var(--color-success-text)]">تم رفع البوستر وتحديث الصفحة.</p> : null}
+        {state.error ? (
+          <p role="alert" className="font-bold text-[var(--color-error-text)]">
+            {errorMessages[state.error]}
+          </p>
+        ) : null}
+        {state.saved ? (
+          <p role="status" className="font-bold text-[var(--color-success-text)]">
+            تم رفع البوستر وتحديث الصفحة.
+          </p>
+        ) : null}
         <button type="submit" disabled={pending} className="button-primary w-fit px-5 py-3">
           {pending ? "جارٍ رفع البوستر…" : posterUrl ? "استبدال البوستر" : "رفع البوستر"}
         </button>

@@ -3,16 +3,9 @@
 import { useMemo, useState, useTransition } from "react";
 import type { Event, ManualMessageKind, ManualMessageRecord, Registration } from "@/lib/domain/types";
 import { formatArabicDateTime, formatArabicEventDate, formatArabicNumber } from "@/lib/format/date";
-import {
-  buildManualMessageContent,
-  manualMessageKinds,
-  manualMessageLabels,
-} from "@/lib/messaging/manual-messages";
+import { buildManualMessageContent, manualMessageKinds, manualMessageLabels } from "@/lib/messaging/manual-messages";
 import { buildWhatsAppMessageUrl } from "@/lib/messaging/registration-reminder";
-import {
-  markManualMessageSentAction,
-  openManualWhatsAppMessageAction,
-} from "@/app/(dashboard)/admin/(protected)/events/[id]/message-actions";
+import { markManualMessageSentAction, openManualWhatsAppMessageAction } from "@/app/(dashboard)/admin/(protected)/events/[id]/message-actions";
 
 interface EventCommunicationsWorkspaceProps {
   event: Event;
@@ -76,18 +69,10 @@ function MessageProgressRail({ prepared, sent }: { prepared: boolean; sent: bool
   );
 }
 
-export function EventCommunicationsWorkspace({
-  event,
-  registrations,
-  messages,
-  reminderTemplate,
-}: EventCommunicationsWorkspaceProps) {
+export function EventCommunicationsWorkspace({ event, registrations, messages, reminderTemplate }: EventCommunicationsWorkspaceProps) {
   const now = useMemo(() => new Date(), []);
-  const defaultKind = event.publicationStatus === "cancelled"
-    ? "cancellation"
-    : new Date(event.endsAt ?? event.startsAt) <= now
-      ? "feedback_request"
-      : "confirmation";
+  const defaultKind =
+    event.publicationStatus === "cancelled" ? "cancellation" : new Date(event.endsAt ?? event.startsAt) <= now ? "feedback_request" : "confirmation";
   const [kind, setKind] = useState<ManualMessageKind>(defaultKind);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, PreparedDraft>>({});
@@ -121,10 +106,11 @@ export function EventCommunicationsWorkspace({
     if (firstSent !== secondSent) return firstSent - secondSent;
     return new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime();
   });
-  const selected = orderedRecipients.find((registration) => registration.id === selectedId)
-    ?? orderedRecipients.find((registration) => !isSent(registration))
-    ?? orderedRecipients[0]
-    ?? null;
+  const selected =
+    orderedRecipients.find((registration) => registration.id === selectedId) ??
+    orderedRecipients.find((registration) => !isSent(registration)) ??
+    orderedRecipients[0] ??
+    null;
   const selectedKey = selected ? recipientKey(selected.id, kind) : null;
   const selectedDraft = selectedKey ? drafts[selectedKey] : undefined;
   const selectedSent = selected ? isSent(selected) : false;
@@ -267,9 +253,7 @@ export function EventCommunicationsWorkspace({
         })}
       </nav>
 
-      {!actionable && !messages.some((message) => message.kind === kind) ? (
-        <p className="notice-info mt-5">{unavailableMessage(kind)}</p>
-      ) : null}
+      {!actionable && !messages.some((message) => message.kind === kind) ? <p className="notice-info mt-5">{unavailableMessage(kind)}</p> : null}
 
       {orderedRecipients.length ? (
         <div className="message-workspace mt-5">
@@ -290,7 +274,10 @@ export function EventCommunicationsWorkspace({
                     className={selected?.id === registration.id ? "message-recipient message-recipient--active" : "message-recipient"}
                     onClick={() => setSelectedId(registration.id)}
                   >
-                    <span><strong>{registration.attendeeName}</strong><small dir="ltr">{registration.phoneE164}</small></span>
+                    <span>
+                      <strong>{registration.attendeeName}</strong>
+                      <small dir="ltr">{registration.phoneE164}</small>
+                    </span>
                     <small className={sent ? "message-state message-state--sent" : waiting ? "message-state message-state--waiting" : "message-state"}>
                       {sent ? "أُرسلت يدويًا" : waiting ? "بانتظار التأكيد" : "تحتاج إرسالًا"}
                     </small>
@@ -305,9 +292,13 @@ export function EventCommunicationsWorkspace({
               <div className="message-composer__identity">
                 <div>
                   <p className="eyebrow">الرسالة الحالية</p>
-                  <h4 id="message-composer-heading" className="mt-2 text-2xl font-black">{selected.attendeeName}</h4>
+                  <h4 id="message-composer-heading" className="mt-2 text-2xl font-black">
+                    {selected.attendeeName}
+                  </h4>
                 </div>
-                <span className={selectedSent ? "message-state message-state--sent" : "message-state"}>{selectedSent ? "أُرسلت يدويًا" : manualMessageLabels[kind]}</span>
+                <span className={selectedSent ? "message-state message-state--sent" : "message-state"}>
+                  {selectedSent ? "أُرسلت يدويًا" : manualMessageLabels[kind]}
+                </span>
               </div>
 
               <MessageProgressRail prepared={Boolean(selectedDraft)} sent={selectedSent} />
@@ -322,10 +313,26 @@ export function EventCommunicationsWorkspace({
               {currentRecords.get(selected.id) && !currentRecords.get(selected.id)?.sentAt && !selectedDraft ? (
                 <p className="notice-info">يوجد رابط قديم غير مرسل. الضغط على الفتح يستبدله برابط آمن جديد.</p>
               ) : null}
-              {error === "prepare" ? <p role="alert" className="notice-error">تعذر تجهيز الرابط. لم تُسجل الرسالة كمرسلة؛ حاولي مرة أخرى.</p> : null}
-              {error === "save" ? <p role="alert" className="notice-error">تعذر حفظ حالة الإرسال. أبقي واتساب مفتوحًا وحاولي مرة أخرى.</p> : null}
-              {error === "popup" ? <p role="alert" className="notice-info">منع المتصفح النافذة الجديدة. استخدمي رابط الفتح المباشر أدناه.</p> : null}
-              {copyError ? <p role="alert" className="notice-error">تعذر نسخ النص. حدديه وانسخيه يدويًا.</p> : null}
+              {error === "prepare" ? (
+                <p role="alert" className="notice-error">
+                  تعذر تجهيز الرابط. لم تُسجل الرسالة كمرسلة؛ حاولي مرة أخرى.
+                </p>
+              ) : null}
+              {error === "save" ? (
+                <p role="alert" className="notice-error">
+                  تعذر حفظ حالة الإرسال. أبقي واتساب مفتوحًا وحاولي مرة أخرى.
+                </p>
+              ) : null}
+              {error === "popup" ? (
+                <p role="alert" className="notice-info">
+                  منع المتصفح النافذة الجديدة. استخدمي رابط الفتح المباشر أدناه.
+                </p>
+              ) : null}
+              {copyError ? (
+                <p role="alert" className="notice-error">
+                  تعذر نسخ النص. حدديه وانسخيه يدويًا.
+                </p>
+              ) : null}
 
               <div className="message-composer__actions">
                 {!selectedSent ? (
@@ -338,8 +345,14 @@ export function EventCommunicationsWorkspace({
                     {markingSent ? "جارٍ حفظ الحالة…" : "تم الإرسال"}
                   </button>
                 ) : null}
-                <button type="button" onClick={copyMessage} className="button-quiet">{copied ? "نُسخ النص" : "نسخ النص"}</button>
-                {fallbackUrl ? <a href={fallbackUrl} className="button-secondary" target="_blank" rel="noreferrer">فتح واتساب مباشرة</a> : null}
+                <button type="button" onClick={copyMessage} className="button-quiet">
+                  {copied ? "نُسخ النص" : "نسخ النص"}
+                </button>
+                {fallbackUrl ? (
+                  <a href={fallbackUrl} className="button-secondary" target="_blank" rel="noreferrer">
+                    فتح واتساب مباشرة
+                  </a>
+                ) : null}
               </div>
               <p className="mt-3 text-xs muted-copy">فتح واتساب لا يعني أن الرسالة أُرسلت أو وصلت. اختاري «تم الإرسال» بعد الإرسال الفعلي فقط.</p>
             </section>
@@ -360,8 +373,14 @@ export function EventCommunicationsWorkspace({
               const recipient = registrations.find((registration) => registration.id === message.registrationId);
               return (
                 <li key={message.id}>
-                  <span><strong>{recipient?.attendeeName ?? "تسجيل سابق"}</strong><small>{manualMessageLabels[message.kind]}</small></span>
-                  <span><strong>{message.sentAt ? "أُرسلت يدويًا" : message.supersededAt ? "استُبدل الرابط" : "جُهزت ولم تُعلّم كمرسلة"}</strong><small>{formatArabicDateTime(message.sentAt ?? message.supersededAt ?? message.preparedAt)}</small></span>
+                  <span>
+                    <strong>{recipient?.attendeeName ?? "تسجيل سابق"}</strong>
+                    <small>{manualMessageLabels[message.kind]}</small>
+                  </span>
+                  <span>
+                    <strong>{message.sentAt ? "أُرسلت يدويًا" : message.supersededAt ? "استُبدل الرابط" : "جُهزت ولم تُعلّم كمرسلة"}</strong>
+                    <small>{formatArabicDateTime(message.sentAt ?? message.supersededAt ?? message.preparedAt)}</small>
+                  </span>
                 </li>
               );
             })}

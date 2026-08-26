@@ -7,10 +7,7 @@ import { createAdminSiteSettingsRepository } from "@/lib/supabase/site-settings"
 
 export type SiteSettingsActionState = { saved?: true; error?: "phone" | "url" | "text" | "save" };
 
-export async function updateSiteSettingsAction(
-  _previousState: SiteSettingsActionState,
-  formData: FormData,
-): Promise<SiteSettingsActionState> {
+export async function updateSiteSettingsAction(_previousState: SiteSettingsActionState, formData: FormData): Promise<SiteSettingsActionState> {
   void _previousState;
   await requireAdmin();
   const input = validateSiteSettingsInput(formData);

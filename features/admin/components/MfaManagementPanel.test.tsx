@@ -115,9 +115,7 @@ describe("MfaManagementPanel", () => {
   });
 
   it("removes a selected device only when another verified device remains", async () => {
-    listFactors
-      .mockResolvedValueOnce(factorResponse([primaryFactor, backupFactor]))
-      .mockResolvedValueOnce(factorResponse([backupFactor]));
+    listFactors.mockResolvedValueOnce(factorResponse([primaryFactor, backupFactor])).mockResolvedValueOnce(factorResponse([backupFactor]));
 
     render(<MfaManagementPanel />);
     await screen.findByText("الجهاز الاحتياطي");

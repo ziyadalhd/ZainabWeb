@@ -53,13 +53,21 @@ export function ConfirmDialog({
         {triggerLabel}
       </button>
       <dialog ref={dialogRef} className="confirm-dialog" aria-labelledby={headingId}>
-        <h2 id={headingId} className="text-lg font-black text-[var(--brand-forest)]">{title}</h2>
+        <h2 id={headingId} className="text-lg font-black text-[var(--brand-forest)]">
+          {title}
+        </h2>
         <p className="mt-2 text-sm muted-copy">{description}</p>
         <form action={formAction} className="mt-5 flex flex-wrap gap-2">
-          <button type="submit" disabled={pending} className={tone === "danger" ? "button-danger min-h-10 px-4 py-2 text-sm" : "button-primary min-h-10 px-4 py-2 text-sm"}>
+          <button
+            type="submit"
+            disabled={pending}
+            className={tone === "danger" ? "button-danger min-h-10 px-4 py-2 text-sm" : "button-primary min-h-10 px-4 py-2 text-sm"}
+          >
             {pending ? "جارٍ التنفيذ…" : confirmLabel}
           </button>
-          <button type="button" className="button-quiet min-h-10 px-4 py-2 text-sm" onClick={() => dialogRef.current?.close()}>تراجع</button>
+          <button type="button" className="button-quiet min-h-10 px-4 py-2 text-sm" onClick={() => dialogRef.current?.close()}>
+            تراجع
+          </button>
         </form>
       </dialog>
     </>

@@ -28,6 +28,9 @@ describe("LoginForm", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "البريد الإلكتروني" }), { target: { value: "admin@example.test" } });
     fireEvent.click(screen.getByRole("button", { name: "إرسال رابط تغيير كلمة المرور" }));
     expect(await screen.findByText(/إذا كان البريد تابعًا لحساب مسؤول/)).toBeInTheDocument();
-    expect(resetPasswordForEmail).toHaveBeenCalledWith("admin@example.test", expect.objectContaining({ redirectTo: expect.stringContaining("/admin/reset-password") }));
+    expect(resetPasswordForEmail).toHaveBeenCalledWith(
+      "admin@example.test",
+      expect.objectContaining({ redirectTo: expect.stringContaining("/admin/reset-password") }),
+    );
   });
 });

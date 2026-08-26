@@ -16,10 +16,7 @@ export default async function AdminMfaVerifyPage() {
   if (destination !== "/admin/mfa/verify") redirect(destination);
 
   return (
-    <MfaPageShell
-      title="أدخلي رمز التحقق"
-      description="تم قبول البريد وكلمة المرور. بقي الرمز المؤقت من تطبيق المصادقة."
-    >
+    <MfaPageShell title="أدخلي رمز التحقق" description="تم قبول البريد وكلمة المرور. بقي الرمز المؤقت من تطبيق المصادقة.">
       <MfaVerifyForm />
     </MfaPageShell>
   );

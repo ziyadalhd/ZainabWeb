@@ -3,7 +3,24 @@ import { describe, expect, it, vi } from "vitest";
 import { EventCapacityTable } from "@/features/admin/components/EventCapacityTable";
 import type { Event } from "@/lib/domain/types";
 
-const event: Event = { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", title: "لقاء", kind: "club_event", audience: "adults", eventTypeLabel: "قراءة", startsAt: "2026-08-10T15:00:00.000Z", endsAt: "2026-08-10T17:00:00.000Z", capacity: 20, activeReservationCount: 4, priceHalalas: 7500, posterUrl: null, registrationStatus: "open", availability: "available", publicationStatus: "draft", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" };
+const event: Event = {
+  id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  title: "لقاء",
+  kind: "club_event",
+  audience: "adults",
+  eventTypeLabel: "قراءة",
+  startsAt: "2026-08-10T15:00:00.000Z",
+  endsAt: "2026-08-10T17:00:00.000Z",
+  capacity: 20,
+  activeReservationCount: 4,
+  priceHalalas: 7500,
+  posterUrl: null,
+  registrationStatus: "open",
+  availability: "available",
+  publicationStatus: "draft",
+  createdAt: "2026-08-01T00:00:00.000Z",
+  updatedAt: "2026-08-01T00:00:00.000Z",
+};
 
 describe("EventCapacityTable", () => {
   it("renders an empty state without demo rows", () => {
@@ -24,12 +41,7 @@ describe("EventCapacityTable", () => {
   });
 
   it("keeps cancellation behind an explicit confirmation", () => {
-    render(
-      <EventCapacityTable
-        events={[{ ...event, publicationStatus: "published" }]}
-        statusAction={vi.fn()}
-      />,
-    );
+    render(<EventCapacityTable events={[{ ...event, publicationStatus: "published" }]} statusAction={vi.fn()} />);
 
     fireEvent.click(screen.getByText("تغيير الحالة"));
     fireEvent.click(screen.getByRole("button", { name: "إلغاء الفعالية" }));
