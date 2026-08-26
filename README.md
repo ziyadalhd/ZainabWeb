@@ -36,6 +36,8 @@ npm install --global pnpm@11.9.0
 pnpm install --frozen-lockfile
 ```
 
+If `pnpm` reports `ERROR: This version of pnpm requires at least Node.js v22.13` (or similar), the active shell is not using the pinned Node 24 — run `fnm use 24` (or select the Node 24 binary directly) before any `pnpm` command.
+
 Copy `.env.example` to `.env.local` and provide the publishable credentials for the hosted Supabase development project. Never use production secrets or a Supabase secret/service-role key in browser-visible configuration.
 
 `SITE_URL` defines the canonical public origin used by metadata and the sitemap. Keep `SITE_INDEXING_ENABLED=false` until the explicit public-launch decision; Preview and Development deployments remain non-indexable even if that flag is changed locally.
