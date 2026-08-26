@@ -62,6 +62,6 @@ describe("updateSiteSettingsAction", () => {
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/contact");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/literary-partner");
-    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/content");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/settings");
   });
 });

@@ -27,6 +27,6 @@ export async function updateSiteSettingsAction(
   revalidatePath("/");
   revalidatePath("/contact");
   revalidatePath("/literary-partner");
-  revalidatePath("/admin/content");
+  revalidatePath("/admin/settings");
   return { saved: true };
 }

@@ -666,7 +666,7 @@ relevant `docs/` entries need correcting as part of Phase 3. `requests/page.tsx`
 | --- | --- | --- |
 | **0** | ✅ Done | Safety net — 58 new tests: every admin action (auth checks, validation, repository-throw paths), `AdminOverview`'s 8 attention categories, and a test pinning A1's inert-row defect. No behaviour change. |
 | **1** | ✅ Done | Failures stop rendering as empty states (A2) — see §11.1. |
-| **2** | Not started | Eleven destinations collapse to four; the dead registration selection (A1) is fixed by removal. |
+| **2** | ✅ Done | Eleven destinations collapse to five; the dead registration selection (A1) is fixed by removal — see §11.2. |
 | **3** | Not started | One interaction model, waitlist replacement UI (A7), request status model (§10.2). |
 | **4** | Not started | Correctness and hygiene (A6, A10, A12) + verify the pg_cron retention jobs are live. |
 | **5** | Not started | Day-of mobile mode (Q5) and conflict warnings (Q3). |
@@ -691,3 +691,26 @@ relevant `docs/` entries need correcting as part of Phase 3. `requests/page.tsx`
 **New regression tests** (the actual guarantee this phase promises): `lib/supabase/events.test.ts`, `lib/supabase/interested-contacts.test.ts`, `lib/supabase/service-requests.test.ts` each assert the repository returns `{ ok: false, code: "load_failed" }` — not `[]` — when the underlying query errors.
 
 **Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 50 files / 182 tests. `pnpm build` and `pnpm test:db` not run (no hosted Supabase environment available in this session).
+
+### 11.2 Phase 2 — what changed
+
+**A prior approved plan surfaced mid-phase.** While pruning stale references, `docs/admin-experience-redesign-plan.md` — a 1,476-line UX plan approved by the product owner on 2026-08-20, one commit before this branch's work began — turned out to already prescribe an overlapping redesign (Event Workspace tabs, registration consolidation, manual outbox — all already implemented, matching what §5's audit found) and, critically, an explicit decision this plan's draft §6.1 had reversed without knowing it existed: **that document keeps Registrations as its own top-level sidebar item**, for cross-event lookup, export, and event-day oversight. Flagged to the product owner directly rather than resolved unilaterally; the answer was to keep Registrations as a permanent sidebar entry. The five-item nav below reflects that. `docs/admin-experience-redesign-plan.md` now carries a superseding note, and `docs/architecture-decisions.md` records the reconciled decision — both updated in this phase per `AGENTS.md` §10.
+
+**Navigation** (`lib/navigation.ts`) collapsed from seven sidebar entries — one of which (`activePrefixes`) silently absorbed four more routes with no link of their own, the A3 defect — to five real, individually-linked destinations with no `activePrefixes` hack anywhere: اليوم (`/admin`) · الفعاليات (`/admin/events`) · التسجيلات (`/admin/registrations`) · الطلبات (`/admin/requests`) · الإعدادات (`/admin/settings`).
+
+- **`/admin/calendar` folded into `/admin/events`** as a `list`/`calendar` view toggle (`?view=calendar`); the standalone route is deleted. Internal links (`AdminOverview`, the old "فتح التقويم" button) updated to the new URL; the dead `revalidatePath("/admin/calendar")` call removed.
+- **`/admin/content`, `/admin/security`, `/admin/interested`, `/admin/surveys`, `/admin/messages/templates` consolidated into `/admin/settings`** as tabs (`?tab=content|templates|security|interested|surveys`). Each tab reuses the existing repository call and form component unchanged; only the routing and the actions' redirect/revalidate targets moved. The old page.tsx files are deleted; `content/actions.ts` and `messages/templates/actions.ts` stay where they are (server actions don't need to be co-located with their page).
+- **Four already-dead compatibility redirects deleted outright**: `/admin/registrations/current`, `/admin/registrations/previous`, `/admin/waitlist`, `/admin/messages`. Nothing live linked to them — confirmed by grep before deletion — only stale `revalidatePath` calls (pruned from `registrations/actions.ts` and three public action files) and the removed nav entry referenced them.
+- **Three empty leftover directories deleted**: `app/(public)/visual-admin-schedule/`, `visual-admin-operations/`, `__visual-admin-schedule/` — sat under the public route group despite admin-sounding names; a `page.tsx` added there would have been publicly routable with no `requireAdmin()` guard.
+
+**A1 fixed by removal, not repair.** The event workspace's registrations/waitlist tabs no longer embed the full `RegistrationTable` (which was only ever actionable for its first row when no `registrationHref` was supplied — impossible to trigger correctly from that call site). They now render a new read-only `EventRegistrationRoster` component with a link into `/admin/registrations?event=<id>&view=<view>`, which is genuinely selectable. `RegistrationTable.registrationHref` is now a **required** prop — the broken optional/fallback branch that caused A1 no longer exists as a possibility in the type system, not just in current usage.
+
+**A13 fixed** (`features/` importing from `app/`): `RegistrationTable` now takes an `actions` prop bundle instead of importing the six registration server actions directly, matching the pattern already used by `EventCapacityTable`'s `statusAction`. Its sole remaining caller, `/admin/registrations`, passes the real actions in.
+
+**Registrations gained an `event` filter** (`AdminRegistrationListFilter.eventId`, applied as an additional `.eq("event_id", …)` constraint in `listPage()`) to support the roster's deep link, plus a "تُعرض تسجيلات فعالية واحدة فقط" banner with a clear-filter link. The view-tab links and search form now preserve the active query string when switching tabs — previously switching from "القادمة" to "السابقة" while searching silently dropped the search term.
+
+**Global search**: a small `AdminSearchForm` component (`components/navigation/AdminSearchForm.tsx`) — one `q` field, GET-submits to `/admin/registrations` — added to the sidebar (desktop) and header (mobile). It's additive to, not a replacement for, the Registrations nav entry per §11.2's reconciliation.
+
+**New regression tests**: `lib/navigation.test.ts` (no duplicate hrefs, no `activePrefixes` collision, Registrations stays reachable), `AdminSearchForm.test.tsx`, `EventRegistrationRoster.test.tsx`, and a rewritten `RegistrationTable.test.tsx` — the old test that *characterised* the A1 defect now asserts every row is selectable instead.
+
+**Validation:** `pnpm lint` ✅ · `pnpm typecheck` ✅ · `pnpm test` ✅ 53 files / 189 tests. `pnpm build` could not be run in this environment — the installed `@next/swc` binary is `darwin-x64` but the available Node 24 toolchain resolved to `arm64`; this is a pre-existing local toolchain mismatch, not a change introduced here. `pnpm test:db` not run (no hosted Supabase environment available in this session).

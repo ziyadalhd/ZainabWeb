@@ -15,11 +15,9 @@ export const publicNavigation: readonly NavigationItem[] = [
 ];
 
 export const adminNavigation: readonly NavigationItem[] = [
-  { href: "/admin", label: "نظرة عامة" },
-  { href: "/admin/calendar", label: "التقويم" },
-  { href: "/admin/events", label: "الفعاليات والرحلات", activePrefixes: ["/admin/events", "/admin/registrations", "/admin/waitlist", "/admin/messages", "/admin/surveys"] },
+  { href: "/admin", label: "اليوم" },
+  { href: "/admin/events", label: "الفعاليات" },
+  { href: "/admin/registrations", label: "التسجيلات" },
   { href: "/admin/requests", label: "الطلبات" },
-  { href: "/admin/interested", label: "المهتمات" },
-  { href: "/admin/content", label: "الموقع والإعدادات" },
-  { href: "/admin/security", label: "الأمان" },
+  { href: "/admin/settings", label: "الإعدادات" },
 ];

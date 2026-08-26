@@ -1,16 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { RegistrationTable } from "@/features/admin/components/RegistrationTable";
+import { RegistrationTable, type RegistrationTableActions } from "@/features/admin/components/RegistrationTable";
 import type { Registration } from "@/lib/domain/types";
 
-vi.mock("@/app/(dashboard)/admin/(protected)/registrations/actions", () => ({
-  cancelRegistrationAction: vi.fn(),
-  cancelWaitlistedRegistrationAction: vi.fn(),
-  confirmAttendanceAction: vi.fn(),
-  recordCheckInAction: vi.fn(),
-  revokeInvitationAction: vi.fn(),
-  setRegistrationPaymentStatusAction: vi.fn(),
-}));
+const actions: RegistrationTableActions = {
+  cancelRegistration: vi.fn(),
+  cancelWaitlistedRegistration: vi.fn(),
+  confirmAttendance: vi.fn(),
+  recordCheckIn: vi.fn(),
+  revokeInvitation: vi.fn(),
+  setPaymentStatus: vi.fn(),
+};
+
+function href(registration: Registration): string {
+  return `/admin/registrations?id=${registration.id}`;
+}
 
 const registration: Registration = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -38,7 +42,7 @@ const registration: Registration = {
 
 describe("RegistrationTable", () => {
   it("shows separate attendance confirmation and operational check-in controls", () => {
-    render(<RegistrationTable registrations={[registration]} mode="current" />);
+    render(<RegistrationTable registrations={[registration]} mode="current" registrationHref={href} actions={actions} />);
 
     expect(screen.getByText("بانتظار التأكيد")).toBeInTheDocument();
     expect(screen.getByText("لم يسجل الحضور")).toBeInTheDocument();
@@ -50,7 +54,7 @@ describe("RegistrationTable", () => {
   });
 
   it("routes previous-registration messaging to the event communication workspace", () => {
-    render(<RegistrationTable registrations={[registration]} mode="previous" />);
+    render(<RegistrationTable registrations={[registration]} mode="previous" registrationHref={href} actions={actions} />);
 
     expect(screen.getByRole("link", { name: "فتح التواصل" })).toHaveAttribute("href", `/admin/events/${registration.eventId}?tab=communications`);
     expect(screen.queryByRole("button", { name: "إلغاء التسجيل" })).not.toBeInTheDocument();
@@ -58,19 +62,11 @@ describe("RegistrationTable", () => {
     expect(screen.getByText("غير مدفوع")).toBeInTheDocument();
   });
 
-  describe("without a registrationHref (event workspace usage — admin overhaul plan A1)", () => {
+  it("makes every row selectable via registrationHref — regression test for admin overhaul plan A1", () => {
     const secondRegistration: Registration = { ...registration, id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", attendeeName: "مشاركة أخرى" };
+    render(<RegistrationTable registrations={[registration, secondRegistration]} mode="current" registrationHref={href} actions={actions} />);
 
-    it("characterises the known defect: every row beyond the first is rendered as inert, non-interactive markup", () => {
-      render(<RegistrationTable registrations={[registration, secondRegistration]} mode="current" />);
-
-      // Only the first registration's details are ever reachable — there is no control that
-      // selects the second row. This pins the bug fixed by the admin overhaul plan's Phase 2
-      // (deleting this table from the event workspace in favour of a selectable roster).
-      expect(screen.getByRole("heading", { name: registration.attendeeName })).toBeInTheDocument();
-      expect(screen.queryByRole("heading", { name: secondRegistration.attendeeName })).not.toBeInTheDocument();
-      expect(screen.getByText(secondRegistration.attendeeName)).toBeInTheDocument();
-      expect(screen.queryByRole("link", { name: new RegExp(secondRegistration.attendeeName) })).not.toBeInTheDocument();
-    });
+    const rosterHrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href")).filter((value) => value?.startsWith("/admin/registrations?id="));
+    expect(rosterHrefs).toEqual([href(registration), href(secondRegistration)]);
   });
 });

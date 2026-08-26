@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ClubLogo } from "@/components/brand/ClubLogo";
+import { AdminSearchForm } from "@/components/navigation/AdminSearchForm";
 import { adminNavigation } from "@/lib/navigation";
 import { logoutAction } from "@/app/(dashboard)/admin/actions";
 
@@ -15,6 +16,11 @@ export function AdminSidebar() {
         <ClubLogo variant="on-green" className="h-auto w-24" priority />
         <span className="font-extrabold">الإدارة</span>
       </Link>
+      <AdminSearchForm
+        className="mt-5"
+        id="admin-sidebar-search"
+        inputClassName="min-h-10 w-full rounded-[var(--radius-control)] border border-white/25 bg-white/10 px-3 text-sm text-white placeholder:text-white/60 focus:bg-white/15"
+      />
       <nav aria-label="أقسام لوحة الإدارة" className="mt-6">
         <ul className="grid gap-0.5">
           {adminNavigation.map((item) => {

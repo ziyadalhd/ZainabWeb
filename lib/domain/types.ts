@@ -102,6 +102,7 @@ export interface AdminRegistrationListFilter {
   page: number;
   pageSize: number;
   now: IsoDateTime;
+  eventId?: string | null;
 }
 
 export interface ManualMessageRecord {

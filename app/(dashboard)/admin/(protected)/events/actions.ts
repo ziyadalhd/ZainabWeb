@@ -35,7 +35,6 @@ export interface EventFormActionState {
 function revalidateEventViews() {
   revalidatePath("/events");
   revalidatePath("/admin");
-  revalidatePath("/admin/calendar");
   revalidatePath("/admin/events");
   revalidatePath("/admin/events/[id]", "page");
 }

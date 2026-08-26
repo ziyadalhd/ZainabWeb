@@ -19,7 +19,7 @@ export default async function AdminOverviewPage() {
 
   return (
     <main className="admin-page">
-      <PageHeader eyebrow="لوحة الإدارة" title="نظرة عامة" description="ابدئي بما يحتاج انتباهك الآن، ثم انتقلي إلى الفعالية أو الطلب المرتبط." />
+      <PageHeader eyebrow="لوحة الإدارة" title="اليوم" description="ابدئي بما يحتاج انتباهك الآن، ثم انتقلي إلى الفعالية أو الطلب المرتبط." />
       {events.ok && registrations.ok && requests.ok
         ? <AdminOverview events={events.data} registrations={registrations.data} requests={requests.data} now={getCurrentTimestamp()} />
         : <LoadErrorNotice />}

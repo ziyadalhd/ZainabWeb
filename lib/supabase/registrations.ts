@@ -352,6 +352,7 @@ implements RegistrationService, AdminRegistrationRepository {
       if (filter.view === "waitlist") query = query.in("status", ["waitlisted", "invited"]);
       if (filter.view === "previous") query = query.or(`status.eq.cancelled,event_id.in.(${eventIds.join(",")})`);
       if (filter.view === "upcoming") query = query.eq("status", "registered").in("event_id", eventIds);
+      if (filter.eventId) query = query.eq("event_id", filter.eventId);
       if (searchTerm) {
         const textFilters = ["attendee_name", "phone_e164", "email", "public_reference"].map((column) => `${column}.ilike.%${searchTerm}%`);
         if (titleMatches && titleMatches.length > 0) textFilters.push(`event_id.in.(${titleMatches.map((event) => event.id).join(",")})`);

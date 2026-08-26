@@ -34,7 +34,7 @@ describe("saveGlobalReminderTemplateAction", () => {
     const formData = new FormData();
     formData.set("body", "بلا متغيرات");
 
-    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/messages/templates?error=validation");
+    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/settings?tab=templates&error=validation");
     expect(mocks.saveRegistrationReminderTemplate).not.toHaveBeenCalled();
   });
 
@@ -43,14 +43,14 @@ describe("saveGlobalReminderTemplateAction", () => {
     const formData = new FormData();
     formData.set("body", validBody);
 
-    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/messages/templates?error=save");
+    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/settings?tab=templates&error=save");
   });
 
   it("saves the global template and redirects with success", async () => {
     const formData = new FormData();
     formData.set("body", validBody);
 
-    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/messages/templates?success=saved");
+    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/settings?tab=templates&success=saved");
     expect(mocks.saveRegistrationReminderTemplate).toHaveBeenCalledWith(validBody);
   });
 });

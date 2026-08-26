@@ -221,7 +221,7 @@ export function MfaManagementPanel() {
       setSuccessMessage(`تمت إزالة «${factor.name}».`);
       setBusyAction(undefined);
     } catch {
-      window.location.replace("/admin/security");
+      window.location.replace("/admin/settings?tab=security");
     }
   }
 

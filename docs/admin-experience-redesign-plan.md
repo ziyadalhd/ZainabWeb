@@ -1,5 +1,17 @@
 # Admin Experience Redesign Plan
 
+> **Superseded on navigation.** `ADMIN_OVERHAUL_PLAN.md` (repository root) is the current, actively
+> implemented admin plan, approved 2026-08-26. Its target sidebar is five items — اليوم / الفعاليات /
+> التسجيلات / الطلبات / الإعدادات — not the seven-item structure in §4–§5 below. That change was made
+> deliberately after reviewing this document: the product owner confirmed Registrations should keep
+> its own sidebar entry (§5's stated rationale — cross-event lookup, export, event-day oversight —
+> still holds), but folded التقويم into الفعاليات as a view toggle and consolidated التواصل/المحتوى/
+> الأمان/المهتمات/الاستبيانات under الإعدادات rather than a separate communications domain. Other
+> sections of this document (Event Workspace shape, registration consolidation, manual outbox,
+> event cancellation lifecycle) were largely already implemented as described and remain accurate
+> background reading — just verify against current code before relying on specifics, since this file
+> was not updated when `ADMIN_OVERHAUL_PLAN.md` superseded it.
+
 Status: **Implementation in progress — foundational navigation, Overview, and Event Workspace delivered**
 Repository audit date: `2026-08-20`
 Product-owner approval date: `2026-08-20`

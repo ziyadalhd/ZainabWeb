@@ -20,9 +20,7 @@ async function runBookingAction(
     const service = await createRegistrationService();
     if (operation === "confirm") await service.confirmBookingAttendance(token);
     if (operation === "cancel") await service.cancelBooking(token);
-    revalidatePath("/admin/registrations/current");
     revalidatePath("/admin/registrations");
-    revalidatePath("/admin/waitlist");
     return { success: operation === "confirm" ? "confirmed" : "cancelled" };
   } catch (error) {
     if (error instanceof RegistrationFailure && error.code === "unavailable") {

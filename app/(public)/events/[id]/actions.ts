@@ -54,9 +54,7 @@ export async function registerForEventAction(
     const service = await createRegistrationService();
     const receipt = await service.register(eventId, input.value);
     revalidatePath("/admin");
-    revalidatePath("/admin/registrations/current");
     revalidatePath("/admin/registrations");
-    revalidatePath("/admin/waitlist");
     return {
       reference: receipt.reference,
       status: receipt.status,
