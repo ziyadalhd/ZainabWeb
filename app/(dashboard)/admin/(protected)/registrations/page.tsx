@@ -94,7 +94,7 @@ export default async function RegistrationsPage({
 
   return (
     <main className="admin-page">
-      <PageHeader eyebrow="التشغيل" title="التسجيلات" description="ابحثي في الحجوزات القادمة والانتظار والتسجيلات السابقة من مكان واحد." />
+      <PageHeader eyebrow="التشغيل" title="التسجيلات" />
       {eventId ? (
         <p className="notice-info mt-5">
           تُعرض تسجيلات فعالية واحدة فقط{eventOutcome ? ` — «${eventOutcome.title}»` : ""}.{" "}

@@ -159,7 +159,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
 
   return (
     <main className="admin-page">
-      <PageHeader eyebrow="صندوق الوارد" title="الطلبات" description="راجعي التفاصيل ثم تواصلي مباشرة عبر واتساب. لا توجد إجراءات أخرى داخل الموقع." />
+      <PageHeader eyebrow="صندوق الوارد" title="الطلبات" />
       <form action="/admin/requests" className="request-filter-bar mt-7">
         <label className="sr-only" htmlFor="request-search">
           البحث في الطلبات

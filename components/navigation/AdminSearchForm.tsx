@@ -6,12 +6,11 @@ interface AdminSearchFormProps {
 
 export function AdminSearchForm({ className, inputClassName, id = "admin-global-search" }: AdminSearchFormProps) {
   return (
-    <form action="/admin/registrations" className={className}>
-      <input type="hidden" name="view" value="upcoming" />
+    <form action="/admin/search" className={className}>
       <label className="sr-only" htmlFor={id}>
-        ابحثي عن مسجلة بالاسم أو الجوال أو رقم المرجع
+        ابحثي عن فعالية أو طلب أو تسجيل
       </label>
-      <input id={id} name="q" type="search" placeholder="ابحثي عن مسجلة…" className={inputClassName} />
+      <input id={id} name="q" type="search" placeholder="ابحثي عن فعالية أو طلب أو تسجيل…" className={inputClassName} />
     </form>
   );
 }

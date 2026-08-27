@@ -792,3 +792,12 @@ All six phases are complete to the extent this session's environment allows. Two
 - **Needs a live deployment**: the manual RTL pass on mobile and desktop widths, and `pnpm build` itself — the local toolchain's `@next/swc` binary is `darwin-x64` against an `arm64` Node 24, a pre-existing mismatch this session didn't introduce and couldn't resolve.
 
 Before promoting any of this to production: run `pnpm build` and `pnpm test:db` in an environment with the hosted Supabase project linked (neither has run once in this entire effort — every phase validated on lint/typecheck/unit tests only), verify the two pg_cron retention jobs are actually live (§2), and do the RTL walkthrough on a preview deployment before merging to `main`.
+
+## 13. Superseded by the admin UX redesign (2026-08-27)
+
+`ADMIN_UX_REDESIGN_PLAN.md`, Phases A–E, subsequently replaced the navigation target this plan proposed in §6.1, after diagnosing that this plan's own approved item — "delete the duplicated registrations table from the event workspace" — had not actually been executed. Recorded here rather than edited into §6.1 above, to keep this plan's history intact. See `docs/architecture-decisions.md` ("Admin UX redesign, phases A–E") for the full decision record. In summary:
+
+- **Kept, against this plan's recommendation:** `/admin/registrations` was *not* removed in favor of the global search field this section proposed. The product owner's D2 decision keeps it as a dedicated cross-event lookup surface, on top of — not instead of — the header search.
+- **Built as proposed, refined:** the "one page, no tabs" event workspace this section called for was built as an overlay panel (`?event=<id>`, native `<dialog>`, focus-trapped, RTL-anchored, deep-linkable) rather than a plain full page, so it can also open over `/admin` and the events list without leaving them. `/admin/events/[id]` and the six workspace tabs it previously served no longer exist; the path redirects into the panel.
+- **Built as proposed:** the "one global search field in the header" is now real — `/admin/search` — and searches events, requests, and upcoming registrations together, not registrations alone.
+- **Also delivered, beyond this plan's scope:** `/admin` became the calendar-first hub this plan's §6.2 `اليوم` section described in spirit (ranked attention list, each item resolving to where the task can be completed) but did not itself design as a calendar.

@@ -91,7 +91,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
 
   return (
     <main className="admin-page">
-      <PageHeader eyebrow="لوحة الإدارة" title="الإعدادات" description="محتوى الموقع، قوالب الرسائل، الأمان، والمهتمات والاستبيانات — كلها من مكان واحد." />
+      <PageHeader eyebrow="لوحة الإدارة" title="الإعدادات" />
       <nav aria-label="أقسام الإعدادات" className="workspace-tabs mt-7">
         {tabs.map((item) => (
           <Link

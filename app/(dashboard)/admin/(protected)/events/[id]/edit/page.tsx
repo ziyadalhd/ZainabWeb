@@ -26,17 +26,13 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
           الفعاليات
         </Link>
         <span aria-hidden="true"> / </span>
-        <Link href={`/admin/events/${event.id}`} className="underline decoration-[var(--brand-olive)] underline-offset-4">
+        <Link href={`/admin/events?event=${event.id}`} className="underline decoration-[var(--brand-olive)] underline-offset-4">
           {event.title}
         </Link>
         <span aria-hidden="true"> / </span>
         <span>تعديل</span>
       </nav>
-      <PageHeader
-        eyebrow="إدارة الفعاليات"
-        title="تعديل الفعالية"
-        description={`حالة النشر الحالية: ${event.publicationStatus === "draft" ? "مسودة" : event.publicationStatus === "published" ? "منشورة" : "مؤرشفة"}.`}
-      />
+      <PageHeader eyebrow="إدارة الفعاليات" title="تعديل الفعالية" />
       <EventForm action={updateEventAction.bind(null, id)} event={event} submitLabel="حفظ التعديلات" />
       <EventPosterForm eventTitle={event.title} posterUrl={event.posterUrl} action={uploadEventPosterAction.bind(null, id)} />
     </main>

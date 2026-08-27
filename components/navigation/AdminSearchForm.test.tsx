@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import { AdminSearchForm } from "@/components/navigation/AdminSearchForm";
 
 describe("AdminSearchForm", () => {
-  it("submits to the registrations workspace with the search term as q", () => {
+  it("submits to the combined search page with the search term as q", () => {
     render(<AdminSearchForm />);
 
-    const input = screen.getByRole("searchbox", { name: "ابحثي عن مسجلة بالاسم أو الجوال أو رقم المرجع" });
+    const input = screen.getByRole("searchbox", { name: "ابحثي عن فعالية أو طلب أو تسجيل" });
     expect(input).toHaveAttribute("name", "q");
-    expect(input.closest("form")).toHaveAttribute("action", "/admin/registrations");
+    expect(input.closest("form")).toHaveAttribute("action", "/admin/search");
   });
 
   it("uses a unique id when rendered more than once on the page", () => {

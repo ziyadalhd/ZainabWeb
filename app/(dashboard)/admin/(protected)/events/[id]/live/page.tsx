@@ -28,7 +28,7 @@ export default async function EventLiveCheckInPage({ params }: { params: Promise
           <p className="eyebrow">وضع اليوم</p>
           <h1 className="page-title mt-1">{event.title}</h1>
         </div>
-        <Link href={`/admin/events/${event.id}`} className="button-quiet">
+        <Link href={`/admin/events?event=${event.id}`} className="button-quiet">
           إنهاء وضع اليوم
         </Link>
       </div>

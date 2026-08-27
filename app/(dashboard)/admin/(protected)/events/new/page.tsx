@@ -12,7 +12,7 @@ export default async function NewEventPage() {
   await requireAdmin();
   return (
     <main className="admin-page">
-      <PageHeader eyebrow="إدارة الفعاليات" title="فعالية جديدة" description="أدخل تفاصيل الفعالية، ثم احفظها كمسودة لمراجعتها قبل النشر." />
+      <PageHeader eyebrow="إدارة الفعاليات" title="فعالية جديدة" />
       <EventForm action={createEventAction} submitLabel="حفظ المسودة" />
     </main>
   );

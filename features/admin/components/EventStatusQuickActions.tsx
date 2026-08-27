@@ -69,7 +69,7 @@ export function EventStatusQuickActions({ event, action }: { event: Event; actio
             ) : (
               <div>
                 <p className="text-sm font-bold">يلزم إكمال وقت النهاية والسعر قبل النشر.</p>
-                <Link href={`/admin/events/${event.id}/edit`} className="button-secondary mt-3 min-h-10 px-3 py-2 text-sm">
+                <Link href={`/admin/events?event=${event.id}#event-section-settings`} className="button-secondary mt-3 min-h-10 px-3 py-2 text-sm">
                   إكمال البيانات
                 </Link>
               </div>
