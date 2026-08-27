@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { LoadErrorNotice } from "@/components/ui/LoadErrorNotice";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { EventRegistrationRoster } from "@/features/admin/components/EventRegistrationRoster";
+import { RegistrationTable, type RegistrationTableActions } from "@/features/admin/components/RegistrationTable";
 import { EventCommunicationsWorkspace } from "@/features/admin/components/EventCommunicationsWorkspace";
 import { EventPublicationActions } from "@/features/admin/components/EventPublicationActions";
 import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEventFeedbackTable";
@@ -17,10 +17,25 @@ import { getEventRegistrationReminderTemplate, getRegistrationReminderTemplate }
 import { registrationReminderTemplateTokens } from "@/lib/messaging/registration-reminder";
 import { saveEventReminderTemplateAction } from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
 import { changeEventStatusAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
+import {
+  cancelRegistrationAction,
+  confirmAttendanceAction,
+  recordCheckInAction,
+  revokeInvitationAction,
+  setRegistrationPaymentStatusAction,
+} from "@/app/(dashboard)/admin/(protected)/registrations/actions";
 
 export const metadata: Metadata = { title: "مساحة الفعالية" };
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+const registrationActions: RegistrationTableActions = {
+  cancelRegistration: cancelRegistrationAction,
+  confirmAttendance: confirmAttendanceAction,
+  recordCheckIn: recordCheckInAction,
+  revokeInvitation: revokeInvitationAction,
+  setPaymentStatus: setRegistrationPaymentStatusAction,
+};
 
 type EventWorkspaceTab = "overview" | "registrations" | "waitlist" | "communications" | "feedback" | "settings";
 
@@ -42,10 +57,10 @@ export default async function EventWorkspacePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string; success?: string; error?: string }>;
+  searchParams: Promise<{ tab?: string; id?: string; success?: string; error?: string }>;
 }) {
   await requireAdmin();
-  const [{ id }, { tab: requestedTab, success, error }] = await Promise.all([params, searchParams]);
+  const [{ id }, { tab: requestedTab, id: selectedRegistrationId, success, error }] = await Promise.all([params, searchParams]);
   const tab = getTab(requestedTab);
   const [eventRepository, registrationRepository, feedbackRepository] = await Promise.all([
     createAdminEventRepository(),
@@ -190,21 +205,21 @@ export default async function EventWorkspacePage({
           </div>
         ) : null}
         {tab === "registrations" ? (
-          <EventRegistrationRoster
+          <RegistrationTable
             registrations={registered}
-            eventId={event.id}
-            view="upcoming"
-            emptyTitle="لا توجد تسجيلات بعد"
-            emptyDescription="ستظهر الأسماء هنا عندما تصل تسجيلات لهذه الفعالية."
+            mode="current"
+            selectedId={selectedRegistrationId}
+            registrationHref={(registration) => `/admin/events/${event.id}?tab=registrations&id=${registration.id}`}
+            actions={registrationActions}
           />
         ) : null}
         {tab === "waitlist" ? (
-          <EventRegistrationRoster
+          <RegistrationTable
             registrations={waitlist}
-            eventId={event.id}
-            view="waitlist"
-            emptyTitle="لا توجد قائمة انتظار"
-            emptyDescription="ستظهر الأسماء هنا عندما تمتلئ الفعالية وتبدأ حجوزات الانتظار."
+            mode="waitlist"
+            selectedId={selectedRegistrationId}
+            registrationHref={(registration) => `/admin/events/${event.id}?tab=waitlist&id=${registration.id}`}
+            actions={registrationActions}
           />
         ) : null}
         {tab === "communications" ? (

@@ -1,10 +1,13 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RegistrationTable, type RegistrationTableActions } from "@/features/admin/components/RegistrationTable";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import type { Registration } from "@/lib/domain/types";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+const refresh = vi.fn();
+// Only `refresh` is exposed: if code under test called router.push/replace instead of
+// refreshing in place, the call would throw and fail the test.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 
 function renderTable(props: React.ComponentProps<typeof RegistrationTable>) {
   return render(
@@ -51,6 +54,22 @@ const registration: Registration = {
 };
 
 describe("RegistrationTable", () => {
+  beforeEach(() => {
+    refresh.mockClear();
+  });
+
+  it("cancels a registration in place — refreshes the current page rather than navigating elsewhere (admin ux redesign plan phase B)", async () => {
+    renderTable({ registrations: [registration], mode: "current", registrationHref: href, actions });
+
+    fireEvent.click(screen.getByRole("button", { name: "إلغاء التسجيل" }));
+    // The dialog's own confirm button shares the trigger's label ("إلغاء التسجيل"); it's the second match.
+    fireEvent.click(screen.getAllByRole("button", { name: "إلغاء التسجيل" })[1]!);
+
+    await waitFor(() => expect(actions.cancelRegistration).toHaveBeenCalledWith(registration.id, expect.anything(), expect.anything()));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("تم إلغاء التسجيل"));
+    expect(refresh).toHaveBeenCalled();
+  });
+
   it("shows separate attendance confirmation and operational check-in controls, with no hidden action menu (A11)", () => {
     renderTable({ registrations: [registration], mode: "current", registrationHref: href, actions });
 
@@ -63,14 +82,12 @@ describe("RegistrationTable", () => {
     // until the dialog opens, so only the trigger is queryable here.
     expect(screen.getByRole("button", { name: "تسجيل الغياب" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "إلغاء التسجيل" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "فتح التواصل" })).toHaveAttribute("href", `/admin/events/${registration.eventId}?tab=communications`);
     expect(screen.queryByText("إجراءات إضافية")).not.toBeInTheDocument();
   });
 
-  it("routes previous-registration messaging to the event communication workspace", () => {
+  it("shows previous-registration payment status without offering cancellation or payment actions", () => {
     renderTable({ registrations: [registration], mode: "previous", registrationHref: href, actions });
 
-    expect(screen.getByRole("link", { name: "فتح التواصل" })).toHaveAttribute("href", `/admin/events/${registration.eventId}?tab=communications`);
     expect(screen.queryByRole("button", { name: "إلغاء التسجيل" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "حفظ الدفع" })).not.toBeInTheDocument();
     expect(screen.getByText("غير مدفوع")).toBeInTheDocument();

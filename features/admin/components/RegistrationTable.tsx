@@ -41,9 +41,6 @@ function RegistrationActions({
 }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <Link href={`/admin/events/${registration.eventId}?tab=communications`} className="button-primary min-h-10 px-3 py-2 text-sm">
-        فتح التواصل
-      </Link>
       {mode === "waitlist" && registration.status === "invited" ? (
         <ConfirmDialog
           triggerLabel="سحب الدعوة"
