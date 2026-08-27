@@ -241,6 +241,15 @@ body {
 .attention-item--urgent .attention-item__dot { background: var(--color-error-text); }
 .attention-item--warning { border-inline-start: 0.32rem solid var(--brand-amber); }
 .attention-item--warning .attention-item__dot { background: var(--brand-amber); }
+.attention-item--group { display: block; padding: 0; }
+.attention-item--group > summary { display: flex; min-height: 5.5rem; align-items: center; gap: 0.9rem; padding: 1rem; cursor: pointer; list-style: none; }
+.attention-item--group > summary::-webkit-details-marker { display: none; }
+.attention-item--group > summary::after { content: "＋"; margin-inline-start: auto; color: var(--brand-olive); font-size: 1rem; font-weight: 900; }
+.attention-item--group[open] > summary::after { content: "−"; }
+.attention-item--group[open] > summary { border-block-end: 1px solid var(--color-border); }
+.attention-item__members { display: grid; gap: 0.5rem; padding: 0.85rem 1rem 1rem; }
+.attention-item__member { display: block; border-radius: var(--radius-control); background: var(--color-surface-muted); padding: 0.6rem 0.9rem; font-size: 0.82rem; font-weight: 700; transition: background-color 160ms ease; }
+.attention-item__member:hover { background: var(--color-info-bg); }
 .agenda-item, .activity-item { padding: 1rem 1.25rem; transition: background-color 160ms ease; }
 .agenda-item:hover, .activity-item:hover { background: var(--color-info-bg); }
 .agenda-item time { display: grid; min-width: 8rem; gap: 0.15rem; color: var(--brand-forest); font-size: 0.8rem; font-weight: 800; }

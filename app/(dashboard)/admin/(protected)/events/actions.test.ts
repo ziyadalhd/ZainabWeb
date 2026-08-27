@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Event } from "@/lib/domain/types";
+import { idleActionResult } from "@/lib/data/action-result";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
-  redirect: vi.fn((url: string) => {
-    throw new Error(`REDIRECT:${url}`);
-  }),
   revalidatePath: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
@@ -16,7 +14,6 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth/require-admin", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/supabase/events", () => ({
   createAdminEventRepository: vi.fn(async () => ({
@@ -80,7 +77,7 @@ describe("createEventAction", () => {
   it("requires an administrator before validating input", async () => {
     mocks.requireAdmin.mockRejectedValueOnce(new Error("unauthorized"));
 
-    await expect(createEventAction({}, validEventFormData())).rejects.toThrow("unauthorized");
+    await expect(createEventAction({ status: "idle" }, validEventFormData())).rejects.toThrow("unauthorized");
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
@@ -88,23 +85,24 @@ describe("createEventAction", () => {
     const formData = validEventFormData();
     formData.set("title", "");
 
-    const result = await createEventAction({}, formData);
+    const result = await createEventAction({ status: "idle" }, formData);
 
-    expect(result).toEqual({ error: "title" });
+    expect(result).toEqual({ status: "error", error: "title" });
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
   it("returns a save error when the repository throws", async () => {
     mocks.create.mockRejectedValueOnce(new Error("db down"));
 
-    const result = await createEventAction({}, validEventFormData());
+    const result = await createEventAction({ status: "idle" }, validEventFormData());
 
-    expect(result).toEqual({ error: "save" });
+    expect(result).toEqual({ status: "error", error: "save" });
   });
 
-  it("creates the event as a draft and redirects with success", async () => {
-    await expect(createEventAction({}, validEventFormData())).rejects.toThrow("REDIRECT:/admin/events?success=created");
+  it("creates the event as a draft and returns a typed success result without redirecting", async () => {
+    const result = await createEventAction({ status: "idle" }, validEventFormData());
 
+    expect(result).toEqual({ status: "success", eventId: baseEvent.id });
     expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ title: "لقاء القراءة" }));
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/events");
   });
@@ -112,8 +110,8 @@ describe("createEventAction", () => {
 
 describe("updateEventAction", () => {
   it("rejects a malformed event id before validating input (admin overhaul plan A12)", async () => {
-    const result = await updateEventAction("not-a-uuid", {}, validEventFormData());
-    expect(result).toEqual({ error: "save" });
+    const result = await updateEventAction("not-a-uuid", { status: "idle" }, validEventFormData());
+    expect(result).toEqual({ status: "error", error: "save" });
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
@@ -121,49 +119,55 @@ describe("updateEventAction", () => {
     const formData = validEventFormData();
     formData.set("capacity", "0");
 
-    const result = await updateEventAction(validId, {}, formData);
+    const result = await updateEventAction(validId, { status: "idle" }, formData);
 
-    expect(result).toEqual({ error: "capacity" });
+    expect(result).toEqual({ status: "error", error: "capacity" });
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
-  it("saves and redirects with success", async () => {
-    await expect(updateEventAction(validId, {}, validEventFormData())).rejects.toThrow("REDIRECT:/admin/events?success=updated");
+  it("saves and returns a typed success result without redirecting", async () => {
+    const result = await updateEventAction(validId, { status: "idle" }, validEventFormData());
 
+    expect(result).toEqual({ status: "success", eventId: validId });
     expect(mocks.update).toHaveBeenCalledWith(validId, expect.objectContaining({ title: "لقاء القراءة" }));
   });
 });
 
 describe("changeEventStatusAction", () => {
-  it("rejects a malformed event id (admin overhaul plan A12)", async () => {
-    await expect(changeEventStatusAction("not-a-uuid", "published")).rejects.toThrow("REDIRECT:/admin/events?error=status");
+  it("rejects a malformed event id", async () => {
+    const result = await changeEventStatusAction("not-a-uuid", "published", idleActionResult, new FormData());
+    expect(result.status).toBe("error");
     expect(mocks.get).not.toHaveBeenCalled();
   });
 
   it("rejects a status value outside the known publication states", async () => {
     // @ts-expect-error intentionally invalid to characterise the guard
-    await expect(changeEventStatusAction(validId, "deleted")).rejects.toThrow("REDIRECT:/admin/events?error=status");
+    const result = await changeEventStatusAction(validId, "deleted", idleActionResult, new FormData());
+    expect(result.status).toBe("error");
     expect(mocks.get).not.toHaveBeenCalled();
   });
 
   it("rejects a transition the domain rules do not allow", async () => {
     mocks.get.mockResolvedValueOnce({ ...baseEvent, publicationStatus: "cancelled" });
 
-    await expect(changeEventStatusAction(validId, "published")).rejects.toThrow("REDIRECT:/admin/events?error=status");
+    const result = await changeEventStatusAction(validId, "published", idleActionResult, new FormData());
+    expect(result.status).toBe("error");
     expect(mocks.changeStatus).not.toHaveBeenCalled();
   });
 
   it("blocks publishing a draft missing the end time or price", async () => {
     mocks.get.mockResolvedValueOnce({ ...baseEvent, publicationStatus: "draft", endsAt: null });
 
-    await expect(changeEventStatusAction(validId, "published")).rejects.toThrow("REDIRECT:/admin/events?error=incomplete");
+    const result = await changeEventStatusAction(validId, "published", idleActionResult, new FormData());
+    expect(result).toEqual({ status: "error", message: "أكمل وقت النهاية والسعر في صفحة التعديل قبل نشر الفعالية." });
     expect(mocks.changeStatus).not.toHaveBeenCalled();
   });
 
-  it("changes status and redirects with success", async () => {
+  it("changes status and returns a typed success result without redirecting, keeping the operator in place", async () => {
     mocks.get.mockResolvedValueOnce(baseEvent);
 
-    await expect(changeEventStatusAction(validId, "published")).rejects.toThrow("REDIRECT:/admin/events?success=status");
+    const result = await changeEventStatusAction(validId, "published", idleActionResult, new FormData());
+    expect(result).toEqual({ status: "success" });
     expect(mocks.changeStatus).toHaveBeenCalledWith(validId, "published");
   });
 });

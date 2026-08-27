@@ -1,8 +1,25 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ActionButton } from "@/components/ui/ActionButton";
 import { ConfirmActionForm } from "@/features/admin/components/ConfirmActionForm";
+import type { ActionResult } from "@/lib/data/action-result";
 import type { Event, EventPublicationStatus } from "@/lib/domain/types";
 
-export type EventStatusAction = (id: string, requestedStatus: EventPublicationStatus) => Promise<void>;
+export type EventStatusAction = (
+  id: string,
+  requestedStatus: EventPublicationStatus,
+  state: ActionResult,
+  formData: FormData,
+) => Promise<ActionResult>;
+
+const statusSuccessMessage: Record<EventPublicationStatus, string> = {
+  draft: "تمت إعادة الفعالية إلى مسودة.",
+  published: "تم نشر الفعالية.",
+  archived: "تم أرشفة الفعالية.",
+  cancelled: "تم إلغاء الفعالية.",
+};
 
 function DirectStatusAction({
   action,
@@ -10,23 +27,31 @@ function DirectStatusAction({
   status,
   label,
   primary = false,
+  onSuccess,
 }: {
   action: EventStatusAction;
   eventId: string;
   status: EventPublicationStatus;
   label: string;
   primary?: boolean;
+  onSuccess: () => void;
 }) {
   return (
-    <form action={action.bind(null, eventId, status)}>
-      <button type="submit" className={`${primary ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}>
-        {label}
-      </button>
-    </form>
+    <ActionButton
+      action={action.bind(null, eventId, status)}
+      label={label}
+      pendingLabel="جارٍ التنفيذ…"
+      className={`${primary ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
+      successMessage={statusSuccessMessage[status]}
+      onSuccess={onSuccess}
+    />
   );
 }
 
 export function EventStatusQuickActions({ event, action }: { event: Event; action: EventStatusAction }) {
+  const router = useRouter();
+  const onSuccess = () => router.refresh();
+
   if (event.publicationStatus === "cancelled") {
     return <p className="text-xs muted-copy">الإلغاء حالة نهائية.</p>;
   }
@@ -40,7 +65,7 @@ export function EventStatusQuickActions({ event, action }: { event: Event; actio
         {event.publicationStatus === "draft" ? (
           <>
             {readyToPublish ? (
-              <DirectStatusAction action={action} eventId={event.id} status="published" label="نشر الفعالية" primary />
+              <DirectStatusAction action={action} eventId={event.id} status="published" label="نشر الفعالية" primary onSuccess={onSuccess} />
             ) : (
               <div>
                 <p className="text-sm font-bold">يلزم إكمال وقت النهاية والسعر قبل النشر.</p>
@@ -53,7 +78,9 @@ export function EventStatusQuickActions({ event, action }: { event: Event; actio
               action={action.bind(null, event.id, "archived")}
               label="أرشفة الفعالية"
               confirmation={`هل تريدين أرشفة «${event.title}»؟ ستختفي من الموقع العام.`}
+              successMessage={statusSuccessMessage.archived}
               tone="quiet"
+              onSuccess={onSuccess}
             />
           </>
         ) : null}
@@ -64,17 +91,23 @@ export function EventStatusQuickActions({ event, action }: { event: Event; actio
               action={action.bind(null, event.id, "archived")}
               label="أرشفة الفعالية"
               confirmation={`هل تريدين أرشفة «${event.title}»؟ ستختفي من الموقع العام.`}
+              successMessage={statusSuccessMessage.archived}
               tone="quiet"
+              onSuccess={onSuccess}
             />
             <ConfirmActionForm
               action={action.bind(null, event.id, "cancelled")}
               label="إلغاء الفعالية"
               confirmation={`هل تريدين إلغاء «${event.title}»؟ ستتوقف التسجيلات وتبقى الفعالية محفوظة في السجل.`}
+              successMessage={statusSuccessMessage.cancelled}
+              onSuccess={onSuccess}
             />
           </>
         ) : null}
 
-        {event.publicationStatus === "archived" ? <DirectStatusAction action={action} eventId={event.id} status="draft" label="إعادة إلى مسودة" /> : null}
+        {event.publicationStatus === "archived" ? (
+          <DirectStatusAction action={action} eventId={event.id} status="draft" label="إعادة إلى مسودة" onSuccess={onSuccess} />
+        ) : null}
       </div>
     </details>
   );

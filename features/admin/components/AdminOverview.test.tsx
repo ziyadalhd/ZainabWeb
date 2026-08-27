@@ -93,12 +93,22 @@ describe("AdminOverview attention list", () => {
     expect(screen.getByText("لا توجد مهام تحتاج معالجة الآن.")).toBeInTheDocument();
   });
 
-  it("flags a registered attendee with no confirmation sent", () => {
+  it("flags a registered attendee with no confirmation sent, carrying the registration's identity", () => {
     const registration = makeRegistration({ confirmationSentAt: null });
     render(<AdminOverview events={[]} registrations={[registration]} requests={[]} now={now} />);
 
     const item = screen.getByRole("link", { name: /تسجيل جديد يحتاج تأكيد واتساب/ });
-    expect(item).toHaveAttribute("href", "/admin/registrations?view=upcoming");
+    expect(item).toHaveAttribute("href", `/admin/registrations?view=upcoming&id=${registration.id}`);
+  });
+
+  it("groups multiple unconfirmed registrations into one row with a count, expanding to each name", () => {
+    const first = makeRegistration({ id: "unconfirmed-1", confirmationSentAt: null });
+    const second = makeRegistration({ id: "unconfirmed-2", confirmationSentAt: null, attendeeName: "سارة" });
+    render(<AdminOverview events={[]} registrations={[first, second]} requests={[]} now={now} />);
+
+    expect(screen.queryByRole("link", { name: /تسجيل جديد يحتاج تأكيد واتساب/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/٢ تسجيلات تنتظر تأكيد واتساب/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /سارة/ })).toHaveAttribute("href", `/admin/registrations?view=upcoming&id=${second.id}`);
   });
 
   it("flags a new, uncontacted service request", () => {
@@ -139,17 +149,18 @@ describe("AdminOverview attention list", () => {
     expect(screen.queryByText(/مقعد متاح مع قائمة انتظار/)).not.toBeInTheDocument();
   });
 
-  it("flags a waitlist invitation expiring within 24 hours", () => {
+  it("flags a waitlist invitation expiring within 24 hours, carrying the registration's identity", () => {
     const registration = makeRegistration({
       status: "invited",
       invitationExpiresAt: new Date(now + 6 * 60 * 60 * 1000).toISOString(),
     });
     render(<AdminOverview events={[]} registrations={[registration]} requests={[]} now={now} />);
 
-    expect(screen.getByText(/دعوة انتظار تنتهي قريبًا/)).toBeInTheDocument();
+    const item = screen.getByRole("link", { name: /دعوة انتظار تنتهي قريبًا/ });
+    expect(item).toHaveAttribute("href", `/admin/registrations?view=waitlist&id=${registration.id}`);
   });
 
-  it("flags an unprepared reminder for an event starting within 24 hours", () => {
+  it("flags an unprepared reminder for an event starting within 24 hours, carrying the event's identity", () => {
     const event = makeEvent({ startsAt: new Date(now + 6 * 60 * 60 * 1000).toISOString() });
     const registration = makeRegistration({
       eventId: event.id,
@@ -158,7 +169,8 @@ describe("AdminOverview attention list", () => {
     });
     render(<AdminOverview events={[event]} registrations={[registration]} requests={[]} now={now} />);
 
-    expect(screen.getByText(/تذكيرات قريبة لم تُجهّز/)).toBeInTheDocument();
+    const item = screen.getByRole("link", { name: /تذكيرات قريبة لم تُجهّز/ });
+    expect(item).toHaveAttribute("href", `/admin/events/${event.id}?tab=communications`);
   });
 
   it("aggregates unpaid upcoming paid registrations into a single item", () => {
@@ -176,10 +188,33 @@ describe("AdminOverview attention list", () => {
     expect(screen.queryByText(/دفعات تحتاج تسجيلًا/)).not.toBeInTheDocument();
   });
 
-  it("shows the next upcoming event on the operational ribbon", () => {
+  it("shows the next upcoming event on the operational ribbon, opening the workspace rather than the edit form", () => {
     const event = makeEvent();
     render(<AdminOverview events={[event]} registrations={[]} requests={[]} now={now} />);
 
-    expect(screen.getByRole("link", { name: /الفعالية التالية/ })).toHaveAttribute("href", `/admin/events/${event.id}/edit`);
+    expect(screen.getByRole("link", { name: /الفعالية التالية/ })).toHaveAttribute("href", `/admin/events/${event.id}`);
+  });
+
+  it("sorts attention rows by deadline rather than category order", () => {
+    const soonEvent = makeEvent({
+      id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      title: "فعالية قريبة",
+      publicationStatus: "draft",
+      endsAt: null,
+      startsAt: new Date(now + 2 * 60 * 60 * 1000).toISOString(),
+    });
+    const laterInvite = makeRegistration({
+      id: "invite-later",
+      status: "invited",
+      invitationExpiresAt: new Date(now + 20 * 60 * 60 * 1000).toISOString(),
+    });
+    render(<AdminOverview events={[soonEvent]} registrations={[laterInvite]} requests={[]} now={now} />);
+
+    const links = screen.getAllByRole("link").map((link) => link.textContent ?? "");
+    const draftIndex = links.findIndex((text) => text.includes("مسودة غير جاهزة للنشر"));
+    const inviteIndex = links.findIndex((text) => text.includes("دعوة انتظار تنتهي قريبًا"));
+    expect(draftIndex).toBeGreaterThanOrEqual(0);
+    expect(inviteIndex).toBeGreaterThanOrEqual(0);
+    expect(draftIndex).toBeLessThan(inviteIndex);
   });
 });

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EventForm } from "@/features/admin/components/EventForm";
@@ -20,6 +21,17 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
 
   return (
     <main className="admin-page">
+      <nav aria-label="مسار التنقل" className="mb-5 text-sm font-bold muted-copy">
+        <Link href="/admin/events" className="underline decoration-[var(--brand-olive)] underline-offset-4">
+          الفعاليات
+        </Link>
+        <span aria-hidden="true"> / </span>
+        <Link href={`/admin/events/${event.id}`} className="underline decoration-[var(--brand-olive)] underline-offset-4">
+          {event.title}
+        </Link>
+        <span aria-hidden="true"> / </span>
+        <span>تعديل</span>
+      </nav>
       <PageHeader
         eyebrow="إدارة الفعاليات"
         title="تعديل الفعالية"

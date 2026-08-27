@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EventRegistrationRoster } from "@/features/admin/components/EventRegistrationRoster";
 import { EventCommunicationsWorkspace } from "@/features/admin/components/EventCommunicationsWorkspace";
+import { EventPublicationActions } from "@/features/admin/components/EventPublicationActions";
 import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEventFeedbackTable";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { formatArabicEventDate, formatArabicEventTimeRange, formatArabicNumber, formatEventPrice, isSameRiyadhDate } from "@/lib/format/date";
@@ -16,7 +17,6 @@ import { getEventRegistrationReminderTemplate, getRegistrationReminderTemplate }
 import { registrationReminderTemplateTokens } from "@/lib/messaging/registration-reminder";
 import { saveEventReminderTemplateAction } from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
 import { changeEventStatusAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
-import { ConfirmActionForm } from "@/features/admin/components/ConfirmActionForm";
 
 export const metadata: Metadata = { title: "مساحة الفعالية" };
 export const dynamic = "force-dynamic";
@@ -260,37 +260,7 @@ export default async function EventWorkspacePage({
             </div>
             <div className="card-surface p-6">
               <h3 className="text-xl font-black">حالة النشر</h3>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {event.publicationStatus === "draft" && event.endsAt !== null && event.priceHalalas !== null ? (
-                  <form action={changeEventStatusAction.bind(null, event.id, "published")}>
-                    <button type="submit" className="button-primary">
-                      نشر الفعالية
-                    </button>
-                  </form>
-                ) : null}
-                {event.publicationStatus !== "archived" ? (
-                  <ConfirmActionForm
-                    action={changeEventStatusAction.bind(null, event.id, "archived")}
-                    label="أرشفة الفعالية"
-                    confirmation={`هل تريدين أرشفة «${event.title}»؟ ستختفي من الموقع العام.`}
-                    tone="quiet"
-                  />
-                ) : (
-                  <form action={changeEventStatusAction.bind(null, event.id, "draft")}>
-                    <button type="submit" className="button-secondary">
-                      إعادة إلى مسودة
-                    </button>
-                  </form>
-                )}
-                {event.publicationStatus === "published" ? (
-                  <ConfirmActionForm
-                    action={changeEventStatusAction.bind(null, event.id, "cancelled")}
-                    label="إلغاء الفعالية"
-                    confirmation={`هل تريدين إلغاء «${event.title}»؟ ستتوقف التسجيلات وتبقى الفعالية محفوظة في السجل.`}
-                    tone="quiet"
-                  />
-                ) : null}
-              </div>
+              <EventPublicationActions event={event} action={changeEventStatusAction} />
             </div>
           </div>
         ) : null}

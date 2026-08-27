@@ -1,8 +1,10 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Event } from "@/lib/domain/types";
 import { PosterFrame } from "@/components/ui/PosterFrame";
+import { useToast } from "@/components/ui/ToastProvider";
 import { EventSchedulePicker } from "@/features/scheduling/components/EventSchedulePicker";
 import { formatRiyadhDateInput, formatRiyadhTimeInput } from "@/lib/format/date";
 import type { EventFormActionError, EventFormActionState } from "@/app/(dashboard)/admin/(protected)/events/actions";
@@ -47,10 +49,28 @@ function formatPriceInput(priceHalalas: number | null | undefined): string {
 }
 
 export function EventForm({ action, event, submitLabel }: EventFormProps) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction, pending] = useActionState(action, { status: "idle" });
   const [dirty, setDirty] = useState(false);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+  const { pushToast } = useToast();
+  const [handledState, setHandledState] = useState(state);
+
+  if (state !== handledState) {
+    setHandledState(state);
+    if (state.status === "success" && event) setDirty(false);
+  }
+
+  useEffect(() => {
+    if (state.status !== "success") return;
+    if (event) {
+      pushToast("تم حفظ تعديلات الفعالية.", "success");
+    } else if (state.eventId) {
+      router.push(`/admin/events/${state.eventId}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire only when the action result changes
+  }, [state]);
 
   useEffect(
     () => () => {

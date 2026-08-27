@@ -3,12 +3,38 @@ import type { AdminServiceRequest, Event, Registration } from "@/lib/domain/type
 import { StatCard } from "@/components/ui/StatCard";
 import { formatArabicDateTime, formatArabicEventDate, formatArabicEventTimeRange, formatArabicNumber, formatSeatCapacity } from "@/lib/format/date";
 
-interface AttentionItem {
+type AttentionTone = "urgent" | "warning" | "neutral";
+
+interface AttentionMember {
   id: string;
-  title: string;
   description: string;
   href: string;
-  tone: "urgent" | "warning" | "neutral";
+  deadline: number;
+}
+
+interface AttentionGroup {
+  id: string;
+  tone: AttentionTone;
+  title: string;
+  deadline: number;
+  members: readonly AttentionMember[];
+}
+
+function buildAttentionGroup(
+  id: string,
+  tone: AttentionTone,
+  members: readonly AttentionMember[],
+  singleTitle: string,
+  pluralTitle: (count: number) => string,
+): AttentionGroup | null {
+  if (members.length === 0) return null;
+  return {
+    id,
+    tone,
+    title: members.length === 1 ? singleTitle : pluralTitle(members.length),
+    deadline: Math.min(...members.map((member) => member.deadline)),
+    members,
+  };
 }
 
 function withinHours(value: string, now: number, hours: number) {
@@ -53,79 +79,114 @@ export function AdminOverview({
   const unconfirmedRegistrations = registrations.filter(
     (registration) => registration.status === "registered" && new Date(registration.eventStartsAt).getTime() >= now && !registration.confirmationSentAt,
   );
-  const attention: AttentionItem[] = [
-    ...unconfirmedRegistrations.map((registration) => ({
-      id: `confirmation-${registration.id}`,
-      title: "تسجيل جديد يحتاج تأكيد واتساب",
+
+  const confirmationMembers: AttentionMember[] = unconfirmedRegistrations.map((registration) => ({
+    id: `confirmation-${registration.id}`,
+    description: `${registration.attendeeName} — ${registration.eventTitle}`,
+    href: `/admin/registrations?view=upcoming&id=${registration.id}`,
+    deadline: new Date(registration.eventStartsAt).getTime(),
+  }));
+
+  const requestMembers: AttentionMember[] = newRequests.map((request) => ({
+    id: `request-${request.id}`,
+    description: `${request.requesterName} — ${request.kind === "workshop_application" ? "طلب ورشة" : "طلب حجز مساحة"}`,
+    href: "/admin/requests",
+    deadline: new Date(request.createdAt).getTime(),
+  }));
+
+  const draftMembers: AttentionMember[] = events
+    .filter((event) => event.publicationStatus === "draft" && (event.endsAt === null || event.priceHalalas === null))
+    .map((event) => ({
+      id: `draft-${event.id}`,
+      description: `أكملي بيانات «${event.title}» قبل نشرها.`,
+      href: `/admin/events/${event.id}/edit`,
+      deadline: new Date(event.startsAt).getTime(),
+    }));
+
+  const seatMembers: AttentionMember[] = upcomingEvents
+    .filter(
+      (event) =>
+        event.activeReservationCount < event.capacity &&
+        registrations.some((registration) => registration.eventId === event.id && registration.status === "waitlisted"),
+    )
+    .map((event) => ({
+      id: `seat-${event.id}`,
+      description: `«${event.title}» لديها ${formatSeatCapacity(event.capacity - event.activeReservationCount)} متاحة. ادعي بديلة من مساحة التواصل.`,
+      href: `/admin/events/${event.id}?tab=communications`,
+      deadline: new Date(event.startsAt).getTime(),
+    }));
+
+  const inviteMembers: AttentionMember[] = registrations
+    .filter((registration) => registration.status === "invited" && registration.invitationExpiresAt && withinHours(registration.invitationExpiresAt, now, 24))
+    .map((registration) => ({
+      id: `invite-${registration.id}`,
       description: `${registration.attendeeName} — ${registration.eventTitle}`,
-      href: "/admin/registrations?view=upcoming",
-      tone: "urgent" as const,
-    })),
-    ...newRequests.map((request) => ({
-      id: `request-${request.id}`,
-      title: "طلب يحتاج تواصلًا",
-      description: `${request.requesterName} — ${request.kind === "workshop_application" ? "طلب ورشة" : "طلب حجز مساحة"}`,
-      href: "/admin/requests",
-      tone: "urgent" as const,
-    })),
-    ...events
-      .filter((event) => event.publicationStatus === "draft" && (event.endsAt === null || event.priceHalalas === null))
-      .map((event) => ({
-        id: `draft-${event.id}`,
-        title: "مسودة غير جاهزة للنشر",
-        description: `أكملي بيانات «${event.title}» قبل نشرها.`,
-        href: `/admin/events/${event.id}/edit`,
-        tone: "warning" as const,
-      })),
-    ...upcomingEvents
-      .filter(
-        (event) =>
-          event.activeReservationCount < event.capacity &&
-          registrations.some((registration) => registration.eventId === event.id && registration.status === "waitlisted"),
-      )
-      .map((event) => ({
-        id: `seat-${event.id}`,
-        title: "مقعد متاح مع قائمة انتظار",
-        description: `«${event.title}» لديها ${formatSeatCapacity(event.capacity - event.activeReservationCount)} متاحة. ادعي بديلة من مساحة التواصل.`,
-        href: `/admin/events/${event.id}?tab=communications`,
-        tone: "urgent" as const,
-      })),
-    ...registrations
-      .filter((registration) => registration.status === "invited" && registration.invitationExpiresAt && withinHours(registration.invitationExpiresAt, now, 24))
-      .map((registration) => ({
-        id: `invite-${registration.id}`,
-        title: "دعوة انتظار تنتهي قريبًا",
-        description: `${registration.attendeeName} — ${registration.eventTitle}`,
-        href: "/admin/registrations?view=waitlist",
-        tone: "warning" as const,
-      })),
-    ...upcomingEvents
-      .filter(
-        (event) =>
-          withinHours(event.startsAt, now, 24) &&
-          registrations.some(
-            (registration) => registration.eventId === event.id && registration.status === "registered" && registration.latestReminderPreparedAt === null,
-          ),
-      )
-      .map((event) => ({
-        id: `reminder-${event.id}`,
-        title: "تذكيرات قريبة لم تُجهّز",
-        description: `فعالية «${event.title}» تبدأ خلال ٢٤ ساعة.`,
-        href: "/admin/registrations?view=upcoming",
-        tone: "urgent" as const,
-      })),
-    ...(upcomingUnpaid > 0
+      href: `/admin/registrations?view=waitlist&id=${registration.id}`,
+      deadline: new Date(registration.invitationExpiresAt as string).getTime(),
+    }));
+
+  const reminderMembers: AttentionMember[] = upcomingEvents
+    .filter(
+      (event) =>
+        withinHours(event.startsAt, now, 24) &&
+        registrations.some(
+          (registration) => registration.eventId === event.id && registration.status === "registered" && registration.latestReminderPreparedAt === null,
+        ),
+    )
+    .map((event) => ({
+      id: `reminder-${event.id}`,
+      description: `فعالية «${event.title}» تبدأ خلال ٢٤ ساعة.`,
+      href: `/admin/events/${event.id}?tab=communications`,
+      deadline: new Date(event.startsAt).getTime(),
+    }));
+
+  const unpaidRegistrations = registrations.filter(
+    (registration) =>
+      registration.status === "registered" &&
+      new Date(registration.eventStartsAt).getTime() >= now &&
+      registration.priceHalalasAtBooking > 0 &&
+      registration.paymentStatus === "unpaid",
+  );
+  const paymentMembers: AttentionMember[] =
+    upcomingUnpaid > 0
       ? [
           {
             id: "payments",
-            title: "دفعات تحتاج تسجيلًا",
             description: `${formatArabicNumber(upcomingUnpaid)} حجوزات مدفوعة لم يُسجّل دفعها بعد.`,
             href: "/admin/registrations?view=upcoming",
-            tone: "neutral" as const,
+            deadline: Math.min(...unpaidRegistrations.map((registration) => new Date(registration.eventStartsAt).getTime())),
           },
         ]
-      : []),
-  ].slice(0, 8);
+      : [];
+
+  const attention: AttentionGroup[] = [
+    buildAttentionGroup("invite", "warning", inviteMembers, "دعوة انتظار تنتهي قريبًا", (count) => `${formatArabicNumber(count)} دعوات انتظار تنتهي قريبًا`),
+    buildAttentionGroup(
+      "reminder",
+      "urgent",
+      reminderMembers,
+      "تذكيرات قريبة لم تُجهّز",
+      (count) => `${formatArabicNumber(count)} فعاليات لديها تذكيرات قريبة لم تُجهّز`,
+    ),
+    buildAttentionGroup(
+      "confirmation",
+      "urgent",
+      confirmationMembers,
+      "تسجيل جديد يحتاج تأكيد واتساب",
+      (count) => `${formatArabicNumber(count)} تسجيلات تنتظر تأكيد واتساب`,
+    ),
+    buildAttentionGroup("request", "urgent", requestMembers, "طلب يحتاج تواصلًا", (count) => `${formatArabicNumber(count)} طلبات تحتاج تواصلًا`),
+    buildAttentionGroup("draft", "warning", draftMembers, "مسودة غير جاهزة للنشر", (count) => `${formatArabicNumber(count)} مسودات غير جاهزة للنشر`),
+    buildAttentionGroup(
+      "seat",
+      "urgent",
+      seatMembers,
+      "مقعد متاح مع قائمة انتظار",
+      (count) => `${formatArabicNumber(count)} فعاليات لديها مقاعد متاحة مع قائمة انتظار`,
+    ),
+    buildAttentionGroup("payment", "neutral", paymentMembers, "دفعات تحتاج تسجيلًا", () => "دفعات تحتاج تسجيلًا"),
+  ].filter((group): group is AttentionGroup => group !== null);
+  attention.sort((first, second) => first.deadline - second.deadline);
   const recentActivity = [
     ...registrations.map((registration) => ({
       id: `registration-${registration.id}`,
@@ -155,7 +216,7 @@ export function AdminOverview({
           <p className="mt-3 text-sm text-white/75">الوقت بتوقيت مكة المكرمة</p>
         </div>
         {nextEvent ? (
-          <Link href={`/admin/events/${nextEvent.id}/edit`} className="overview-ribbon__event">
+          <Link href={`/admin/events/${nextEvent.id}`} className="overview-ribbon__event">
             <span>الفعالية التالية</span>
             <strong>{nextEvent.title}</strong>
             <small>
@@ -189,16 +250,32 @@ export function AdminOverview({
         </div>
         {attention.length ? (
           <div className="grid gap-3 lg:grid-cols-2">
-            {attention.map((item) => (
-              <Link key={item.id} href={item.href} className={`attention-item attention-item--${item.tone}`}>
-                <span className="attention-item__dot" aria-hidden="true" />
-                <span>
-                  <strong>{item.title}</strong>
-                  <small>{item.description}</small>
-                </span>
-                <span aria-hidden="true">←</span>
-              </Link>
-            ))}
+            {attention.map((group) =>
+              group.members.length === 1 ? (
+                <Link key={group.id} href={group.members[0]!.href} className={`attention-item attention-item--${group.tone}`}>
+                  <span className="attention-item__dot" aria-hidden="true" />
+                  <span>
+                    <strong>{group.title}</strong>
+                    <small>{group.members[0]!.description}</small>
+                  </span>
+                  <span aria-hidden="true">←</span>
+                </Link>
+              ) : (
+                <details key={group.id} className={`attention-item attention-item--group attention-item--${group.tone}`}>
+                  <summary>
+                    <span className="attention-item__dot" aria-hidden="true" />
+                    <strong>{group.title}</strong>
+                  </summary>
+                  <div className="attention-item__members">
+                    {group.members.map((member) => (
+                      <Link key={member.id} href={member.href} className="attention-item__member">
+                        {member.description}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
+              ),
+            )}
           </div>
         ) : (
           <div className="card-surface px-5 py-6">
@@ -226,7 +303,7 @@ export function AdminOverview({
               upcomingEvents
                 .filter((event) => withinHours(event.startsAt, now, 24 * 7))
                 .map((event) => (
-                  <Link key={event.id} href={`/admin/events/${event.id}/edit`} className="agenda-item">
+                  <Link key={event.id} href={`/admin/events/${event.id}`} className="agenda-item">
                     <time>
                       {formatArabicEventDate(event.startsAt)}
                       <small>{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</small>

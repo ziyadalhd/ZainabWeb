@@ -15,12 +15,6 @@ export const metadata: Metadata = { title: "الفعاليات" };
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const successMessages: Record<string, string> = { created: "تم حفظ الفعالية كمسودة.", updated: "تم حفظ تعديلات الفعالية.", status: "تم تحديث حالة النشر." };
-const errorMessages: Record<string, string> = {
-  status: "تعذر تغيير حالة الفعالية. حدّث الصفحة وحاول مرة أخرى.",
-  incomplete: "أكمل وقت النهاية والسعر في صفحة التعديل قبل نشر الفعالية.",
-};
-
 type EventsView = "list" | "calendar";
 
 function getView(value: string | undefined): EventsView {
@@ -51,13 +45,10 @@ function monthHref(month: Date, offset: number): string {
 export default async function AdminEventsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; month?: string; success?: string; error?: string; notice?: string }>;
+  searchParams: Promise<{ view?: string; month?: string; notice?: string }>;
 }) {
   await requireAdmin();
-  const [{ view: requestedView, month: requestedMonth, success, error, notice }, eventRepository] = await Promise.all([
-    searchParams,
-    createAdminEventRepository(),
-  ]);
+  const [{ view: requestedView, month: requestedMonth, notice }, eventRepository] = await Promise.all([searchParams, createAdminEventRepository()]);
   const view = getView(requestedView);
   const events = await eventRepository.list();
   const requests = view === "calendar" ? await (await createAdminServiceRequestRepository()).list() : { ok: true as const, data: [] };
@@ -73,16 +64,6 @@ export default async function AdminEventsPage({
           </Link>
         </div>
       </div>
-      {success && successMessages[success] ? (
-        <p role="status" className="notice-success mt-6">
-          {successMessages[success]}
-        </p>
-      ) : null}
-      {error && errorMessages[error] ? (
-        <p role="alert" className="notice-error mt-6">
-          {errorMessages[error]}
-        </p>
-      ) : null}
       {notice === "communications" ? <p className="notice-info mt-6">اختاري الفعالية، ثم افتحي تبويب «التواصل» لإدارة جميع رسائلها في مكان واحد.</p> : null}
       <nav aria-label="طريقة عرض الفعاليات" className="workspace-tabs mt-7">
         <Link

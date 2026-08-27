@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { isEntityId } from "@/lib/domain/entity-id";
 import { canChangeEventStatus, isEventPublicationStatus, validateEventInput } from "@/lib/domain/event-input";
@@ -10,13 +9,21 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 import { validateEventPoster } from "@/lib/domain/event-poster-input";
 import { SupabaseEventPosterStorage } from "@/lib/supabase/event-posters";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { ActionResult } from "@/lib/data/action-result";
 
 export type EventFormActionError =
   "title" | "audience" | "kind" | "eventTypeLabel" | "startsAt" | "endsAt" | "capacity" | "priceHalalas" | "registrationStatus" | "save";
 
 export interface EventFormActionState {
+  status: "idle" | "success" | "error";
   error?: EventFormActionError;
+  eventId?: string;
 }
+
+const statusChangeErrorMessages: Record<"status" | "incomplete", string> = {
+  status: "تعذر تغيير حالة الفعالية. حدّث الصفحة وحاول مرة أخرى.",
+  incomplete: "أكمل وقت النهاية والسعر في صفحة التعديل قبل نشر الفعالية.",
+};
 
 function revalidateEventViews() {
   revalidatePath("/events");
@@ -28,18 +35,20 @@ function revalidateEventViews() {
 export async function createEventAction(_previousState: EventFormActionState, formData: FormData): Promise<EventFormActionState> {
   await requireAdmin();
   const input = validateEventInput(formData);
-  if (!input.ok) return { error: input.error };
+  if (!input.ok) return { status: "error", error: input.error };
 
   const posterRaw = formData.get("poster");
   const hasPoster = posterRaw instanceof File && posterRaw.size > 0;
   if (hasPoster) {
     const posterCheck = validateEventPoster(posterRaw);
-    if (!posterCheck.ok) return { error: "save" };
+    if (!posterCheck.ok) return { status: "error", error: "save" };
   }
 
+  let createdEventId: string;
   try {
     const repository = await createAdminEventRepository();
     const createdEvent = await repository.create(input.value);
+    createdEventId = createdEvent.id;
 
     if (hasPoster) {
       const posterCheck = validateEventPoster(posterRaw);
@@ -51,24 +60,24 @@ export async function createEventAction(_previousState: EventFormActionState, fo
       }
     }
   } catch {
-    return { error: "save" };
+    return { status: "error", error: "save" };
   }
 
   revalidateEventViews();
-  redirect("/admin/events?success=created");
+  return { status: "success", eventId: createdEventId };
 }
 
 export async function updateEventAction(id: string, _previousState: EventFormActionState, formData: FormData): Promise<EventFormActionState> {
   await requireAdmin();
-  if (!isEntityId(id)) return { error: "save" };
+  if (!isEntityId(id)) return { status: "error", error: "save" };
   const input = validateEventInput(formData);
-  if (!input.ok) return { error: input.error };
+  if (!input.ok) return { status: "error", error: input.error };
 
   const posterRaw = formData.get("poster");
   const hasPoster = posterRaw instanceof File && posterRaw.size > 0;
   if (hasPoster) {
     const posterCheck = validateEventPoster(posterRaw);
-    if (!posterCheck.ok) return { error: "save" };
+    if (!posterCheck.ok) return { status: "error", error: "save" };
   }
 
   try {
@@ -89,35 +98,42 @@ export async function updateEventAction(id: string, _previousState: EventFormAct
       }
     }
   } catch {
-    return { error: "save" };
+    return { status: "error", error: "save" };
   }
 
   revalidateEventViews();
-  redirect("/admin/events?success=updated");
+  return { status: "success", eventId: id };
 }
 
-export async function changeEventStatusAction(id: string, requestedStatus: EventPublicationStatus) {
+export async function changeEventStatusAction(
+  id: string,
+  requestedStatus: EventPublicationStatus,
+  _previousState: ActionResult,
+  _formData: FormData,
+): Promise<ActionResult> {
+  void _previousState;
+  void _formData;
   await requireAdmin();
-  if (!isEntityId(id) || !isEventPublicationStatus(requestedStatus)) redirect("/admin/events?error=status");
+  if (!isEntityId(id) || !isEventPublicationStatus(requestedStatus)) {
+    return { status: "error", message: statusChangeErrorMessages.status };
+  }
 
-  let failure: "status" | "incomplete" | null = null;
   try {
     const repository = await createAdminEventRepository();
     const event = await repository.get(id);
     if (!event || !canChangeEventStatus(event.publicationStatus, requestedStatus)) {
-      failure = "status";
-    } else if (requestedStatus === "published" && (event.endsAt === null || event.priceHalalas === null)) {
-      failure = "incomplete";
-    } else {
-      await repository.changeStatus(id, requestedStatus);
+      return { status: "error", message: statusChangeErrorMessages.status };
     }
+    if (requestedStatus === "published" && (event.endsAt === null || event.priceHalalas === null)) {
+      return { status: "error", message: statusChangeErrorMessages.incomplete };
+    }
+    await repository.changeStatus(id, requestedStatus);
   } catch {
-    failure = "status";
+    return { status: "error", message: statusChangeErrorMessages.status };
   }
 
-  if (failure) redirect(`/admin/events?error=${failure}`);
   revalidateEventViews();
-  redirect("/admin/events?success=status");
+  return { status: "success" };
 }
 
 export interface EventPosterActionState {

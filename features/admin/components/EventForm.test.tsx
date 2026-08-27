@@ -1,10 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { EventForm } from "@/features/admin/components/EventForm";
+import { ToastProvider } from "@/components/ui/ToastProvider";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 
 describe("EventForm", () => {
   it("renders the approved fields and explains draft behavior", () => {
-    render(<EventForm action={vi.fn()} submitLabel="حفظ المسودة" />);
+    render(
+      <ToastProvider>
+        <EventForm action={vi.fn()} submitLabel="حفظ المسودة" />
+      </ToastProvider>,
+    );
     expect(screen.getByRole("textbox", { name: "عنوان الفعالية" })).toBeRequired();
     expect(screen.getByRole("combobox", { name: /مسار الفعالية/ })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "رحلة بَيْن" })).toBeInTheDocument();

@@ -1,7 +1,18 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { EventCapacityTable } from "@/features/admin/components/EventCapacityTable";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 import type { Event } from "@/lib/domain/types";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
+function renderTable(props: React.ComponentProps<typeof EventCapacityTable>) {
+  return render(
+    <ToastProvider>
+      <EventCapacityTable {...props} />
+    </ToastProvider>,
+  );
+}
 
 const event: Event = {
   id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
@@ -29,7 +40,7 @@ describe("EventCapacityTable", () => {
   });
 
   it("shows derived availability and opens the event workspace", () => {
-    render(<EventCapacityTable events={[event]} statusAction={vi.fn()} />);
+    renderTable({ events: [event], statusAction: vi.fn(async () => ({ status: "success" as const })) });
     expect(screen.getByText("متاح")).toBeInTheDocument();
     expect(screen.getByText("مفتوح")).toBeInTheDocument();
     expect(screen.getByText("٤ / ٢٠")).toBeInTheDocument();
@@ -41,7 +52,7 @@ describe("EventCapacityTable", () => {
   });
 
   it("keeps cancellation behind an explicit confirmation", () => {
-    render(<EventCapacityTable events={[{ ...event, publicationStatus: "published" }]} statusAction={vi.fn()} />);
+    renderTable({ events: [{ ...event, publicationStatus: "published" }], statusAction: vi.fn(async () => ({ status: "success" as const })) });
 
     fireEvent.click(screen.getByText("تغيير الحالة"));
     fireEvent.click(screen.getByRole("button", { name: "إلغاء الفعالية" }));
