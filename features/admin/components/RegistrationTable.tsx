@@ -24,7 +24,12 @@ interface RegistrationTableProps {
   registrations: readonly Registration[];
   mode: "current" | "waitlist" | "previous";
   selectedId?: string;
-  registrationHref: (registration: Registration) => string;
+  /**
+   * Href per registration id, keyed by `registration.id`. A plain serializable map rather than a
+   * callback — this table is a Client Component, and a Server Component parent cannot pass it a
+   * function prop (React throws "Functions cannot be passed directly to Client Components").
+   */
+  registrationHrefs: Readonly<Record<string, string>>;
   actions: RegistrationTableActions;
 }
 
@@ -200,7 +205,7 @@ function RegistrationDetails({
   );
 }
 
-export function RegistrationTable({ registrations, mode, selectedId, registrationHref, actions }: RegistrationTableProps) {
+export function RegistrationTable({ registrations, mode, selectedId, registrationHrefs, actions }: RegistrationTableProps) {
   const router = useRouter();
   const onChanged = () => router.refresh();
 
@@ -214,7 +219,12 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
           const active = registration.id === selected.id;
           const className = active ? "registration-master-item registration-master-item--active" : "registration-master-item";
           return (
-            <Link key={registration.id} href={registrationHref(registration)} aria-current={active ? "page" : undefined} className={className}>
+            <Link
+              key={registration.id}
+              href={registrationHrefs[registration.id] ?? "#"}
+              aria-current={active ? "page" : undefined}
+              className={className}
+            >
               <span className="grid gap-0.5">
                 <strong>{registration.attendeeName}</strong>
                 <small>{registration.eventTitle}</small>

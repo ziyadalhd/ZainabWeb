@@ -147,7 +147,9 @@ export default async function RegistrationsPage({
               registrations={outcome.data.items}
               mode={actionMode}
               selectedId={id}
-              registrationHref={(registration) => registrationHref(registration, view, query, eventId, outcome.data.page)}
+              registrationHrefs={Object.fromEntries(
+                outcome.data.items.map((registration) => [registration.id, registrationHref(registration, view, query, eventId, outcome.data.page)]),
+              )}
               actions={registrationActions}
             />
           </div>

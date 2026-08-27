@@ -29,6 +29,10 @@ function href(registration: Registration): string {
   return `/admin/registrations?id=${registration.id}`;
 }
 
+function hrefsFor(registrations: readonly Registration[]): Record<string, string> {
+  return Object.fromEntries(registrations.map((registration) => [registration.id, href(registration)]));
+}
+
 const registration: Registration = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   reference: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
@@ -59,7 +63,7 @@ describe("RegistrationTable", () => {
   });
 
   it("cancels a registration in place — refreshes the current page rather than navigating elsewhere (admin ux redesign plan phase B)", async () => {
-    renderTable({ registrations: [registration], mode: "current", registrationHref: href, actions });
+    renderTable({ registrations: [registration], mode: "current", registrationHrefs: hrefsFor([registration]), actions });
 
     fireEvent.click(screen.getByRole("button", { name: "إلغاء التسجيل" }));
     // The dialog's own confirm button shares the trigger's label ("إلغاء التسجيل"); it's the second match.
@@ -71,7 +75,7 @@ describe("RegistrationTable", () => {
   });
 
   it("shows separate attendance confirmation and operational check-in controls, with no hidden action menu (A11)", () => {
-    renderTable({ registrations: [registration], mode: "current", registrationHref: href, actions });
+    renderTable({ registrations: [registration], mode: "current", registrationHrefs: hrefsFor([registration]), actions });
 
     expect(screen.getByText("بانتظار التأكيد")).toBeInTheDocument();
     expect(screen.getByText("لم يسجل الحضور")).toBeInTheDocument();
@@ -86,7 +90,7 @@ describe("RegistrationTable", () => {
   });
 
   it("shows previous-registration payment status without offering cancellation or payment actions", () => {
-    renderTable({ registrations: [registration], mode: "previous", registrationHref: href, actions });
+    renderTable({ registrations: [registration], mode: "previous", registrationHrefs: hrefsFor([registration]), actions });
 
     expect(screen.queryByRole("button", { name: "إلغاء التسجيل" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "حفظ الدفع" })).not.toBeInTheDocument();
@@ -95,7 +99,7 @@ describe("RegistrationTable", () => {
 
   it("makes every row selectable via registrationHref — regression test for admin overhaul plan A1", () => {
     const secondRegistration: Registration = { ...registration, id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", attendeeName: "مشاركة أخرى" };
-    renderTable({ registrations: [registration, secondRegistration], mode: "current", registrationHref: href, actions });
+    renderTable({ registrations: [registration, secondRegistration], mode: "current", registrationHrefs: hrefsFor([registration, secondRegistration]), actions });
 
     const rosterHrefs = screen
       .getAllByRole("link")

@@ -48,7 +48,9 @@ export function EventWorkspaceContent({
   statusAction,
 }: EventWorkspaceContentProps) {
   const isEventDay = isSameRiyadhDate(event.startsAt, new Date(now)) && event.publicationStatus !== "cancelled";
-  const registrationHref = (registration: Registration) => `/admin/events?event=${event.id}&id=${registration.id}`;
+  const registrationHrefs = Object.fromEntries(
+    allRegistrations.map((registration) => [registration.id, `/admin/events?event=${event.id}&id=${registration.id}`]),
+  );
 
   return (
     <div className="event-panel__content">
@@ -99,7 +101,7 @@ export function EventWorkspaceContent({
           registrations={registered}
           mode="current"
           selectedId={selectedRegistrationId}
-          registrationHref={registrationHref}
+          registrationHrefs={registrationHrefs}
           actions={registrationActions}
         />
       </section>
@@ -110,7 +112,7 @@ export function EventWorkspaceContent({
           registrations={waitlist}
           mode="waitlist"
           selectedId={selectedRegistrationId}
-          registrationHref={registrationHref}
+          registrationHrefs={registrationHrefs}
           actions={registrationActions}
         />
       </section>
