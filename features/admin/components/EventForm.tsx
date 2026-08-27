@@ -13,6 +13,7 @@ interface EventFormProps {
   action: (state: EventFormActionState, formData: FormData) => Promise<EventFormActionState>;
   event?: Event;
   submitLabel: string;
+  onSaved?: () => void;
 }
 
 const errorMessages: Record<EventFormActionError, string> = {
@@ -48,7 +49,7 @@ function formatPriceInput(priceHalalas: number | null | undefined): string {
   return fraction === 0 ? String(whole) : `${whole}.${String(fraction).padStart(2, "0")}`;
 }
 
-export function EventForm({ action, event, submitLabel }: EventFormProps) {
+export function EventForm({ action, event, submitLabel, onSaved }: EventFormProps) {
   const [state, formAction, pending] = useActionState(action, { status: "idle" });
   const [dirty, setDirty] = useState(false);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
@@ -66,8 +67,9 @@ export function EventForm({ action, event, submitLabel }: EventFormProps) {
     if (state.status !== "success") return;
     if (event) {
       pushToast("تم حفظ تعديلات الفعالية.", "success");
+      onSaved?.();
     } else if (state.eventId) {
-      router.push(`/admin/events/${state.eventId}`);
+      router.push(`/admin/events?event=${state.eventId}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire only when the action result changes
   }, [state]);

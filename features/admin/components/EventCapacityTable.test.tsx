@@ -45,7 +45,7 @@ describe("EventCapacityTable", () => {
     expect(screen.getByText("مفتوح")).toBeInTheDocument();
     expect(screen.getByText("٤ / ٢٠")).toBeInTheDocument();
     expect(screen.getByText("مسودة")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "إدارة الفعالية" })).toHaveAttribute("href", `/admin/events/${event.id}`);
+    expect(screen.getByRole("link", { name: "إدارة الفعالية" })).toHaveAttribute("href", `/admin/events?event=${event.id}`);
     fireEvent.click(screen.getByText("تغيير الحالة"));
     expect(screen.getByRole("button", { name: "نشر الفعالية" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "أرشفة الفعالية" })).toBeInTheDocument();

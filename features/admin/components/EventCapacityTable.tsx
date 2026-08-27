@@ -64,7 +64,7 @@ export function EventCapacityTable({
                 {!compact ? (
                   <td data-label="الإجراءات" className="px-5 py-4">
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`/admin/events/${event.id}`} className="button-primary min-h-9 px-3 py-1.5 text-sm">
+                      <Link id={`event-trigger-${event.id}`} href={`/admin/events?event=${event.id}`} className="button-primary min-h-9 px-3 py-1.5 text-sm">
                         إدارة الفعالية
                       </Link>
                       {statusAction ? <EventStatusQuickActions event={event} action={statusAction} /> : null}

@@ -11,7 +11,8 @@ vi.mock("next/font/local", () => ({
 }));
 
 // jsdom does not implement <dialog> showModal()/close(); polyfill the minimum behavior
-// (toggling the open attribute) so components using the native dialog element are testable.
+// (toggling the open attribute, dispatching "close" the way real dialogs do) so components
+// using the native dialog element are testable.
 if (typeof HTMLDialogElement !== "undefined") {
   if (!HTMLDialogElement.prototype.showModal) {
     HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
@@ -20,7 +21,9 @@ if (typeof HTMLDialogElement !== "undefined") {
   }
   if (!HTMLDialogElement.prototype.close) {
     HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+      if (!this.open) return;
       this.removeAttribute("open");
+      this.dispatchEvent(new Event("close"));
     };
   }
 }

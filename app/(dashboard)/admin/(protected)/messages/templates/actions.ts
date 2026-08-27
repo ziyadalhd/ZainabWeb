@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { isEntityId } from "@/lib/domain/entity-id";
 import { registrationReminderTemplateTokens } from "@/lib/messaging/registration-reminder";
 import { saveRegistrationReminderTemplate } from "@/lib/supabase/message-templates";
+import type { ActionResult } from "@/lib/data/action-result";
 
 export async function saveGlobalReminderTemplateAction(formData: FormData) {
   await requireAdmin();
@@ -22,16 +23,24 @@ export async function saveGlobalReminderTemplateAction(formData: FormData) {
   redirect("/admin/settings?tab=templates&success=saved");
 }
 
-export async function saveEventReminderTemplateAction(eventId: string, formData: FormData) {
+const eventTemplateErrorMessage = "تحققي من النص والمتغيرات المطلوبة.";
+
+export async function saveEventReminderTemplateAction(
+  eventId: string,
+  _previousState: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  void _previousState;
   await requireAdmin();
   const body = String(formData.get("body") ?? "").trim();
-  if (!isEntityId(eventId) || body.length < 1 || body.length > 2000 || registrationReminderTemplateTokens.some((token) => !body.includes(token)))
-    redirect(`/admin/events/${eventId}?tab=communications&error=template`);
+  if (!isEntityId(eventId) || body.length < 1 || body.length > 2000 || registrationReminderTemplateTokens.some((token) => !body.includes(token))) {
+    return { status: "error", message: eventTemplateErrorMessage };
+  }
   try {
     await saveRegistrationReminderTemplate(body, eventId);
   } catch {
-    redirect(`/admin/events/${eventId}?tab=communications&error=template`);
+    return { status: "error", message: eventTemplateErrorMessage };
   }
-  revalidatePath(`/admin/events/${eventId}`);
-  redirect(`/admin/events/${eventId}?tab=communications&success=template`);
+  revalidatePath("/admin/events");
+  return { status: "success" };
 }

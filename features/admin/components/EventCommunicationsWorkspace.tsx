@@ -15,6 +15,7 @@ interface EventCommunicationsWorkspaceProps {
   registrations: readonly Registration[];
   messages: readonly ManualMessageRecord[];
   reminderTemplate: string | null;
+  now: string;
 }
 
 interface PreparedDraft {
@@ -72,8 +73,8 @@ function MessageProgressRail({ prepared, sent }: { prepared: boolean; sent: bool
   );
 }
 
-export function EventCommunicationsWorkspace({ event, registrations, messages, reminderTemplate }: EventCommunicationsWorkspaceProps) {
-  const now = useMemo(() => new Date(), []);
+export function EventCommunicationsWorkspace({ event, registrations, messages, reminderTemplate, now: nowIso }: EventCommunicationsWorkspaceProps) {
+  const now = useMemo(() => new Date(nowIso), [nowIso]);
   const defaultKind =
     event.publicationStatus === "cancelled" ? "cancellation" : new Date(event.endsAt ?? event.startsAt) <= now ? "feedback_request" : "confirmation";
   const [kind, setKind] = useState<ManualMessageKind>(defaultKind);

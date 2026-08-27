@@ -17,6 +17,7 @@ vi.mock("@/lib/supabase/message-templates", () => ({
 }));
 
 import { saveEventReminderTemplateAction, saveGlobalReminderTemplateAction } from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
+import { idleActionResult } from "@/lib/data/action-result";
 
 const validEventId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const validBody = "مرحبًا {{attendee_name}}، فعالية {{event_title}} — {{management_url}}";
@@ -53,23 +54,23 @@ describe("saveGlobalReminderTemplateAction", () => {
 });
 
 describe("saveEventReminderTemplateAction", () => {
-  it("rejects a malformed event id before validating the body", async () => {
+  it("rejects a malformed event id before validating the body, without redirecting", async () => {
     const formData = new FormData();
     formData.set("body", validBody);
 
-    await expect(saveEventReminderTemplateAction("not-a-uuid", formData)).rejects.toThrow(
-      "REDIRECT:/admin/events/not-a-uuid?tab=communications&error=template",
-    );
+    const result = await saveEventReminderTemplateAction("not-a-uuid", idleActionResult, formData);
+    expect(result.status).toBe("error");
+    expect(mocks.redirect).not.toHaveBeenCalled();
     expect(mocks.saveRegistrationReminderTemplate).not.toHaveBeenCalled();
   });
 
-  it("saves a per-event override and redirects with success", async () => {
+  it("saves a per-event override and returns a typed success result, keeping the operator on the panel", async () => {
     const formData = new FormData();
     formData.set("body", validBody);
 
-    await expect(saveEventReminderTemplateAction(validEventId, formData)).rejects.toThrow(
-      `REDIRECT:/admin/events/${validEventId}?tab=communications&success=template`,
-    );
+    const result = await saveEventReminderTemplateAction(validEventId, idleActionResult, formData);
+    expect(result).toEqual({ status: "success" });
+    expect(mocks.redirect).not.toHaveBeenCalled();
     expect(mocks.saveRegistrationReminderTemplate).toHaveBeenCalledWith(validBody, validEventId);
   });
 });
