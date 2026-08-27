@@ -216,26 +216,11 @@ body {
   background: var(--color-surface);
 }
 
-.overview-ribbon {
-  display: grid;
-  gap: 1rem;
-  align-items: center;
-  border: 1px solid var(--brand-forest);
-  border-radius: var(--radius-surface);
-  background: var(--brand-forest);
-  padding: clamp(1.25rem, 2.4vw, 2rem);
-  color: var(--color-on-primary);
-}
-
-.overview-ribbon .eyebrow { color: var(--brand-cream); }
-.overview-ribbon__event { display: grid; gap: 0.25rem; border-inline-start: 0.3rem solid var(--brand-amber); padding-inline-start: 1rem; }
-.overview-ribbon__event span, .overview-ribbon__event small { color: rgb(255 254 248 / 0.76); font-size: 0.8rem; }
-.overview-ribbon__event strong { font-size: 1.15rem; }
-.attention-item, .agenda-item, .activity-item { display: flex; gap: 0.9rem; align-items: center; justify-content: space-between; }
+.attention-item, .activity-item { display: flex; gap: 0.9rem; align-items: center; justify-content: space-between; }
 .attention-item { min-height: 5.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); padding: 1rem; transition: border-color 160ms ease, transform 160ms ease; }
 .attention-item:hover { border-color: var(--brand-olive); transform: translateY(-0.1rem); }
-.attention-item > span:nth-child(2), .agenda-item > span:nth-child(2), .activity-item > span:first-child { display: grid; flex: 1; gap: 0.12rem; }
-.attention-item small, .agenda-item small, .activity-item small { color: var(--color-text-muted); font-size: 0.8rem; line-height: 1.5; }
+.attention-item > span:nth-child(2), .activity-item > span:first-child { display: grid; flex: 1; gap: 0.12rem; }
+.attention-item small, .activity-item small { color: var(--color-text-muted); font-size: 0.8rem; line-height: 1.5; }
 .attention-item__dot { width: 0.6rem; height: 0.6rem; flex: 0 0 auto; border-radius: 999px; background: var(--brand-olive); }
 .attention-item--urgent { border-inline-start: 0.32rem solid var(--color-error-text); }
 .attention-item--urgent .attention-item__dot { background: var(--color-error-text); }
@@ -250,12 +235,9 @@ body {
 .attention-item__members { display: grid; gap: 0.5rem; padding: 0.85rem 1rem 1rem; }
 .attention-item__member { display: block; border-radius: var(--radius-control); background: var(--color-surface-muted); padding: 0.6rem 0.9rem; font-size: 0.82rem; font-weight: 700; transition: background-color 160ms ease; }
 .attention-item__member:hover { background: var(--color-info-bg); }
-.agenda-item, .activity-item { padding: 1rem 1.25rem; transition: background-color 160ms ease; }
-.agenda-item:hover, .activity-item:hover { background: var(--color-info-bg); }
-.agenda-item time { display: grid; min-width: 8rem; gap: 0.15rem; color: var(--brand-forest); font-size: 0.8rem; font-weight: 800; }
+.activity-item { padding: 1rem 1.25rem; transition: background-color 160ms ease; }
+.activity-item:hover { background: var(--color-info-bg); }
 .activity-item time { color: var(--color-text-muted); font-size: 0.75rem; text-align: end; }
-
-@media (min-width: 48rem) { .overview-ribbon { grid-template-columns: minmax(10rem, 0.7fr) minmax(18rem, 1.4fr) auto; } }
 
 .workspace-status { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; color: var(--color-text-muted); font-size: 0.9rem; }
 .workspace-tabs { display: flex; gap: 0.25rem; overflow-x: auto; border-block-end: 1px solid var(--color-border); scrollbar-width: thin; }
@@ -300,6 +282,18 @@ body {
 .calendar-item__kind, .calendar-item__time { color: var(--color-text-muted); font-size: 0.64rem; font-weight: 700; }
 .calendar-item__title { overflow: hidden; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
 .calendar-item__conflict { color: var(--color-error-text); font-size: 0.62rem; font-weight: 900; }
+
+.calendar-day--today { position: relative; background: var(--color-surface-strong); box-shadow: inset 0 0 0 0.14rem var(--brand-amber); }
+.calendar-today-badge {
+  display: inline-block;
+  margin-inline-start: 0.4rem;
+  border-radius: 999px;
+  background: var(--brand-amber);
+  padding: 0.05rem 0.5rem;
+  color: var(--brand-forest);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
 
 .registration-master-detail { display: grid; gap: 1.25rem; align-items: start; }
 .registration-master-list { display: grid; gap: 0.4rem; max-height: 72vh; overflow-y: auto; padding-inline-end: 0.25rem; }

@@ -16,7 +16,7 @@ function itemClassName(item: CalendarItem): string {
 function CalendarItemLink({ item }: { item: CalendarItem }) {
   const label = `${itemLabels[item.kind]}: ${item.title}${item.conflictCount ? `، يوجد ${formatArabicNumber(item.conflictCount)} تعارض` : ""}`;
   return (
-    <Link href={item.href} className={itemClassName(item)} aria-label={label}>
+    <Link id={item.triggerId} href={item.href} className={itemClassName(item)} aria-label={label}>
       <span className="calendar-item__kind">{itemLabels[item.kind]}</span>
       <span className="calendar-item__title">{item.title}</span>
       <span className="calendar-item__time">
@@ -28,10 +28,12 @@ function CalendarItemLink({ item }: { item: CalendarItem }) {
   );
 }
 
-export function CalendarMonthGrid({ items, month = new Date() }: { items: readonly CalendarItem[]; month?: Date }) {
+export function CalendarMonthGrid({ items, month = new Date(), today = new Date() }: { items: readonly CalendarItem[]; month?: Date; today?: Date }) {
   const monthParts = getRiyadhDateParts(month);
   const year = monthParts.year;
   const monthIndex = monthParts.month - 1;
+  const todayParts = getRiyadhDateParts(today);
+  const isToday = (day: number) => todayParts.year === year && todayParts.month === monthIndex + 1 && todayParts.day === day;
   const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
   const firstDayOffset = new Date(Date.UTC(year, monthIndex, 1)).getUTCDay();
   const cells = Array.from({ length: firstDayOffset + daysInMonth }, (_, index) => (index < firstDayOffset ? null : index - firstDayOffset + 1));
@@ -83,8 +85,18 @@ export function CalendarMonthGrid({ items, month = new Date() }: { items: readon
         ) : (
           <ol className="grid gap-3">
             {scheduledDays.map(({ day, items: dayItems }) => (
-              <li key={day} className="border-r-4 border-[var(--brand-amber)] bg-[var(--color-surface-muted)] p-4">
-                <p className="font-black text-[var(--brand-forest)]">{formatArabicEventDate(new Date(Date.UTC(year, monthIndex, day, 12)))}</p>
+              <li
+                key={day}
+                className={
+                  isToday(day)
+                    ? "calendar-day--today border-r-4 border-[var(--brand-amber)] bg-[var(--color-surface-muted)] p-4"
+                    : "border-r-4 border-[var(--brand-amber)] bg-[var(--color-surface-muted)] p-4"
+                }
+              >
+                <p className="font-black text-[var(--brand-forest)]">
+                  {formatArabicEventDate(new Date(Date.UTC(year, monthIndex, day, 12)))}
+                  {isToday(day) ? <span className="calendar-today-badge">اليوم</span> : null}
+                </p>
                 <div className="mt-3 grid gap-2">
                   {dayItems.map((item) => (
                     <CalendarItemLink key={item.id} item={item} />
@@ -115,8 +127,17 @@ export function CalendarMonthGrid({ items, month = new Date() }: { items: readon
               );
             const dayItems = itemsByDay[day - 1]?.items ?? [];
             return (
-              <div key={day} role="gridcell" className="min-h-32 min-w-0 border-b border-l border-[var(--color-border)] p-2">
+              <div
+                key={day}
+                role="gridcell"
+                className={
+                  isToday(day)
+                    ? "calendar-day--today min-h-32 min-w-0 border-b border-l border-[var(--color-border)] p-2"
+                    : "min-h-32 min-w-0 border-b border-l border-[var(--color-border)] p-2"
+                }
+              >
                 <span className="data-value text-xs font-extrabold text-[var(--brand-forest)]">{formatArabicNumber(day)}</span>
+                {isToday(day) ? <span className="calendar-today-badge">اليوم</span> : null}
                 <div className="mt-2 grid gap-1">
                   {dayItems.map((item) => (
                     <CalendarItemLink key={item.id} item={item} />

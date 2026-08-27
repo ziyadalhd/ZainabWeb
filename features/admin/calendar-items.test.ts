@@ -62,6 +62,12 @@ describe("buildCalendarItems", () => {
     expect(items[0]?.conflictCount).toBe(1);
     expect(items[1]?.conflictCount).toBe(1);
     expect(items[2]?.conflictCount).toBe(0);
+    expect(items[0]?.href).toBe(`/admin/events?event=${event.id}`);
+  });
+
+  it("scopes event links to the given base path, so the same builder serves both the hub and the events list", () => {
+    const items = buildCalendarItems([event], [], "/admin");
+    expect(items[0]?.href).toBe(`/admin?event=${event.id}`);
   });
 
   it("excludes archived events, cancelled requests, workshops, and malformed schedules", () => {

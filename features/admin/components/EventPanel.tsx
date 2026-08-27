@@ -20,6 +20,8 @@ export function EventPanel({ closeHref, triggerId, label, children }: EventPanel
     if (!dialog || dialog.open) return;
     dialog.showModal();
     document.body.style.overflow = "hidden";
+    const hash = window.location.hash.slice(1);
+    if (hash) document.getElementById(hash)?.scrollIntoView({ block: "start" });
     return () => {
       document.body.style.overflow = "";
     };

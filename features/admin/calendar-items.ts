@@ -9,6 +9,7 @@ export interface CalendarItem {
   startsAt: string;
   endsAt: string | null;
   href: string;
+  triggerId?: string;
   status: string;
   conflictCount: number;
 }
@@ -25,7 +26,11 @@ function overlaps(first: CalendarItem, second: CalendarItem): boolean {
   return new Date(first.startsAt).getTime() < new Date(second.endsAt).getTime() && new Date(second.startsAt).getTime() < new Date(first.endsAt).getTime();
 }
 
-export function buildCalendarItems(events: readonly Event[], requests: readonly AdminServiceRequest[]): readonly CalendarItem[] {
+export function buildCalendarItems(
+  events: readonly Event[],
+  requests: readonly AdminServiceRequest[],
+  eventBaseHref = "/admin/events",
+): readonly CalendarItem[] {
   const items: CalendarItem[] = [
     ...events
       .filter((event) => event.publicationStatus === "draft" || event.publicationStatus === "published")
@@ -35,7 +40,8 @@ export function buildCalendarItems(events: readonly Event[], requests: readonly 
         title: event.title,
         startsAt: event.startsAt,
         endsAt: event.endsAt,
-        href: `/admin/events/${event.id}`,
+        href: `${eventBaseHref}?event=${event.id}`,
+        triggerId: `event-trigger-${event.id}`,
         status: event.publicationStatus,
         conflictCount: 0,
       })),
