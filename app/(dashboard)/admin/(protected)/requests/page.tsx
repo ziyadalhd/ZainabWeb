@@ -34,7 +34,7 @@ function ConflictWarning({ conflicts }: { conflicts: readonly ServiceRequestConf
   if (conflicts.length === 0) return null;
   return (
     <div className="notice-warning mt-5" role="status">
-      <p className="font-black">تعارض في الموعد</p>
+      <p className="font-bold">تعارض في الموعد</p>
       <ul className="mt-2 grid gap-1 text-sm">
         {conflicts.map((conflict, index) => (
           <li key={index}>
@@ -54,7 +54,7 @@ function RequestCard({ request, conflicts }: { request: AdminServiceRequest; con
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="eyebrow">{requestKindLabel(request.kind)}</p>
-          <h2 className="mt-2 break-words text-2xl font-black text-[var(--brand-forest)]">{requestTitle(request)}</h2>
+          <h2 className="mt-2 break-words text-2xl font-bold text-[var(--brand-forest)]">{requestTitle(request)}</h2>
           <p className="mt-2 text-sm muted-copy">وصل الطلب {formatArabicDateTime(request.createdAt)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -70,7 +70,7 @@ function RequestCard({ request, conflicts }: { request: AdminServiceRequest; con
               successMessage="تم تسجيل التواصل."
             />
           ) : (
-            <span className="text-sm font-bold text-[var(--color-success-text)]">تم التواصل</span>
+            <span className="text-sm font-medium text-[var(--color-success-text)]">تم التواصل</span>
           )}
         </div>
       </div>
@@ -130,7 +130,7 @@ function RequestCard({ request, conflicts }: { request: AdminServiceRequest; con
       ) : null}
       {request.notes ? (
         <div className="mt-5 border-r-4 border-[var(--brand-olive)] bg-[var(--surface-soft)] p-4 text-sm">
-          <p className="font-bold">ملاحظات</p>
+          <p className="font-medium">ملاحظات</p>
           <p className="mt-2 whitespace-pre-wrap">{request.notes}</p>
         </div>
       ) : null}
@@ -190,7 +190,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
       </form>
       {outcome.ok ? (
         <>
-          <p className="mt-5 text-sm font-bold muted-copy">{formatArabicNumber(outcome.data.total)} طلبات</p>
+          <p className="mt-5 text-sm font-medium muted-copy">{formatArabicNumber(outcome.data.total)} طلبات</p>
           <div className="mt-4 grid gap-5">
             {outcome.data.items.map((request) => (
               <RequestCard key={request.id} request={request} conflicts={conflictsById.get(request.id) ?? []} />

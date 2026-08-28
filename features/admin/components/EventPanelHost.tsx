@@ -75,7 +75,7 @@ export async function EventPanelHost({
     return (
       <EventPanel closeHref={closeHref} triggerId={`event-trigger-${eventId}`} label="فعالية غير موجودة">
         <p className="eyebrow">مساحة الفعالية</p>
-        <p className="mt-3 text-lg font-bold">تعذر العثور على هذه الفعالية. قد تكون حُذفت أو أن الرابط غير صحيح.</p>
+        <p className="mt-3 text-lg font-normal">تعذر العثور على هذه الفعالية. قد تكون حُذفت أو أن الرابط غير صحيح.</p>
       </EventPanel>
     );
   }

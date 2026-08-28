@@ -35,14 +35,14 @@ export function MfaEnrollmentForm({
 
   return (
     <section className="card-surface p-5 sm:p-7" aria-labelledby="add-mfa-device-heading">
-      <h2 id="add-mfa-device-heading" className="text-xl font-black text-[var(--brand-forest)]">
+      <h2 id="add-mfa-device-heading" className="text-xl font-bold text-[var(--brand-forest)]">
         إضافة جهاز جديد
       </h2>
       <p className="mt-2 text-sm leading-6 muted-copy">سمّي الجهاز باسم واضح مثل «جوالي الجديد» أو «الجهاز الاحتياطي».</p>
 
       {!enrollment ? (
         <form onSubmit={onBeginEnrollment} className="mt-5 grid gap-4 sm:max-w-xl">
-          <label className="grid gap-2 font-bold">
+          <label className="grid gap-2 font-medium">
             اسم الجهاز
             <input
               className="field-control font-normal"
@@ -70,7 +70,7 @@ export function MfaEnrollmentForm({
               {enrollment.secret}
             </code>
           </details>
-          <label className="grid gap-2 font-bold sm:max-w-sm">
+          <label className="grid gap-2 font-medium sm:max-w-sm">
             رمز الجهاز الجديد
             <input
               className="field-control text-center font-normal tracking-[0.35em]"

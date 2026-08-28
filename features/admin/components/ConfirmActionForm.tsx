@@ -48,7 +48,7 @@ export function ConfirmActionForm({ action, label, confirmation, successMessage,
 
   return (
     <form action={formAction} className="admin-confirm-action" aria-label={`تأكيد ${label}`}>
-      <p className="text-sm font-bold">{confirmation}</p>
+      <p className="text-sm font-normal">{confirmation}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="submit"

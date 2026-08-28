@@ -58,7 +58,7 @@ async function TemplatesTab({ success, error }: { success?: string; error?: stri
         </p>
       ) : null}
       <form action={saveGlobalReminderTemplateAction} className="form-surface mt-5 p-5 sm:p-7">
-        <label htmlFor="template-body" className="font-black">
+        <label htmlFor="template-body" className="font-medium">
           قالب تذكير التسجيل
         </label>
         <textarea id="template-body" name="body" defaultValue={template ?? ""} rows={10} className="field-control mt-3 w-full" required />

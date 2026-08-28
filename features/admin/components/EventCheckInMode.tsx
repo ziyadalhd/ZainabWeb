@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useOptimistic, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Registration } from "@/lib/domain/types";
 import { formatArabicNumber } from "@/lib/format/date";
 import { ActionButton } from "@/components/ui/ActionButton";
+import { useToast } from "@/components/ui/ToastProvider";
 import type { ActionResult } from "@/lib/data/action-result";
 
 interface EventCheckInModeProps {
@@ -18,28 +19,46 @@ function normalize(value: string): string {
 
 export function EventCheckInMode({ registrations, recordCheckIn }: EventCheckInModeProps) {
   const router = useRouter();
+  const { pushToast } = useToast();
   const [search, setSearch] = useState("");
+  // Marks a name as arrived the instant it's tapped, ahead of the server round trip — this screen
+  // is used at the door for rapid, back-to-back check-ins, where any visible lag compounds fast.
+  const [optimisticRegistrations, markArrived] = useOptimistic(registrations, (current: readonly Registration[], id: string) =>
+    current.map((registration) => (registration.id === id ? { ...registration, checkInStatus: "checked_in" as const } : registration)),
+  );
 
-  const arrivedCount = registrations.filter((registration) => registration.checkInStatus === "checked_in").length;
+  const arrivedCount = optimisticRegistrations.filter((registration) => registration.checkInStatus === "checked_in").length;
 
   const ordered = useMemo(() => {
     const term = normalize(search);
     const filtered = term
-      ? registrations.filter((registration) => normalize(registration.attendeeName).includes(term) || registration.phoneE164.includes(term))
-      : registrations;
+      ? optimisticRegistrations.filter((registration) => normalize(registration.attendeeName).includes(term) || registration.phoneE164.includes(term))
+      : optimisticRegistrations;
     return [...filtered].sort((first, second) => {
       const firstArrived = first.checkInStatus === "checked_in" ? 1 : 0;
       const secondArrived = second.checkInStatus === "checked_in" ? 1 : 0;
       if (firstArrived !== secondArrived) return firstArrived - secondArrived;
       return first.attendeeName.localeCompare(second.attendeeName, "ar");
     });
-  }, [registrations, search]);
+  }, [optimisticRegistrations, search]);
+
+  // The row swaps to "✓ حضرت" the instant this runs (optimistic), which unmounts the ActionButton
+  // that submitted it before its own success effect can run — so completion (toast + real
+  // refresh) is handled here instead, in this always-mounted component.
+  async function checkIn(id: string, name: string, state: ActionResult, formData: FormData): Promise<ActionResult> {
+    markArrived(id);
+    const result = await recordCheckIn(id, "checked_in", state, formData);
+    if (result.status === "success") pushToast(`تم تسجيل حضور ${name}.`, "success");
+    else if (result.status === "error") pushToast(result.message ?? "تعذر تنفيذ الإجراء. حاولي مرة أخرى.", "error");
+    router.refresh();
+    return result;
+  }
 
   return (
     <div className="grid gap-5">
       <div className="check-in-summary" aria-live="polite">
         <strong>{formatArabicNumber(arrivedCount)}</strong>
-        <span>من {formatArabicNumber(registrations.length)} حضرن</span>
+        <span>من {formatArabicNumber(optimisticRegistrations.length)} حضرن</span>
       </div>
 
       <label className="sr-only" htmlFor="check-in-search">
@@ -73,12 +92,11 @@ export function EventCheckInMode({ registrations, recordCheckIn }: EventCheckInM
                   <span className="check-in-row__done">✓ حضرت</span>
                 ) : (
                   <ActionButton
-                    action={recordCheckIn.bind(null, registration.id, "checked_in")}
+                    action={checkIn.bind(null, registration.id, registration.attendeeName)}
                     label="تسجيل الحضور"
                     pendingLabel="…"
                     className="button-primary min-h-12 px-5 text-base"
                     successMessage={`تم تسجيل حضور ${registration.attendeeName}.`}
-                    onSuccess={() => router.refresh()}
                   />
                 )}
               </li>

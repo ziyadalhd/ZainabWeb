@@ -36,14 +36,14 @@ export function EventSettingsSection({ event, statusAction }: { event: Event; st
   return (
     <div className="grid gap-5">
       <div className="card-surface p-6">
-        <h3 className="text-xl font-black">إعدادات الفعالية</h3>
+        <h3 className="text-xl font-bold">إعدادات الفعالية</h3>
         <p className="mt-3 muted-copy">عدّلي المحتوى والموعد والسعة وحالة التسجيل.</p>
         <button type="button" className="button-primary mt-5" onClick={() => setEditing(true)}>
           تعديل الإعدادات
         </button>
       </div>
       <div className="card-surface p-6">
-        <h3 className="text-xl font-black">حالة النشر</h3>
+        <h3 className="text-xl font-bold">حالة النشر</h3>
         <EventPublicationActions event={event} action={statusAction} />
       </div>
     </div>

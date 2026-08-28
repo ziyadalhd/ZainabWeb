@@ -15,9 +15,13 @@ function itemClassName(item: CalendarItem): string {
 
 function CalendarItemLink({ item }: { item: CalendarItem }) {
   const label = `${itemLabels[item.kind]}: ${item.title}${item.conflictCount ? `، يوجد ${formatArabicNumber(item.conflictCount)} تعارض` : ""}`;
+  const capacityLabel =
+    item.kind === "event" && item.capacity !== undefined && item.activeReservationCount !== undefined
+      ? `${formatArabicNumber(item.activeReservationCount)}/${formatArabicNumber(item.capacity)}`
+      : null;
   return (
     <Link id={item.triggerId} href={item.href} className={itemClassName(item)} aria-label={label}>
-      <span className="calendar-item__kind">{itemLabels[item.kind]}</span>
+      <span className="calendar-item__kind">{capacityLabel ?? itemLabels[item.kind]}</span>
       <span className="calendar-item__title">{item.title}</span>
       <span className="calendar-item__time">
         {formatArabicTime(item.startsAt)}
@@ -53,11 +57,11 @@ export function CalendarMonthGrid({ items, month = new Date(), today = new Date(
   return (
     <section
       aria-labelledby="calendar-title"
-      className="border border-t-4 border-[var(--color-border)] border-t-[var(--brand-amber)] bg-[var(--color-surface)] p-4 sm:p-6"
+      className="border border-t-4 border-[var(--color-border)] border-t-[var(--brand-amber)] bg-[var(--color-surface)] p-4 shadow-raised sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--brand-olive)] pb-4">
         <div>
-          <h2 id="calendar-title" className="text-2xl font-black text-[var(--brand-forest)]">
+          <h2 id="calendar-title" className="text-2xl font-bold text-[var(--brand-forest)]">
             {monthFormatter.format(month)}
           </h2>
           <p className="mt-1 text-sm muted-copy">فعاليات وطلبات الحجز والحجوزات المقبولة في موضع واحد.</p>
@@ -78,7 +82,7 @@ export function CalendarMonthGrid({ items, month = new Date(), today = new Date(
           {conflictCount ? <span className="calendar-legend__conflict">{formatArabicNumber(conflictCount)} عناصر متعارضة</span> : null}
         </div>
       </div>
-      <p className="mt-4 text-sm font-bold text-[var(--color-warning-text)]">التحذير يعني تداخلًا زمنيًا مع عنصر آخر؛ لا يغيّر حالة الطلب أو الحجز تلقائيًا.</p>
+      <p className="mt-4 text-sm font-normal text-[var(--color-warning-text)]">التحذير يعني تداخلًا زمنيًا مع عنصر آخر؛ لا يغيّر حالة الطلب أو الحجز تلقائيًا.</p>
       <div className="mt-5 md:hidden">
         {scheduledDays.length === 0 ? (
           <p className="py-8 text-center muted-copy">لا توجد فعاليات أو حجوزات أو طلبات مجدولة في هذا الشهر.</p>
@@ -93,7 +97,7 @@ export function CalendarMonthGrid({ items, month = new Date(), today = new Date(
                     : "border-r-4 border-[var(--brand-amber)] bg-[var(--color-surface-muted)] p-4"
                 }
               >
-                <p className="font-black text-[var(--brand-forest)]">
+                <p className="font-bold text-[var(--brand-forest)]">
                   {formatArabicEventDate(new Date(Date.UTC(year, monthIndex, day, 12)))}
                   {isToday(day) ? <span className="calendar-today-badge">اليوم</span> : null}
                 </p>
@@ -108,7 +112,7 @@ export function CalendarMonthGrid({ items, month = new Date(), today = new Date(
         )}
       </div>
       <div className="mt-5 hidden md:block">
-        <div className="grid grid-cols-7 gap-px bg-[var(--color-border)] text-center text-xs font-extrabold text-[var(--brand-forest)]">
+        <div className="grid grid-cols-7 gap-px bg-[var(--color-border)] text-center text-xs font-medium text-[var(--brand-forest)]">
           {weekDays.map((day) => (
             <div key={day} className="bg-[var(--brand-cream)] py-3">
               {day}
@@ -136,7 +140,9 @@ export function CalendarMonthGrid({ items, month = new Date(), today = new Date(
                     : "min-h-32 min-w-0 border-b border-l border-[var(--color-border)] p-2"
                 }
               >
-                <span className="data-value text-xs font-extrabold text-[var(--brand-forest)]">{formatArabicNumber(day)}</span>
+                <span className={isToday(day) ? "calendar-day-number calendar-day-number--today" : "calendar-day-number"}>
+                  {formatArabicNumber(day)}
+                </span>
                 {isToday(day) ? <span className="calendar-today-badge">اليوم</span> : null}
                 <div className="mt-2 grid gap-1">
                   {dayItems.map((item) => (

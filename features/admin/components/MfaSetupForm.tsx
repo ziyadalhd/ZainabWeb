@@ -149,7 +149,7 @@ export function MfaSetupForm() {
             </code>
           </details>
 
-          <label className="grid gap-2 font-bold">
+          <label className="grid gap-2 font-medium">
             رمز التحقق
             <input
               className="field-control text-center font-normal tracking-[0.35em]"

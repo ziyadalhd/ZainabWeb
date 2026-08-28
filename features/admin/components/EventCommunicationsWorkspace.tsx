@@ -230,7 +230,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
       <header className="event-communications__header">
         <div>
           <p className="eyebrow">التواصل اليدوي</p>
-          <h3 className="mt-2 text-2xl font-black">ما الرسالة التالية لهذه الفعالية؟</h3>
+          <h3 className="mt-2 text-2xl font-bold">ما الرسالة التالية لهذه الفعالية؟</h3>
           <p className="mt-2 muted-copy">كل رسالة تُفتح منفردة في واتساب، ثم تُسجل كمرسلة يدويًا بعد إرسالها فعلًا.</p>
         </div>
         <div className="event-communications__summary" aria-live="polite">
@@ -259,7 +259,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
               <div className="message-composer__identity">
                 <div>
                   <p className="eyebrow">الرسالة الحالية</p>
-                  <h4 id="message-composer-heading" className="mt-2 text-2xl font-black">
+                  <h4 id="message-composer-heading" className="mt-2 text-2xl font-bold">
                     {selected.attendeeName}
                   </h4>
                 </div>
@@ -327,7 +327,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
         </div>
       ) : (
         <div className="card-surface mt-5 p-6">
-          <h4 className="text-lg font-black">لا توجد مستلمات لهذه الرسالة</h4>
+          <h4 className="text-lg font-bold">لا توجد مستلمات لهذه الرسالة</h4>
           <p className="mt-2 muted-copy">ستظهر الأسماء هنا عندما تنطبق حالة التسجيل ونوع الرسالة.</p>
         </div>
       )}

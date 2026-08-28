@@ -31,13 +31,13 @@ export function MfaDeviceList({
     <section className="card-surface p-5 sm:p-7" aria-labelledby="mfa-devices-heading">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 id="mfa-devices-heading" className="text-xl font-black text-[var(--brand-forest)]">
+          <h2 id="mfa-devices-heading" className="text-xl font-bold text-[var(--brand-forest)]">
             أجهزة التحقق المسجلة
           </h2>
           <p className="mt-2 text-sm leading-6 muted-copy">احتفظي بجهازين على الأقل حتى لا تفقدي الوصول عند تغيير الجوال.</p>
         </div>
         {!isLoading ? (
-          <span className="rounded-full bg-[var(--color-surface-muted)] px-3 py-1 text-sm font-bold">{formatArabicNumber(factors.length)} جهاز</span>
+          <span className="rounded-full bg-[var(--color-surface-muted)] px-3 py-1 text-sm font-medium">{formatArabicNumber(factors.length)} جهاز</span>
         ) : null}
       </div>
 
@@ -58,7 +58,7 @@ export function MfaDeviceList({
             <li key={factor.id} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <p className="font-extrabold text-[var(--brand-forest)]">{factor.name}</p>
+                  <p className="font-bold text-[var(--brand-forest)]">{factor.name}</p>
                   <p className="mt-1 text-xs muted-copy">أُضيف في {formatArabicDateTime(factor.createdAt)}</p>
                 </div>
                 {confirmingRemovalId !== factor.id ? (
@@ -73,7 +73,7 @@ export function MfaDeviceList({
                   </button>
                 ) : (
                   <div className="max-w-md rounded-xl border border-[var(--color-danger)] bg-white p-4" role="group" aria-label={`تأكيد إزالة ${factor.name}`}>
-                    <p className="text-sm font-bold">هل تريدين إزالة «{factor.name}»؟ لن تقبل رموزه بعد التأكيد.</p>
+                    <p className="text-sm font-normal">هل تريدين إزالة «{factor.name}»؟ لن تقبل رموزه بعد التأكيد.</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button type="button" className="button-danger min-h-10 px-3 py-2 text-sm" disabled={busy} onClick={() => onConfirmRemoval(factor)}>
                         {removing ? "جارٍ الإزالة…" : "تأكيد الإزالة"}

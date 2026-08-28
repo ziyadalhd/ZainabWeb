@@ -40,12 +40,12 @@ export function EventPosterForm({
   return (
     <section className="form-surface mt-8 grid max-w-5xl gap-5 p-5 sm:p-8">
       <div>
-        <h2 className="border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">بوستر الفعالية</h2>
+        <h2 className="border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-bold text-[var(--brand-forest)]">بوستر الفعالية</h2>
         <p className="mt-2 text-sm muted-copy">اختياري. يقبل PNG أو JPG أو WebP، ويظهر للزائرات مع تفاصيل الفعالية.</p>
       </div>
       {previewUrl ? (
         <div className="grid gap-2">
-          <p className="text-sm font-bold text-[var(--brand-forest)]">{localPreviewUrl ? "معاينة البوستر قبل الرفع" : "البوستر الحالي"}</p>
+          <p className="text-sm font-medium text-[var(--brand-forest)]">{localPreviewUrl ? "معاينة البوستر قبل الرفع" : "البوستر الحالي"}</p>
           <PosterFrame
             src={previewUrl}
             alt={`${localPreviewUrl ? "معاينة" : "البوستر الحالي"} لفعالية ${eventTitle}`}
@@ -55,7 +55,7 @@ export function EventPosterForm({
         </div>
       ) : null}
       <form action={formAction} className="grid gap-4">
-        <label className="grid gap-2 font-bold" htmlFor="event-poster">
+        <label className="grid gap-2 font-medium" htmlFor="event-poster">
           {posterUrl ? "استبدال البوستر" : "إضافة بوستر"}
           <input
             id="event-poster"

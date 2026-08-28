@@ -21,7 +21,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
 
   return (
     <main className="admin-page">
-      <nav aria-label="مسار التنقل" className="mb-5 text-sm font-bold muted-copy">
+      <nav aria-label="مسار التنقل" className="mb-5 text-sm font-medium muted-copy">
         <Link href="/admin/events" className="underline decoration-[var(--brand-olive)] underline-offset-4">
           الفعاليات
         </Link>

@@ -12,6 +12,8 @@ export interface CalendarItem {
   triggerId?: string;
   status: string;
   conflictCount: number;
+  capacity?: number;
+  activeReservationCount?: number;
 }
 
 const scheduledRequestStatuses: readonly ServiceRequestStatus[] = ["new", "under_review", "accepted"];
@@ -44,6 +46,8 @@ export function buildCalendarItems(
         triggerId: `event-trigger-${event.id}`,
         status: event.publicationStatus,
         conflictCount: 0,
+        capacity: event.capacity,
+        activeReservationCount: event.activeReservationCount,
       })),
     ...requests
       .filter((request) => request.kind !== "workshop_application" && scheduledRequestStatuses.includes(request.status))

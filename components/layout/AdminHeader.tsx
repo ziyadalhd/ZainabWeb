@@ -9,7 +9,7 @@ export function AdminHeader() {
       <div className="flex min-h-12 items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <ClubLogo className="h-auto w-20" priority />
-          <span className="hidden font-extrabold text-[var(--brand-forest)] sm:inline">لوحة الإدارة</span>
+          <span className="hidden font-bold text-[var(--brand-forest)] sm:inline">لوحة الإدارة</span>
         </div>
         <div className="flex items-center gap-2">
           <form action={logoutAction}>

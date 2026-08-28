@@ -55,7 +55,7 @@ async function AdminSearchResults({ query }: { query: string }) {
       ) : null}
 
       <section aria-labelledby="search-events-heading">
-        <h2 id="search-events-heading" className="text-lg font-black text-[var(--brand-forest)]">
+        <h2 id="search-events-heading" className="text-lg font-bold text-[var(--brand-forest)]">
           الفعاليات
         </h2>
         <div className="mt-3 card-surface divide-y divide-[var(--color-border)]">
@@ -78,7 +78,7 @@ async function AdminSearchResults({ query }: { query: string }) {
       </section>
 
       <section aria-labelledby="search-requests-heading">
-        <h2 id="search-requests-heading" className="text-lg font-black text-[var(--brand-forest)]">
+        <h2 id="search-requests-heading" className="text-lg font-bold text-[var(--brand-forest)]">
           الطلبات
         </h2>
         <div className="mt-3 card-surface divide-y divide-[var(--color-border)]">
@@ -100,7 +100,7 @@ async function AdminSearchResults({ query }: { query: string }) {
       </section>
 
       <section aria-labelledby="search-registrations-heading">
-        <h2 id="search-registrations-heading" className="text-lg font-black text-[var(--brand-forest)]">
+        <h2 id="search-registrations-heading" className="text-lg font-bold text-[var(--brand-forest)]">
           التسجيلات
         </h2>
         <div className="mt-3 card-surface divide-y divide-[var(--color-border)]">

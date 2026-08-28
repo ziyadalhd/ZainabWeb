@@ -43,7 +43,7 @@ export function EventCapacityTable({
                   <span className="text-xs muted-copy">{event.eventTypeLabel}</span>
                 </td>
                 <td data-label="التاريخ والوقت" className="px-5 py-4 whitespace-nowrap">
-                  <span className="block font-bold">{formatArabicEventDate(event.startsAt)}</span>
+                  <span className="block font-medium">{formatArabicEventDate(event.startsAt)}</span>
                   <span className="text-xs muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</span>
                 </td>
                 <td data-label="السعة" className="data-value px-5 py-4">

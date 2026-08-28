@@ -37,7 +37,7 @@ export function LoginForm({ errorMessage }: { errorMessage?: string }) {
           {recoveryMessage}
         </p>
       ) : null}
-      <label className="grid gap-2 font-bold">
+      <label className="grid gap-2 font-medium">
         البريد الإلكتروني
         <input
           className="field-control font-normal"
@@ -51,7 +51,7 @@ export function LoginForm({ errorMessage }: { errorMessage?: string }) {
           required
         />
       </label>
-      <label className="grid gap-2 font-bold">
+      <label className="grid gap-2 font-medium">
         كلمة المرور
         <input className="field-control font-normal" type="password" name="password" autoComplete="current-password" dir="ltr" required />
       </label>

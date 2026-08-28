@@ -53,7 +53,7 @@ export function ConfirmDialog({
         {triggerLabel}
       </button>
       <dialog ref={dialogRef} className="confirm-dialog" aria-labelledby={headingId}>
-        <h2 id={headingId} className="text-lg font-black text-[var(--brand-forest)]">
+        <h2 id={headingId} className="text-lg font-bold text-[var(--brand-forest)]">
           {title}
         </h2>
         <p className="mt-2 text-sm muted-copy">{description}</p>

@@ -83,7 +83,7 @@ export function ResetPasswordForm() {
           {message}
         </p>
       ) : null}
-      <label className="grid gap-2 font-bold">
+      <label className="grid gap-2 font-medium">
         كلمة المرور الجديدة
         <input
           className="field-control font-normal"
@@ -96,7 +96,7 @@ export function ResetPasswordForm() {
           required
         />
       </label>
-      <label className="grid gap-2 font-bold">
+      <label className="grid gap-2 font-medium">
         تأكيد كلمة المرور
         <input
           className="field-control font-normal"

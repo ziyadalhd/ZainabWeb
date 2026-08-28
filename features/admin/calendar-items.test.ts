@@ -65,6 +65,12 @@ describe("buildCalendarItems", () => {
     expect(items[0]?.href).toBe(`/admin/events?event=${event.id}`);
   });
 
+  it("carries an event's capacity and active reservation count for the calendar's fill indicator", () => {
+    const items = buildCalendarItems([{ ...event, capacity: 20, activeReservationCount: 12 }], []);
+    expect(items[0]?.capacity).toBe(20);
+    expect(items[0]?.activeReservationCount).toBe(12);
+  });
+
   it("scopes event links to the given base path, so the same builder serves both the hub and the events list", () => {
     const items = buildCalendarItems([event], [], "/admin");
     expect(items[0]?.href).toBe(`/admin?event=${event.id}`);

@@ -8,6 +8,7 @@ interface Toast {
   id: number;
   message: string;
   tone: ToastTone;
+  leaving: boolean;
 }
 
 interface ToastContextValue {
@@ -23,6 +24,9 @@ export function useToast(): ToastContextValue {
 }
 
 const TOAST_LIFETIME_MS = 5000;
+// Kept in sync with the --duration-standard token (app/globals.css); JS timers can't read
+// CSS custom properties, so the exit animation's length is mirrored here.
+const TOAST_EXIT_MS = 200;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<readonly Toast[]>([]);
@@ -30,7 +34,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const pushToast = useCallback((message: string, tone: ToastTone = "success") => {
     const id = nextId.current++;
-    setToasts((current) => [...current, { id, message, tone }]);
+    setToasts((current) => [...current, { id, message, tone, leaving: false }]);
+    window.setTimeout(() => {
+      setToasts((current) => current.map((toast) => (toast.id === id ? { ...toast, leaving: true } : toast)));
+    }, TOAST_LIFETIME_MS - TOAST_EXIT_MS);
     window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
     }, TOAST_LIFETIME_MS);
@@ -41,7 +48,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="toast-region">
         {toasts.map((toast) => (
-          <p key={toast.id} role={toast.tone === "error" ? "alert" : "status"} className={`toast toast--${toast.tone}`}>
+          <p
+            key={toast.id}
+            role={toast.tone === "error" ? "alert" : "status"}
+            className={`toast toast--${toast.tone}${toast.leaving ? " toast--leaving" : ""}`}
+          >
             {toast.message}
           </p>
         ))}

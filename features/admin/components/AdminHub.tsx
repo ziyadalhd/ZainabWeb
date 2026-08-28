@@ -32,7 +32,7 @@ export function AdminHub({
   const recent = buildRecentItems(registrations, requests, now, 3);
 
   return (
-    <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(19rem,0.85fr)]">
+    <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.6fr)_minmax(19rem,0.85fr)]">
       <section aria-labelledby="admin-hub-calendar-heading">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 id="admin-hub-calendar-heading" className="sr-only">
@@ -56,19 +56,19 @@ export function AdminHub({
         <CalendarMonthGrid items={calendarItems} month={month} />
       </section>
 
-      <aside aria-labelledby="attention-heading" className="grid content-start gap-6">
+      <aside aria-labelledby="attention-heading" className="grid content-start gap-8">
         <section>
-          <div className="mb-4 flex items-end justify-between gap-4">
+          <div className="mb-5 flex items-end justify-between gap-4">
             <div>
               <p className="eyebrow">قائمة التشغيل</p>
-              <h2 id="attention-heading" className="mt-2 text-2xl font-black text-[var(--brand-forest)]">
+              <h2 id="attention-heading" className="mt-2 text-2xl font-bold text-[var(--brand-forest)]">
                 يحتاج معالجة
               </h2>
             </div>
-            <span className="data-value text-sm font-bold muted-copy">{formatArabicNumber(attention.length)} مهام</span>
+            <span className="data-value text-sm font-medium muted-copy">{formatArabicNumber(attention.length)} مهام</span>
           </div>
           {attention.length ? (
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               {attention.map((group) =>
                 group.members.length === 1 ? (
                   <Link key={group.id} href={group.members[0]!.href} className={`attention-item attention-item--${group.tone}`}>
@@ -97,7 +97,7 @@ export function AdminHub({
               )}
             </div>
           ) : (
-            <div className="card-surface px-5 py-6">
+            <div className="card-surface px-5 py-7">
               <p className="font-bold">لا توجد مهام تحتاج معالجة الآن.</p>
               <p className="mt-1 text-sm muted-copy">راجعي التقويم أو أنشئي فعالية جديدة عند الحاجة.</p>
             </div>
@@ -105,7 +105,7 @@ export function AdminHub({
         </section>
 
         <section aria-labelledby="recent-heading">
-          <h3 id="recent-heading" className="eyebrow mb-3">
+          <h3 id="recent-heading" className="eyebrow mb-4">
             الجديد
           </h3>
           {recent.length ? (

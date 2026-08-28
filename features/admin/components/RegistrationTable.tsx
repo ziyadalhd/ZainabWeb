@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useOptimistic } from "react";
 import type { Registration } from "@/lib/domain/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ActionButton } from "@/components/ui/ActionButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { formatArabicDateTime, formatArabicNumber } from "@/lib/format/date";
 import type { RegistrationPaymentActionState } from "@/app/(dashboard)/admin/(protected)/registrations/actions";
 import type { ActionResult } from "@/lib/data/action-result";
@@ -44,12 +46,25 @@ function RegistrationActions({
   actions: RegistrationTableActions;
   onChanged: () => void;
 }) {
+  const canConfirmAttendance = mode === "current" && registration.attendanceStatus === "pending";
+  const canCheckIn = mode === "current" && registration.checkInStatus !== "checked_in";
+  const canRevoke = mode === "waitlist" && registration.status === "invited";
+  // Every available action stays visible (no hidden menu — see the A11 test below), but exactly
+  // one is styled as the row's confident "next step"; the rest recede to secondary/danger.
+  const primaryAction: "confirm" | "checkIn" | "revoke" | null = canConfirmAttendance
+    ? "confirm"
+    : canCheckIn
+      ? "checkIn"
+      : canRevoke
+        ? "revoke"
+        : null;
+
   return (
     <div className="flex flex-wrap gap-2">
-      {mode === "waitlist" && registration.status === "invited" ? (
+      {canRevoke ? (
         <ConfirmDialog
           triggerLabel="سحب الدعوة"
-          triggerClassName="button-secondary min-h-10 px-3 py-2 text-sm"
+          triggerClassName={`${primaryAction === "revoke" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
           tone="default"
           title="سحب الدعوة"
           description={`هل تريدين سحب دعوة ${registration.attendeeName} وإعادتها لقائمة الانتظار؟`}
@@ -59,22 +74,22 @@ function RegistrationActions({
           onSuccess={onChanged}
         />
       ) : null}
-      {mode === "current" && registration.attendanceStatus === "pending" ? (
+      {canConfirmAttendance ? (
         <ActionButton
           action={actions.confirmAttendance.bind(null, registration.id)}
           label="تأكيد الحضور"
           pendingLabel="جارٍ التأكيد…"
-          className="button-secondary min-h-10 px-3 py-2 text-sm"
+          className={`${primaryAction === "confirm" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
           successMessage="تم تأكيد الحضور."
           onSuccess={onChanged}
         />
       ) : null}
-      {mode === "current" && registration.checkInStatus !== "checked_in" ? (
+      {canCheckIn ? (
         <ActionButton
           action={actions.recordCheckIn.bind(null, registration.id, "checked_in")}
           label="تسجيل الحضور"
           pendingLabel="جارٍ الحفظ…"
-          className="button-secondary min-h-10 px-3 py-2 text-sm"
+          className={`${primaryAction === "checkIn" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
           successMessage="تم حفظ حالة الحضور."
           onSuccess={onChanged}
         />
@@ -122,8 +137,8 @@ function RegistrationDetails({
     <article className="card-surface min-w-0 p-5 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-[var(--brand-green-deep)]">تفاصيل التسجيل</p>
-          <h2 className="mt-1 text-2xl font-black">{registration.attendeeName}</h2>
+          <p className="text-sm font-medium text-[var(--brand-green-deep)]">تفاصيل التسجيل</p>
+          <h2 className="mt-1 text-2xl font-bold">{registration.attendeeName}</h2>
           <p className="mt-1 text-sm muted-copy">{registration.eventTitle}</p>
         </div>
         <div className="grid justify-items-start gap-2">
@@ -198,24 +213,74 @@ function RegistrationDetails({
         </div>
       </dl>
       <div className="mt-6">
-        <p className="mb-3 text-sm font-bold">الإجراءات</p>
+        <p className="mb-3 text-sm font-medium">الإجراءات</p>
         <RegistrationActions registration={registration} mode={mode} actions={actions} onChanged={onChanged} />
       </div>
     </article>
   );
 }
 
+interface RegistrationPatch {
+  id: string;
+  changes: Partial<Registration>;
+}
+
 export function RegistrationTable({ registrations, mode, selectedId, registrationHrefs, actions }: RegistrationTableProps) {
   const router = useRouter();
+  const { pushToast } = useToast();
   const onChanged = () => router.refresh();
+  // Applies each mutation to a local, transition-scoped copy of the list the instant an action is
+  // submitted, so the row/badge updates before the server round trip (triggered by onChanged below)
+  // resolves. React reconciles back to the real `registrations` prop once that refresh lands.
+  const [optimisticRegistrations, applyPatch] = useOptimistic(registrations, (current: readonly Registration[], patch: RegistrationPatch) =>
+    current.map((registration) => (registration.id === patch.id ? { ...registration, ...patch.changes } : registration)),
+  );
+
+  // These four actions optimistically flip a status field that also gates which action controls
+  // are rendered (e.g. the cancel dialog disappears once status becomes "cancelled") — so the
+  // ConfirmDialog/ActionButton that submitted the action unmounts before its own success/error
+  // effect can run. Completion (toast + real refresh) is handled here instead, in this
+  // always-mounted component, rather than relying on those components' internal state.
+  async function runGatingAction(patch: RegistrationPatch, successMessage: string, call: () => Promise<ActionResult>): Promise<ActionResult> {
+    applyPatch(patch);
+    const result = await call();
+    if (result.status === "success") pushToast(successMessage, "success");
+    else if (result.status === "error") pushToast(result.message ?? "تعذر تنفيذ الإجراء. حاولي مرة أخرى.", "error");
+    onChanged();
+    return result;
+  }
+
+  const optimisticActions: RegistrationTableActions = {
+    cancelRegistration: (id, state, formData) =>
+      runGatingAction({ id, changes: { status: "cancelled" } }, "تم إلغاء التسجيل، ويمكن الآن اختيار بديلة من قائمة الانتظار.", () =>
+        actions.cancelRegistration(id, state, formData),
+      ),
+    confirmAttendance: (id, state, formData) =>
+      runGatingAction({ id, changes: { attendanceStatus: "confirmed" } }, "تم تأكيد الحضور.", () => actions.confirmAttendance(id, state, formData)),
+    recordCheckIn: (id, outcome, state, formData) =>
+      runGatingAction({ id, changes: { checkInStatus: outcome as Registration["checkInStatus"] } }, "تم حفظ حالة الحضور.", () =>
+        actions.recordCheckIn(id, outcome, state, formData),
+      ),
+    revokeInvitation: (id, state, formData) =>
+      runGatingAction({ id, changes: { status: "waitlisted" } }, "تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار.", () =>
+        actions.revokeInvitation(id, state, formData),
+      ),
+    setPaymentStatus: (id, state, formData) => {
+      // Payment status doesn't gate any control's visibility, so the form stays mounted and its
+      // own success/error handling (inline, not a toast) already works correctly.
+      const nextStatus = formData.get("paymentStatus");
+      if (typeof nextStatus === "string") applyPatch({ id, changes: { paymentStatus: nextStatus as Registration["paymentStatus"] } });
+      return actions.setPaymentStatus(id, state, formData);
+    },
+  };
 
   if (registrations.length === 0) return <EmptyState title="لا توجد تسجيلات هنا" description="ستظهر الأسماء هنا عندما تصل تسجيلات لهذه القائمة." />;
-  const selected = registrations.find((registration) => registration.id === selectedId) ?? registrations[0]!;
+  const selected = optimisticRegistrations.find((registration) => registration.id === selectedId) ?? optimisticRegistrations[0]!;
   return (
     <div className="registration-master-detail">
       <aside className="registration-master-list" aria-label="نتائج التسجيلات">
-        <p className="mb-3 text-sm font-bold muted-copy">اختاري تسجيلًا لعرض بياناته وإجراءاته.</p>
-        {registrations.map((registration) => {
+        <p className="mb-3 text-sm font-normal muted-copy">اختاري تسجيلًا لعرض بياناته وإجراءاته.</p>
+        {optimisticRegistrations.map((registration) => {
           const active = registration.id === selected.id;
           const className = active ? "registration-master-item registration-master-item--active" : "registration-master-item";
           return (
@@ -237,7 +302,7 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
           );
         })}
       </aside>
-      <RegistrationDetails registration={selected} mode={mode} actions={actions} onChanged={onChanged} />
+      <RegistrationDetails registration={selected} mode={mode} actions={optimisticActions} onChanged={onChanged} />
     </div>
   );
 }

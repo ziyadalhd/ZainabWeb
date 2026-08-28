@@ -30,7 +30,7 @@ export function MfaPageShell({
             <ClubLogo className="h-auto w-32" priority />
           </Link>
           <header className="mt-8 border-r-4 border-[var(--brand-amber)] pr-5">
-            <p className="text-sm font-extrabold text-[var(--brand-olive)]">التحقق بخطوتين</p>
+            <p className="text-sm font-medium text-[var(--brand-olive)]">التحقق بخطوتين</p>
             <h1 className="mt-2 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">{title}</h1>
             <p className="mt-3 leading-7 muted-copy">{description}</p>
           </header>

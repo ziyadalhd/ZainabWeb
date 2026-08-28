@@ -109,14 +109,14 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
       ) : null}
 
       <fieldset className="grid gap-5">
-        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">المعلومات الأساسية</legend>
-        <label className="grid gap-2 font-bold" htmlFor="event-title">
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-bold text-[var(--brand-forest)]">المعلومات الأساسية</legend>
+        <label className="grid gap-2 font-medium" htmlFor="event-title">
           عنوان الفعالية
           <input id="event-title" className={inputClassName} name="title" defaultValue={event?.title} autoComplete="off" maxLength={140} required />
           {fieldError("title")}
         </label>
         <div className="grid gap-5 sm:grid-cols-2">
-          <label className="grid gap-2 font-bold" htmlFor="event-kind">
+          <label className="grid gap-2 font-medium" htmlFor="event-kind">
             مسار الفعالية
             <select id="event-kind" className={inputClassName} name="kind" defaultValue={event?.kind ?? "club_event"}>
               <option value="club_event">فعالية النادي</option>
@@ -125,7 +125,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
             <span className="text-xs font-normal muted-copy">رحلة بَيْن تظهر أيضًا في صفحة رحلات بَيْن وتستخدم التسجيل نفسه.</span>
             {fieldError("kind")}
           </label>
-          <label className="grid gap-2 font-bold" htmlFor="event-audience">
+          <label className="grid gap-2 font-medium" htmlFor="event-audience">
             الفئة
             <select id="event-audience" className={inputClassName} name="audience" defaultValue={event?.audience ?? "adults"}>
               <option value="adults">الكبار</option>
@@ -134,7 +134,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
             </select>
             {fieldError("audience")}
           </label>
-          <label className="grid gap-2 font-bold" htmlFor="event-type">
+          <label className="grid gap-2 font-medium" htmlFor="event-type">
             نوع الفعالية
             <input
               id="event-type"
@@ -151,7 +151,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
       </fieldset>
 
       <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">
-        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">موعد الفعالية</legend>
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-bold text-[var(--brand-forest)]">موعد الفعالية</legend>
         <EventSchedulePicker
           defaultStartDate={event ? formatRiyadhDateInput(event.startsAt) : undefined}
           defaultStartTime={event ? formatRiyadhTimeInput(event.startsAt) : undefined}
@@ -164,10 +164,10 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
       </fieldset>
 
       <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">
-        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">المقاعد والسعر</legend>
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-bold text-[var(--brand-forest)]">المقاعد والسعر</legend>
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="grid gap-2">
-            <label className="font-bold" htmlFor="event-capacity">
+            <label className="font-medium" htmlFor="event-capacity">
               السعة
             </label>
             <input
@@ -194,7 +194,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
             ) : null}
           </div>
           <div className="grid gap-2">
-            <label className="font-bold" htmlFor="event-price">
+            <label className="font-medium" htmlFor="event-price">
               السعر بالريال السعودي
             </label>
             <input
@@ -221,7 +221,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
             ) : null}
           </div>
           <div className="grid gap-2">
-            <label className="font-bold" htmlFor="event-registration-status">
+            <label className="font-medium" htmlFor="event-registration-status">
               استقبال التسجيلات
             </label>
             <select
@@ -243,11 +243,11 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
       </fieldset>
 
       <fieldset className="grid gap-5 border-t border-[var(--color-border)] pt-7">
-        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-black text-[var(--brand-forest)]">بوستر الفعالية</legend>
+        <legend className="mb-2 border-r-4 border-[var(--brand-olive)] pr-3 text-xl font-bold text-[var(--brand-forest)]">بوستر الفعالية</legend>
         <p className="text-sm muted-copy">اختياري. يقبل PNG أو JPG أو WebP، ويظهر للزائرات مع تفاصيل الفعالية.</p>
         {(localPreviewUrl ?? event?.posterUrl) ? (
           <div className="grid gap-2">
-            <p className="text-sm font-bold text-[var(--brand-forest)]">{localPreviewUrl ? "معاينة البوستر المختار" : "البوستر الحالي"}</p>
+            <p className="text-sm font-medium text-[var(--brand-forest)]">{localPreviewUrl ? "معاينة البوستر المختار" : "البوستر الحالي"}</p>
             <PosterFrame
               src={localPreviewUrl ?? event?.posterUrl ?? ""}
               alt={event?.title ? `بوستر فعالية ${event.title}` : "معاينة بوستر الفعالية"}
@@ -256,7 +256,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
             />
           </div>
         ) : null}
-        <label className="grid gap-2 font-bold" htmlFor="event-poster">
+        <label className="grid gap-2 font-medium" htmlFor="event-poster">
           {event?.posterUrl ? "استبدال البوستر" : "إضافة بوستر"}
           <input
             id="event-poster"

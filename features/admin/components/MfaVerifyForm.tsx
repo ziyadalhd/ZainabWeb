@@ -102,7 +102,7 @@ export function MfaVerifyForm() {
       ) : null}
       {factors.length > 1 ? (
         <fieldset className="grid gap-3">
-          <legend className="font-bold">اختاري جهاز التحقق</legend>
+          <legend className="font-medium">اختاري جهاز التحقق</legend>
           {factors.map((factor) => (
             <label
               key={factor.id}
@@ -120,7 +120,7 @@ export function MfaVerifyForm() {
           ))}
         </fieldset>
       ) : null}
-      <label className="grid gap-2 font-bold">
+      <label className="grid gap-2 font-medium">
         الرمز من تطبيق المصادقة
         <input
           className="field-control text-center font-normal tracking-[0.35em]"

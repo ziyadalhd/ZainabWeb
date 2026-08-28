@@ -57,7 +57,7 @@ export function EventWorkspaceContent({
       <header className="event-panel__header">
         <div>
           <p className="eyebrow">مساحة الفعالية</p>
-          <h2 id="event-panel-title" className="mt-1 text-2xl font-black text-[var(--brand-forest)]">
+          <h2 id="event-panel-title" className="mt-1 text-2xl font-bold text-[var(--brand-forest)]">
             {event.title}
           </h2>
           <p className="mt-1 text-sm muted-copy">
@@ -90,7 +90,7 @@ export function EventWorkspaceContent({
 
       {event.publicationStatus === "cancelled" ? (
         <section className="notice-error mt-6 p-5" aria-label="إشعار إلغاء الفعالية">
-          <h3 className="font-black">الفعالية ملغاة</h3>
+          <h3 className="font-bold">الفعالية ملغاة</h3>
           <p className="mt-2">{formatArabicNumber(registered.length)} مسجّلات متأثرات. أرسلي الإشعار الموحد من قسم التواصل أدناه.</p>
         </section>
       ) : null}

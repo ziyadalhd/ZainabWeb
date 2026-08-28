@@ -98,7 +98,7 @@ export default async function RegistrationsPage({
       {eventId ? (
         <p className="notice-info mt-5">
           تُعرض تسجيلات فعالية واحدة فقط{eventOutcome ? ` — «${eventOutcome.title}»` : ""}.{" "}
-          <Link href={clearEventHref(view, query)} className="font-bold underline decoration-current underline-offset-4">
+          <Link href={clearEventHref(view, query)} className="font-medium underline decoration-current underline-offset-4">
             عرض كل التسجيلات
           </Link>
         </p>
@@ -140,7 +140,7 @@ export default async function RegistrationsPage({
                 </Link>
               ) : null}
             </form>
-            <p className="data-value text-sm font-bold muted-copy">{formatArabicNumber(outcome.data.total)} نتيجة</p>
+            <p className="data-value text-sm font-medium muted-copy">{formatArabicNumber(outcome.data.total)} نتيجة</p>
           </div>
           <div className="mt-6">
             <RegistrationTable
