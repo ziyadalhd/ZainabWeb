@@ -24,7 +24,7 @@ export type EventInputErrorCode =
 
 export type EventInputResult =
   | { ok: true; value: EventInput }
-  | { ok: false; error: EventInputErrorCode };
+  | { ok: false; errors: readonly EventInputErrorCode[] };
 
 export function isEventAudience(value: string): value is EventAudience {
   return audiences.includes(value as EventAudience);
@@ -93,58 +93,62 @@ export function parsePriceSarToHalalas(value: string): number | null {
 }
 
 export function validateEventInput(formData: FormData): EventInputResult {
+  const errors: EventInputErrorCode[] = [];
+
   const title = String(formData.get("title") ?? "").trim();
-  if (!title) return { ok: false, error: "title" };
+  if (!title) errors.push("title");
 
-  const audience = String(formData.get("audience") ?? "");
-  if (!isEventAudience(audience)) return { ok: false, error: "audience" };
+  const audienceRaw = String(formData.get("audience") ?? "");
+  const audience = isEventAudience(audienceRaw) ? audienceRaw : null;
+  if (!audience) errors.push("audience");
 
-  const kind = String(formData.get("kind") ?? "");
-  if (!isEventKind(kind)) return { ok: false, error: "kind" };
+  const kindRaw = String(formData.get("kind") ?? "");
+  const kind = isEventKind(kindRaw) ? kindRaw : null;
+  if (!kind) errors.push("kind");
 
   const eventTypeLabel = String(formData.get("eventTypeLabel") ?? "").trim();
-  if (!eventTypeLabel) return { ok: false, error: "eventTypeLabel" };
+  if (!eventTypeLabel) errors.push("eventTypeLabel");
 
   const startsAt = riyadhDateAndTimeToIso(
     String(formData.get("startDate") ?? ""),
     String(formData.get("startTime") ?? ""),
   );
-  if (!startsAt) return { ok: false, error: "startsAt" };
+  if (!startsAt) errors.push("startsAt");
 
   const endsAt = riyadhDateAndTimeToIso(
     String(formData.get("endDate") ?? ""),
     String(formData.get("endTime") ?? ""),
   );
-  if (!endsAt || new Date(endsAt) <= new Date(startsAt)) {
-    return { ok: false, error: "endsAt" };
+  if (!endsAt || (startsAt && new Date(endsAt) <= new Date(startsAt))) {
+    errors.push("endsAt");
   }
 
   const capacityText = normalizeArabicDigits(String(formData.get("capacity") ?? ""));
   const capacity = Number(capacityText);
-  if (!/^\d+$/.test(capacityText) || !Number.isSafeInteger(capacity) || capacity <= 0 || capacity > 50) {
-    return { ok: false, error: "capacity" };
-  }
+  const capacityValid = /^\d+$/.test(capacityText) && Number.isSafeInteger(capacity) && capacity > 0 && capacity <= 50;
+  if (!capacityValid) errors.push("capacity");
 
   const priceHalalas = parsePriceSarToHalalas(String(formData.get("priceSar") ?? ""));
-  if (priceHalalas === null) return { ok: false, error: "priceHalalas" };
+  if (priceHalalas === null) errors.push("priceHalalas");
 
-  const registrationStatus = String(formData.get("registrationStatus") ?? "");
-  if (!isEventRegistrationStatus(registrationStatus)) {
-    return { ok: false, error: "registrationStatus" };
-  }
+  const registrationStatusRaw = String(formData.get("registrationStatus") ?? "");
+  const registrationStatus = isEventRegistrationStatus(registrationStatusRaw) ? registrationStatusRaw : null;
+  if (!registrationStatus) errors.push("registrationStatus");
+
+  if (errors.length > 0) return { ok: false, errors };
 
   return {
     ok: true,
     value: {
       title,
-      kind,
-      audience,
+      kind: kind!,
+      audience: audience!,
       eventTypeLabel,
-      startsAt,
-      endsAt,
+      startsAt: startsAt!,
+      endsAt: endsAt!,
       capacity,
-      priceHalalas,
-      registrationStatus,
+      priceHalalas: priceHalalas!,
+      registrationStatus: registrationStatus!,
     },
   };
 }

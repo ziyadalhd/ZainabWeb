@@ -1,4 +1,10 @@
-import type { EventAvailability } from "@/lib/domain/types";
+import type { EventAudience, EventAvailability } from "@/lib/domain/types";
+
+export const eventAudienceLabels: Record<EventAudience, string> = {
+  adults: "للبالغات",
+  youth: "للفتيات",
+  children: "للأطفال",
+};
 
 export const eventAvailabilityPresentation: Record<EventAvailability, {
   status: string;

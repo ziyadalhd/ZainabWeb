@@ -440,6 +440,13 @@ implements RegistrationService, AdminRegistrationRepository {
     if (error) throw mapFailure(error.message);
   }
 
+  async confirmInvitation(id: string): Promise<void> {
+    const { error } = await this.client.rpc("admin_accept_waitlist_invitation", {
+      p_registration_id: id,
+    });
+    if (error) throw mapFailure(error.message);
+  }
+
   async confirmAttendance(id: string): Promise<void> {
     const { error } = await this.client.rpc("confirm_registration_attendance", { p_registration_id: id });
     if (error) throw mapFailure(error.message);

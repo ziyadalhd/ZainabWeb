@@ -6,10 +6,16 @@ import {
   formatArabicTimeInput,
   formatArabicNumber,
   formatArabicRequestedSchedule,
+  formatCapacityRatio,
+  formatDayCount,
+  formatEventDuration,
   formatEventPrice,
   formatEventCount,
+  formatHourCount,
+  formatMinuteCount,
   formatRegistrationCount,
   formatSeatCapacity,
+  formatTaskCount,
   formatRiyadhDateInput,
   formatRiyadhDateTimeLocal,
   formatRiyadhTimeInput,
@@ -24,12 +30,29 @@ describe("Arabic formatting", () => {
     expect(formatSeatCapacity(2)).toBe("مقعدان");
     expect(formatSeatCapacity(5)).toBe("٥ مقاعد");
     expect(formatSeatCapacity(11)).toBe("١١ مقعدًا");
+    expect(formatCapacityRatio(28, 30)).toBe("السعة ٢٨/٣٠");
     expect(formatEventCount(1)).toBe("فعالية واحدة");
     expect(formatEventCount(2)).toBe("فعاليتان");
     expect(formatEventCount(5)).toBe("٥ فعاليات");
     expect(formatRegistrationCount(0)).toBe("لا توجد مسجلات");
     expect(formatRegistrationCount(2)).toBe("مسجلتان");
     expect(formatRegistrationCount(8)).toBe("٨ مسجلات");
+    expect(formatMinuteCount(1)).toBe("دقيقة واحدة");
+    expect(formatMinuteCount(2)).toBe("دقيقتان");
+    expect(formatMinuteCount(5)).toBe("٥ دقائق");
+    expect(formatMinuteCount(40)).toBe("٤٠ دقيقة");
+    expect(formatHourCount(1)).toBe("ساعة واحدة");
+    expect(formatHourCount(2)).toBe("ساعتان");
+    expect(formatHourCount(6)).toBe("٦ ساعات");
+    expect(formatHourCount(23)).toBe("٢٣ ساعة");
+    expect(formatDayCount(1)).toBe("يوم واحد");
+    expect(formatDayCount(2)).toBe("يومان");
+    expect(formatDayCount(5)).toBe("٥ أيام");
+    expect(formatDayCount(15)).toBe("١٥ يومًا");
+    expect(formatTaskCount(1)).toBe("مهمة واحدة");
+    expect(formatTaskCount(2)).toBe("مهمتان");
+    expect(formatTaskCount(4)).toBe("٤ مهام");
+    expect(formatTaskCount(12)).toBe("١٢ مهمة");
   });
 
   it("formats a Gregorian date in the Riyadh time zone", () => {
@@ -82,5 +105,24 @@ describe("Arabic formatting", () => {
     expect(formatEventPrice(1000)).toBe("١٠ ريال");
     expect(formatEventPrice(7550)).toBe("٧٥٫٥ ريال");
     expect(formatEventPrice(1000)).not.toContain(".");
+  });
+});
+
+describe("formatEventDuration", () => {
+  it("formats an exact number of hours", () => {
+    expect(formatEventDuration(new Date("2026-08-10T15:00:00.000Z"), new Date("2026-08-10T17:00:00.000Z"))).toBe("ساعتان");
+  });
+
+  it("formats hours and minutes together", () => {
+    expect(formatEventDuration(new Date("2026-08-10T15:00:00.000Z"), new Date("2026-08-10T17:30:00.000Z"))).toBe("ساعتان و٣٠ دقيقة");
+  });
+
+  it("formats a sub-hour gap as minutes only", () => {
+    expect(formatEventDuration(new Date("2026-08-10T15:00:00.000Z"), new Date("2026-08-10T15:45:00.000Z"))).toBe("٤٥ دقيقة");
+  });
+
+  it("returns an empty string for a zero or negative gap", () => {
+    expect(formatEventDuration(new Date("2026-08-10T15:00:00.000Z"), new Date("2026-08-10T15:00:00.000Z"))).toBe("");
+    expect(formatEventDuration(new Date("2026-08-10T17:00:00.000Z"), new Date("2026-08-10T15:00:00.000Z"))).toBe("");
   });
 });

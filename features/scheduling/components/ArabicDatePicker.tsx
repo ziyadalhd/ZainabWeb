@@ -15,13 +15,16 @@ interface ArabicDatePickerProps {
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
+  /** ISO date (YYYY-MM-DD); days before it are disabled in the calendar. Omit to allow any date (editing a past event). */
+  minDate?: string;
 }
 
-export function ArabicDatePicker({ id, label, name, value, onChange, required = false }: ArabicDatePickerProps) {
+export function ArabicDatePicker({ id, label, name, value, onChange, required = false, minDate }: ArabicDatePickerProps) {
   const [open, setOpen] = useState(false);
   const regionId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const selected = parseDateInput(value);
+  const minDateObj = minDate ? parseDateInput(minDate) : undefined;
 
   return (
     <div className="grid gap-2">
@@ -70,6 +73,7 @@ export function ArabicDatePicker({ id, label, name, value, onChange, required = 
             }}
             selected={selected}
             defaultMonth={selected}
+            disabled={minDateObj ? { before: minDateObj } : undefined}
             onSelect={(date) => {
               if (!date) return;
               onChange(formatDateInput(date));

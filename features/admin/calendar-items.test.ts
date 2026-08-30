@@ -71,6 +71,12 @@ describe("buildCalendarItems", () => {
     expect(items[0]?.activeReservationCount).toBe(12);
   });
 
+  it("carries an event's audience for the day pulse's audience chip, leaving requests without one", () => {
+    const items = buildCalendarItems([event], [request({ status: "accepted" })]);
+    expect(items.find((item) => item.kind === "event")?.audience).toBe("adults");
+    expect(items.find((item) => item.kind === "booking")?.audience).toBeUndefined();
+  });
+
   it("scopes event links to the given base path, so the same builder serves both the hub and the events list", () => {
     const items = buildCalendarItems([event], [], "/admin");
     expect(items[0]?.href).toBe(`/admin?event=${event.id}`);

@@ -109,11 +109,55 @@ export function formatSeatCapacity(value: number): string {
   return `${formatArabicNumber(value)} مقعدًا`;
 }
 
+export function formatCapacityRatio(active: number, capacity: number): string {
+  return `السعة ${formatArabicNumber(active)}/${formatArabicNumber(capacity)}`;
+}
+
+export function formatMinuteCount(value: number): string {
+  if (value === 1) return "دقيقة واحدة";
+  if (value === 2) return "دقيقتان";
+  if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} دقائق`;
+  return `${formatArabicNumber(value)} دقيقة`;
+}
+
+export function formatHourCount(value: number): string {
+  if (value === 1) return "ساعة واحدة";
+  if (value === 2) return "ساعتان";
+  if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} ساعات`;
+  return `${formatArabicNumber(value)} ساعة`;
+}
+
+export function formatDayCount(value: number): string {
+  if (value === 1) return "يوم واحد";
+  if (value === 2) return "يومان";
+  if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} أيام`;
+  return `${formatArabicNumber(value)} يومًا`;
+}
+
+/** Renders the gap between two instants as "ساعتان و٣٠ دقيقة"-style Arabic prose; empty for a zero or negative gap. */
+export function formatEventDuration(start: Date, end: Date): string {
+  const totalMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+  if (totalMinutes <= 0) return "";
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return formatMinuteCount(minutes);
+  if (minutes === 0) return formatHourCount(hours);
+  return `${formatHourCount(hours)} و${formatMinuteCount(minutes)}`;
+}
+
 export function formatEventCount(value: number): string {
   if (value === 1) return "فعالية واحدة";
   if (value === 2) return "فعاليتان";
   if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} فعاليات`;
   return `${formatArabicNumber(value)} فعالية`;
+}
+
+export function formatTaskCount(value: number): string {
+  if (value === 1) return "مهمة واحدة";
+  if (value === 2) return "مهمتان";
+  if (value >= 3 && value <= 10) return `${formatArabicNumber(value)} مهام`;
+  return `${formatArabicNumber(value)} مهمة`;
 }
 
 export function formatRegistrationCount(value: number): string {

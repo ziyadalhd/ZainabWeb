@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(23);
+select plan(31);
 
 insert into auth.users (
   instance_id,
@@ -60,12 +60,44 @@ values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'مؤرشفة قادمة', 'children', 'قراءة', now() + interval '9 days', now() + interval '9 days 2 hours', 10, 5000, 'closed', 'archived'),
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'منشورة سابقة', 'adults', 'لقاء', now() - interval '1 day', now() - interval '22 hours', 20, 0, 'open', 'published');
 
+-- Seeded as the migration role so RLS does not gate the fixture. Registrations exist to prove the
+-- delete guard below: an event anyone registered for must stay undeletable.
+insert into public.registrations (
+  id,
+  event_id,
+  attendee_name,
+  phone_e164,
+  status,
+  retention_until
+)
+values (
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1',
+  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1',
+  'مسجلة',
+  '+966500000001',
+  'registered',
+  now() + interval '120 days'
+);
+
 set local role anon;
 
 select is(
   (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
   1,
   'anon sees only upcoming published events'
+);
+
+select throws_ok(
+  $$delete from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'$$,
+  '42501',
+  null,
+  'anon has no delete grant at all'
+);
+
+select is(
+  (select count(*)::integer from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'),
+  1,
+  'anon delete removed no rows'
 );
 
 select is(
@@ -103,6 +135,17 @@ select throws_ok(
 select lives_ok(
   $$update public.events set title = 'تعديل ممنوع' where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'$$,
   'non-admin cannot update an event'
+);
+
+select lives_ok(
+  $$delete from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'$$,
+  'non-admin delete is filtered by RLS rather than erroring'
+);
+
+select is(
+  (select count(*)::integer from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'),
+  1,
+  'non-admin delete removed no rows'
 );
 
 reset role;
@@ -203,16 +246,46 @@ select throws_ok(
   'database rejects a negative price'
 );
 
+-- Deletion is available to an approved admin at aal2, but only for an event with no attendee
+-- history: registrations.event_id and event_feedback_links.event_id are `on delete restrict`, which is
+-- what keeps AGENTS.md §263 (cancel, never hard-delete, once anyone has registered) enforced in
+-- the database rather than only in the application.
 select ok(
-  not has_table_privilege('authenticated', 'public.events', 'DELETE'),
-  'authenticated role has no hard-delete privilege'
+  has_table_privilege('authenticated', 'public.events', 'DELETE'),
+  'authenticated role has the delete privilege the admin policy gates'
 );
 
 select throws_ok(
-  $$delete from public.events where title = 'مسودة جديدة'$$,
-  '42501',
+  $$delete from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1'$$,
+  '23503',
   null,
-  'hard delete is unavailable through the application role'
+  'an event with registrations cannot be hard-deleted even by an approved admin'
+);
+
+select lives_ok(
+  $$delete from public.events where title = 'مسودة جديدة'$$,
+  'approved admin can delete an event that has no registrations'
+);
+
+select is(
+  (select count(*)::integer from public.events where title = 'مسودة جديدة'),
+  0,
+  'the deleted event is gone'
+);
+
+select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
+
+select lives_ok(
+  $$delete from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3'$$,
+  'an aal1 delete is filtered by RLS rather than erroring'
+);
+
+select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
+
+select is(
+  (select count(*)::integer from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3'),
+  1,
+  'an admin without MFA cannot delete an event'
 );
 
 select * from finish();

@@ -10,7 +10,6 @@ import { recordCheckInAction } from "@/app/(dashboard)/admin/(protected)/registr
 
 export const metadata: Metadata = { title: "تسجيل الحضور" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default async function EventLiveCheckInPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();

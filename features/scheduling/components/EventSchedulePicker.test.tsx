@@ -12,7 +12,10 @@ describe("EventSchedulePicker", () => {
     expect(container.querySelector<HTMLInputElement>('input[name="startTime"]')?.value).toBe("18:30");
     expect(container.querySelector<HTMLInputElement>('input[name="endDate"]')?.value).toBe("2026-08-13");
     expect(container.querySelector<HTMLInputElement>('input[name="endTime"]')?.value).toBe("20:30");
-    expect(screen.getByText("الخميس، ١٣ أغسطس ٢٠٢٦ · من ٦:٣٠ إلى ٨:٣٠ مساءً")).toBeInTheDocument();
+    const preview = container.querySelector(".date-time-preview");
+    expect(preview?.textContent).toContain("الخميس، ١٣ أغسطس ٢٠٢٦ · من ٦:٣٠ إلى ٨:٣٠ مساءً");
+    expect(preview?.textContent).toContain("المدة ساعتان");
+    expect(preview?.textContent).toContain("توقيت السعودية");
     expect(screen.getAllByRole("option", { name: "٦" })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: "٣٠ ونصف" })).toHaveLength(2);
     for (const button of screen.getAllByRole("button", { name: "٣٠ ونصف" })) {
@@ -24,6 +27,18 @@ describe("EventSchedulePicker", () => {
 
     fireEvent.click(screen.getByRole("checkbox", { name: "تنتهي في يوم مختلف" }));
     expect(screen.getByRole("button", { name: /تاريخ النهاية/ })).toBeInTheDocument();
+  });
+
+  it("shows the inherited end date as visible text instead of only a hidden field", () => {
+    const { container } = render(<EventSchedulePicker defaultStartDate="2026-08-13" defaultStartTime="18:30" />);
+    expect(screen.getByText("تاريخ النهاية").parentElement).toHaveTextContent("الخميس، ١٣ أغسطس ٢٠٢٦");
+    expect(container.querySelector('input[name="endDate"]')).toHaveValue("2026-08-13");
+  });
+
+  it("disables days before minStartDate in the start-date calendar", () => {
+    render(<EventSchedulePicker defaultStartDate="2026-08-20" defaultStartTime="18:00" minStartDate="2026-08-15" />);
+    fireEvent.click(screen.getByRole("button", { name: /اليوم والتاريخ/ }));
+    expect(screen.getByRole("button", { name: /أغسطس ١, ٢٠٢٦/ })).toBeDisabled();
   });
 
   it("opens an Arabic RTL calendar and closes it with Escape", () => {

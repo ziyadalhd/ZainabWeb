@@ -7,9 +7,12 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  duplicate: vi.fn(),
   get: vi.fn(),
   changeStatus: vi.fn(),
   setPosterPath: vi.fn(),
+  deleteEvent: vi.fn(),
+  removePoster: vi.fn(),
   createSupabaseServerClient: vi.fn(),
 }));
 
@@ -19,16 +22,30 @@ vi.mock("@/lib/supabase/events", () => ({
   createAdminEventRepository: vi.fn(async () => ({
     create: mocks.create,
     update: mocks.update,
+    duplicate: mocks.duplicate,
     get: mocks.get,
     changeStatus: mocks.changeStatus,
     setPosterPath: mocks.setPosterPath,
+    delete: mocks.deleteEvent,
   })),
+}));
+vi.mock("@/lib/supabase/event-posters", () => ({
+  SupabaseEventPosterStorage: class {
+    remove = mocks.removePoster;
+  },
 }));
 vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServerClient: mocks.createSupabaseServerClient,
 }));
 
-import { changeEventStatusAction, createEventAction, updateEventAction, uploadEventPosterAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
+import {
+  changeEventStatusAction,
+  createEventAction,
+  deleteEventAction,
+  duplicateEventAction,
+  updateEventAction,
+  uploadEventPosterAction,
+} from "@/app/(dashboard)/admin/(protected)/events/actions";
 
 const validId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
@@ -87,7 +104,7 @@ describe("createEventAction", () => {
 
     const result = await createEventAction({ status: "idle" }, formData);
 
-    expect(result).toEqual({ status: "error", error: "title" });
+    expect(result).toEqual({ status: "error", errors: ["title"] });
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
@@ -96,7 +113,18 @@ describe("createEventAction", () => {
 
     const result = await createEventAction({ status: "idle" }, validEventFormData());
 
-    expect(result).toEqual({ status: "error", error: "save" });
+    expect(result).toEqual({ status: "error", errors: ["save"] });
+  });
+
+  it("reports every failing field in one round trip instead of only the first", async () => {
+    const formData = validEventFormData();
+    formData.set("title", "");
+    formData.set("capacity", "0");
+
+    const result = await createEventAction({ status: "idle" }, formData);
+
+    expect(result).toEqual({ status: "error", errors: ["title", "capacity"] });
+    expect(mocks.create).not.toHaveBeenCalled();
   });
 
   it("creates the event as a draft and returns a typed success result without redirecting", async () => {
@@ -111,7 +139,7 @@ describe("createEventAction", () => {
 describe("updateEventAction", () => {
   it("rejects a malformed event id before validating input (admin overhaul plan A12)", async () => {
     const result = await updateEventAction("not-a-uuid", { status: "idle" }, validEventFormData());
-    expect(result).toEqual({ status: "error", error: "save" });
+    expect(result).toEqual({ status: "error", errors: ["save"] });
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
@@ -121,7 +149,7 @@ describe("updateEventAction", () => {
 
     const result = await updateEventAction(validId, { status: "idle" }, formData);
 
-    expect(result).toEqual({ status: "error", error: "capacity" });
+    expect(result).toEqual({ status: "error", errors: ["capacity"] });
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
@@ -172,6 +200,39 @@ describe("changeEventStatusAction", () => {
   });
 });
 
+describe("duplicateEventAction", () => {
+  it("requires an administrator before touching the repository", async () => {
+    mocks.requireAdmin.mockRejectedValueOnce(new Error("unauthorized"));
+
+    await expect(duplicateEventAction(validId, { status: "idle" }, new FormData())).rejects.toThrow("unauthorized");
+    expect(mocks.duplicate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed event id", async () => {
+    const result = await duplicateEventAction("not-a-uuid", { status: "idle" }, new FormData());
+    expect(result).toEqual({ status: "error" });
+    expect(mocks.duplicate).not.toHaveBeenCalled();
+  });
+
+  it("returns a save error when the repository throws", async () => {
+    mocks.duplicate.mockRejectedValueOnce(new Error("db down"));
+
+    const result = await duplicateEventAction(validId, { status: "idle" }, new FormData());
+
+    expect(result).toEqual({ status: "error" });
+  });
+
+  it("duplicates the event and returns the new draft's id", async () => {
+    mocks.duplicate.mockResolvedValueOnce({ ...baseEvent, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" });
+
+    const result = await duplicateEventAction(validId, { status: "idle" }, new FormData());
+
+    expect(result).toEqual({ status: "success", eventId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" });
+    expect(mocks.duplicate).toHaveBeenCalledWith(validId);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/events");
+  });
+});
+
 describe("uploadEventPosterAction", () => {
   it("rejects a malformed event id before validating the file", async () => {
     const result = await uploadEventPosterAction("not-a-uuid", {}, new FormData());
@@ -181,5 +242,86 @@ describe("uploadEventPosterAction", () => {
   it("rejects a missing poster file", async () => {
     const result = await uploadEventPosterAction(validId, {}, new FormData());
     expect(result).toEqual({ error: "file" });
+  });
+});
+
+describe("deleteEventAction", () => {
+  beforeEach(() => {
+    mocks.removePoster.mockResolvedValue(undefined);
+    mocks.createSupabaseServerClient.mockResolvedValue({});
+  });
+
+  it("requires an admin session before touching the repository", async () => {
+    mocks.requireAdmin.mockRejectedValueOnce(new Error("NEXT_REDIRECT"));
+
+    await expect(deleteEventAction(validId, idleActionResult, new FormData())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.deleteEvent).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed event id without calling the repository", async () => {
+    const result = await deleteEventAction("not-a-uuid", idleActionResult, new FormData());
+
+    expect(result.status).toBe("error");
+    expect(mocks.deleteEvent).not.toHaveBeenCalled();
+  });
+
+  it("deletes the event, removes its poster and revalidates the event views", async () => {
+    mocks.deleteEvent.mockResolvedValueOnce({ deleted: true, posterPath: `${validId}/poster.png` });
+
+    const result = await deleteEventAction(validId, idleActionResult, new FormData());
+
+    expect(result).toEqual({ status: "success" });
+    expect(mocks.deleteEvent).toHaveBeenCalledWith(validId);
+    expect(mocks.removePoster).toHaveBeenCalledWith(`${validId}/poster.png`);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/events");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/events");
+  });
+
+  it("skips storage cleanup when the event had no poster", async () => {
+    mocks.deleteEvent.mockResolvedValueOnce({ deleted: true, posterPath: null });
+
+    const result = await deleteEventAction(validId, idleActionResult, new FormData());
+
+    expect(result).toEqual({ status: "success" });
+    expect(mocks.removePoster).not.toHaveBeenCalled();
+  });
+
+  it("still reports success when the row is gone but the poster cleanup fails", async () => {
+    mocks.deleteEvent.mockResolvedValueOnce({ deleted: true, posterPath: `${validId}/poster.png` });
+    mocks.removePoster.mockRejectedValueOnce(new Error("storage down"));
+
+    const result = await deleteEventAction(validId, idleActionResult, new FormData());
+
+    expect(result).toEqual({ status: "success" });
+  });
+
+  it("refuses an event that has attendees and explains cancellation instead", async () => {
+    mocks.deleteEvent.mockResolvedValueOnce({ deleted: false, reason: "has-attendees" });
+
+    const result = await deleteEventAction(validId, idleActionResult, new FormData());
+
+    expect(result.status).toBe("error");
+    expect(result.message).toContain("تسجيلات");
+    expect(mocks.removePoster).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("reports a missing event distinctly from a blocked one", async () => {
+    mocks.deleteEvent.mockResolvedValueOnce({ deleted: false, reason: "not-found" });
+
+    const result = await deleteEventAction(validId, idleActionResult, new FormData());
+
+    expect(result.status).toBe("error");
+    expect(result.message).toContain("لم نعثر");
+  });
+
+  it("returns a failure message and revalidates nothing when the repository throws", async () => {
+    mocks.deleteEvent.mockRejectedValueOnce(new Error("db down"));
+
+    const result = await deleteEventAction(validId, idleActionResult, new FormData());
+
+    expect(result.status).toBe("error");
+    expect(result.message).toContain("تعذر حذف الفعالية");
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });

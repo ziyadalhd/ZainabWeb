@@ -1,10 +1,41 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AdminHub } from "@/features/admin/components/AdminHub";
-import type { Registration } from "@/lib/domain/types";
+import { ToastProvider } from "@/components/ui/ToastProvider";
+import type { Event, Registration } from "@/lib/domain/types";
+import type { ActionResult } from "@/lib/data/action-result";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const now = new Date("2026-08-20T12:00:00.000Z").getTime();
 const month = new Date(Date.UTC(2026, 7, 15, 12));
+
+const registrationActions = {
+  confirmInvitation: vi.fn(async (): Promise<ActionResult> => ({ status: "success" as const })),
+  revokeInvitation: vi.fn(async (): Promise<ActionResult> => ({ status: "success" as const })),
+};
+
+function makeEvent(overrides: Partial<Event> = {}): Event {
+  return {
+    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    title: "لقاء القراءة",
+    kind: "club_event",
+    audience: "adults",
+    eventTypeLabel: "قراءة",
+    startsAt: "2026-08-25T15:00:00.000Z",
+    endsAt: "2026-08-25T17:00:00.000Z",
+    capacity: 20,
+    activeReservationCount: 4,
+    priceHalalas: 7500,
+    posterUrl: null,
+    registrationStatus: "open",
+    availability: "available",
+    publicationStatus: "published",
+    createdAt: "2026-08-01T00:00:00.000Z",
+    updatedAt: "2026-08-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
 
 function makeRegistration(overrides: Partial<Registration> = {}): Registration {
   return {
@@ -34,42 +65,110 @@ function makeRegistration(overrides: Partial<Registration> = {}): Registration {
   };
 }
 
-function renderHub(registrations: Registration[] = []) {
+function renderHub(events: Event[] = [], registrations: Registration[] = []) {
   return render(
-    <AdminHub
-      events={[]}
-      registrations={registrations}
-      requests={[]}
-      now={now}
-      calendarItems={[]}
-      month={month}
-      monthHrefPrevious="/admin?month=2026-07"
-      monthHrefNext="/admin?month=2026-09"
-      monthHrefCurrent="/admin"
-    />,
+    <ToastProvider>
+      <AdminHub
+        events={events}
+        registrations={registrations}
+        requests={[]}
+        now={now}
+        pulseItems={[]}
+        selectedDay={month}
+        today={month}
+        dayHrefFor={(day) => `/admin?day=${day.getUTCFullYear()}-${String(day.getUTCMonth() + 1).padStart(2, "0")}-${String(day.getUTCDate()).padStart(2, "0")}`}
+        calendarHref="/admin?calendar=1"
+        registrationActions={registrationActions}
+      />
+    </ToastProvider>,
   );
 }
 
 describe("AdminHub", () => {
-  it("renders the calendar with month navigation and the primary create-event action", () => {
+  it("offers the primary create-event action and a way to open the full calendar", () => {
     renderHub();
 
-    expect(screen.getByRole("link", { name: "الشهر السابق" })).toHaveAttribute("href", "/admin?month=2026-07");
-    expect(screen.getByRole("link", { name: "الشهر التالي" })).toHaveAttribute("href", "/admin?month=2026-09");
     expect(screen.getByRole("link", { name: "فعالية جديدة" })).toHaveAttribute("href", "/admin/events/new");
+    expect(screen.getByRole("link", { name: "عرض التقويم الكامل" })).toHaveAttribute("href", "/admin?calendar=1");
   });
 
-  it("shows a calm empty state in the attention rail when nothing needs work", () => {
+  it("shows a calm empty state in the triage stream when nothing needs work", () => {
     renderHub();
     expect(screen.getByText("لا توجد مهام تحتاج معالجة الآن.")).toBeInTheDocument();
   });
 
-  it("surfaces an unconfirmed registration in the attention rail, opening the registrations lookup", () => {
+  it("headlines an unconfirmed registration by name and links to the event's communications section", () => {
+    const event = makeEvent();
     const registration = makeRegistration({ confirmationSentAt: null });
-    renderHub([registration]);
+    renderHub([event], [registration]);
 
-    const item = screen.getByRole("link", { name: /تسجيل جديد يحتاج تأكيد واتساب/ });
-    expect(item).toHaveAttribute("href", `/admin/registrations?view=upcoming&id=${registration.id}`);
+    expect(screen.getByText(registration.attendeeName)).toBeInTheDocument();
+    const item = screen.getByRole("link", { name: "فتح مساحة التواصل" });
+    expect(item).toHaveAttribute("href", `/admin/events?event=${event.id}#event-section-communications`);
+  });
+
+  it("offers an inline confirm action for a waitlist invitation expiring soon, with no navigation", () => {
+    const event = makeEvent();
+    const registration = makeRegistration({
+      eventId: event.id,
+      status: "invited",
+      invitationExpiresAt: new Date(now + 40 * 60 * 1000).toISOString(),
+    });
+    renderHub([event], [registration]);
+
+    expect(screen.getByText(registration.attendeeName)).toBeInTheDocument();
+    expect(screen.getByText("تنتهي الدعوة خلال ٤٠ دقيقة")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "تأكيد الدعوة" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "إعادة للقائمة" })).toBeInTheDocument();
+  });
+
+  it("exposes the triage stream as a real list, each item announcing its own subject and urgency (Phase 5 a11y)", () => {
+    const event = makeEvent();
+    const registration = makeRegistration({
+      eventId: event.id,
+      status: "invited",
+      invitationExpiresAt: new Date(now + 40 * 60 * 1000).toISOString(),
+    });
+    renderHub([event], [registration]);
+
+    const list = screen.getByRole("list", { name: "قائمة المهام" });
+    const items = screen.getAllByRole("listitem");
+    expect(list).toContainElement(items[0]!);
+    expect(items[0]).toHaveAccessibleName(`${registration.attendeeName} — تنتهي الدعوة خلال ٤٠ دقيقة`);
+  });
+
+  it("renders Today's Pulse from the given pulse items", () => {
+    render(
+      <ToastProvider>
+        <AdminHub
+          events={[]}
+          registrations={[]}
+          requests={[]}
+          now={now}
+          pulseItems={[
+            {
+              id: "event-1",
+              href: "/admin?event=1",
+              timeLabel: "١١:٠٠ ص",
+              title: "نادي القراءة الصغير",
+              isEvent: true,
+              audience: "children",
+              capacityLabel: "١٢/١٥",
+              conflictCount: 0,
+            },
+          ]}
+          selectedDay={month}
+          today={month}
+          dayHrefFor={() => "/admin"}
+          calendarHref="/admin?calendar=1"
+          registrationActions={registrationActions}
+        />
+      </ToastProvider>,
+    );
+
+    expect(screen.getByText("نبض اليوم")).toBeInTheDocument();
+    expect(screen.getByText("نادي القراءة الصغير")).toBeInTheDocument();
+    expect(screen.getByText("للأطفال")).toBeInTheDocument();
   });
 
   it("lists recent activity under الجديد, capped at three items", () => {
@@ -79,7 +178,7 @@ describe("AdminHub", () => {
       makeRegistration({ id: "r3", attendeeName: "٣", createdAt: "2026-08-19T12:00:00.000Z" }),
       makeRegistration({ id: "r4", attendeeName: "٤", createdAt: "2026-08-19T13:00:00.000Z" }),
     ];
-    renderHub(registrations);
+    renderHub([], registrations);
 
     expect(screen.getByText("الجديد")).toBeInTheDocument();
     expect(screen.getAllByText(/تسجيل جديد:/)).toHaveLength(3);

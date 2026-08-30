@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(53);
+select plan(61);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -55,6 +55,11 @@ values
   (
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb5', 'اختبار سحب الدعوة',
     'adults', 'لقاء', now() + interval '11 days', now() + interval '11 days 2 hours',
+    1, 0, 'open', 'published'
+  ),
+  (
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb6', 'اختبار تأكيد الإدارة',
+    'adults', 'لقاء', now() + interval '12 days', now() + interval '12 days 2 hours',
     1, 0, 'open', 'published'
   );
 
@@ -193,6 +198,32 @@ select throws_ok(
   'closed registration rejects new reservations instead of waitlisting them'
 );
 
+select is(
+  (
+    select registration_status
+    from public.register_for_event(
+      'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb6',
+      'مقعد التأكيد', '+966500000020', '', null, null, false,
+      repeat('ac', 32)
+    )
+  ),
+  'registered',
+  'admin-confirm test event receives its first reservation'
+);
+
+select is(
+  (
+    select registration_status
+    from public.register_for_event(
+      'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb6',
+      'انتظار التأكيد', '+966500000021', '', null, null, false,
+      repeat('ad', 32)
+    )
+  ),
+  'waitlisted',
+  'admin-confirm test event receives a waitlisted reservation'
+);
+
 reset role;
 
 select is(
@@ -228,6 +259,13 @@ select throws_ok(
   '42501',
   'admin_required',
   'non-admin cannot create a waitlist invitation'
+);
+
+select throws_ok(
+  $$select public.admin_accept_waitlist_invitation('00000000-0000-4000-8000-000000000000')$$,
+  '42501',
+  'admin_required',
+  'non-admin cannot confirm a waitlist invitation on a guest''s behalf'
 );
 
 select throws_ok(
@@ -423,6 +461,39 @@ select is(
 select lives_ok(
   $$select public.invite_waitlisted_registration((select id from public.registrations where phone_e164 = '+966500000011'), repeat('0', 64))$$,
   'admin can issue a new invitation after revocation'
+);
+
+select lives_ok(
+  $$select public.invite_waitlisted_registration((select id from public.registrations where phone_e164 = '+966500000021'), repeat('ae', 32))$$,
+  'admin can invite the waitlisted guest for the admin-confirm scenario'
+);
+
+select lives_ok(
+  $$select public.admin_accept_waitlist_invitation((select id from public.registrations where phone_e164 = '+966500000021'))$$,
+  'admin can confirm a waitlist invitation on the guest''s behalf'
+);
+
+select is(
+  (select status from public.registrations where phone_e164 = '+966500000021'),
+  'registered',
+  'admin confirmation moves the invited guest to registered'
+);
+
+select is(
+  (
+    select invitation_token_hash is null and invitation_expires_at is null
+    from public.registrations
+    where phone_e164 = '+966500000021'
+  ),
+  true,
+  'admin confirmation clears the invitation token and expiry, mirroring guest self-acceptance'
+);
+
+select throws_ok(
+  $$select public.admin_accept_waitlist_invitation((select id from public.registrations where phone_e164 = '+966500000021'))$$,
+  'P0001',
+  'invitation_unavailable',
+  'admin confirmation cannot be repeated once the guest is already registered'
 );
 
 reset role;

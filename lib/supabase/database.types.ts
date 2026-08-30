@@ -532,6 +532,10 @@ export type Database = {
         Args: { p_invitation_token_hash: string }
         Returns: undefined
       }
+      admin_accept_waitlist_invitation: {
+        Args: { p_registration_id: string }
+        Returns: undefined
+      }
       cancel_booking_by_token: {
         Args: { p_booking_token_hash: string }
         Returns: undefined

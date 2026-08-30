@@ -63,6 +63,64 @@
   --color-info-bg: #edf2e8;
   --color-info-text: #385739;
 
+  /*
+   * Tonal ramps for the three brand hues, generated in OKLCH on one shared
+   * lightness scale (100=0.96 ... 900=0.245) so the same step carries the
+   * same visual weight across ramps; only chroma/hue vary per role. Usage:
+   * 100-300 for tinted fills, hovers and subtle borders; 500 as the role's
+   * base; 700-900 for text on tinted fills and pressed states. Prefer a
+   * ramp step over an ad-hoc color-mix().
+   */
+  --forest-100: #eaf5eb;
+  --forest-200: #d4e5d5;
+  --forest-300: #b6cfb8;
+  --forest-400: #91b494;
+  --forest-500: #68996d;
+  --forest-600: #4c7a51;
+  --forest-700: #335c39;
+  --forest-800: #1f3f23;
+  --forest-900: #0f2712;
+
+  --olive-100: #eef4e8;
+  --olive-200: #dae4d1;
+  --olive-300: #bfcdb3;
+  --olive-400: #9db18c;
+  --olive-500: #7a9562;
+  --olive-600: #5e7646;
+  --olive-700: #44592f;
+  --olive-800: #2c3d1b;
+  --olive-900: #19250c;
+
+  --amber-100: #ffefd7;
+  --amber-200: #f5dcb7;
+  --amber-300: #e5c18a;
+  --amber-400: #d29f4a;
+  --amber-500: #c07a00;
+  --amber-600: #9e5c00;
+  --amber-700: #7c4100;
+  --amber-800: #582900;
+  --amber-900: #381700;
+
+  /*
+   * Capacity meter, in OKLCH. The three fill tones share one lightness/chroma
+   * progression (L 0.62 -> 0.56, C 0.10 -> 0.15) and differ only in hue, so
+   * calm -> warn -> full reads as one family stepping up in urgency rather than
+   * as three unrelated brand colors. The track is the same hue as the calm fill
+   * at display lightness, which keeps an empty meter from reading as a border.
+   * --meter-height is shared by the inline card meter and the larger rail meter.
+   */
+  --meter-track: oklch(0.94 0.021 133);
+  --meter-fill: oklch(0.62 0.098 133);
+  --meter-fill-warn: oklch(0.59 0.124 76);
+  --meter-fill-full: oklch(0.56 0.152 27);
+  --meter-height: 0.35rem;
+  --meter-height-lg: 0.6rem;
+
+  /* Hairline divider — the technique Classical uses for a rule that reads
+     correctly on any surface, since it is mixed from the foreground color
+     rather than fixed to one background. */
+  --divider-hairline: color-mix(in srgb, var(--color-text) 16%, transparent);
+
   /* Backward-compatible aliases used by existing components */
   --color-brand-cream: var(--brand-cream);
   --color-brand-yellow: var(--brand-amber);
@@ -253,7 +311,8 @@ body {
   color: var(--color-text-muted);
 }
 
-.data-value {
+.data-value,
+.numeral {
   font-variant-numeric: tabular-nums;
 }
 
@@ -264,30 +323,29 @@ body {
   box-shadow: var(--shadow-raised);
 }
 
-.attention-item, .activity-item { display: flex; gap: 0.9rem; align-items: center; justify-content: space-between; }
-.attention-item { min-height: 5.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); padding: 1rem; box-shadow: var(--shadow-resting); transition: border-color var(--duration-standard) var(--ease-standard), transform var(--duration-standard) var(--ease-standard), box-shadow var(--duration-standard) var(--ease-standard); }
-.attention-item:hover { border-color: var(--brand-olive); transform: translateY(-0.1rem); box-shadow: var(--shadow-raised); }
-.attention-item > span:nth-child(2), .activity-item > span:first-child { display: grid; flex: 1; gap: 0.12rem; }
-.attention-item small, .activity-item small { color: var(--color-text-muted); font-size: 0.8rem; line-height: 1.5; }
-.attention-item__dot { width: 0.6rem; height: 0.6rem; flex: 0 0 auto; border-radius: 999px; background: var(--brand-olive); }
-.attention-item--urgent { border-inline-start: 0.32rem solid var(--color-error-text); }
-.attention-item--urgent .attention-item__dot { background: var(--color-error-text); }
-.attention-item--warning { border-inline-start: 0.32rem solid var(--brand-amber); }
-.attention-item--warning .attention-item__dot { background: var(--brand-amber); }
-.attention-item--group { display: block; padding: 0; }
-.attention-item--group > summary { display: flex; min-height: 5.5rem; align-items: center; gap: 0.9rem; padding: 1rem; cursor: pointer; list-style: none; }
-.attention-item--group > summary::-webkit-details-marker { display: none; }
-.attention-item--group > summary::after { content: "＋"; margin-inline-start: auto; color: var(--brand-olive); font-size: 1rem; font-weight: 900; }
-.attention-item--group[open] > summary::after { content: "−"; }
-.attention-item--group[open] > summary { border-block-end: 1px solid var(--color-border); }
-.attention-item__members { display: grid; gap: 0.5rem; padding: 0.85rem 1rem 1rem; animation: admin-reveal var(--duration-standard) var(--ease-standard) both; }
-.attention-item__member { display: block; border-radius: var(--radius-control); background: var(--color-surface-muted); padding: 0.6rem 0.9rem; font-size: 0.82rem; font-weight: 700; transition: background-color 160ms ease; }
-.attention-item__member:hover { background: var(--color-info-bg); }
+.activity-item { display: flex; gap: 0.9rem; align-items: center; justify-content: space-between; }
+.activity-item > span:first-child { display: grid; flex: 1; gap: 0.12rem; }
+.activity-item small { color: var(--color-text-muted); font-size: 0.8rem; line-height: 1.5; }
 .activity-item { padding: 1rem 1.25rem; transition: background-color var(--duration-standard) var(--ease-standard); }
+
+/* Triage stream card — every item headlines a person or event, carries a self-contained
+   context sentence, and exposes its own inline action(s); see OPERATIONS_HUB_REDESIGN_PLAN.md §2.1. */
+.triage-stream { display: grid; gap: 0.75rem; list-style: none; margin: 0; padding: 0; }
+.triage-card { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); padding: 1rem; box-shadow: var(--shadow-resting); transition: border-color var(--duration-standard) var(--ease-standard), transform var(--duration-standard) var(--ease-standard), box-shadow var(--duration-standard) var(--ease-standard); }
+.triage-card:hover { border-color: var(--brand-olive); transform: translateY(-0.1rem); box-shadow: var(--shadow-raised); }
+.triage-card__icon { flex: 0 0 auto; width: 1.35rem; height: 1.35rem; color: var(--brand-olive); }
+.triage-card__body { flex: 1 1 16rem; min-width: 0; display: grid; gap: 0.25rem; }
+.triage-card__heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.triage-card__subject { font-weight: 800; font-size: 1rem; }
+.triage-card__tag { border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.triage-card__tag--urgent { background: var(--color-error-bg); color: var(--color-error-text); }
+.triage-card__tag--warning { background: var(--color-warning-bg); color: var(--color-warning-text); }
+.triage-card__tag--neutral { background: var(--color-info-bg); color: var(--color-info-text); }
+.triage-card__context { color: var(--color-text-muted); font-size: 0.85rem; line-height: 1.5; }
+.triage-card__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 0 0 auto; }
 .activity-item:hover { background: var(--color-info-bg); }
 .activity-item time { color: var(--color-text-muted); font-size: 0.75rem; text-align: end; }
 
-.workspace-status { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; color: var(--color-text-muted); font-size: 0.9rem; }
 .workspace-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; overflow-x: auto; scrollbar-width: thin; }
 .workspace-tab {
   flex: 0 0 auto;
@@ -321,13 +379,45 @@ body {
 .calendar-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; color: var(--color-text-muted); font-size: 0.78rem; font-weight: 500; }
 .calendar-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
 .calendar-legend i { inline-size: 0.65rem; block-size: 0.65rem; border-radius: 999px; }
-.calendar-legend__event { background: var(--brand-olive); }
+.calendar-legend__children { background: var(--brand-olive); }
+.calendar-legend__youth { background: var(--brand-amber); }
+.calendar-legend__adults { background: var(--color-info-text); }
 .calendar-legend__request { background: var(--brand-amber); }
 .calendar-legend__booking { background: #596bab; }
 .calendar-legend__conflict { color: var(--color-error-text); }
+
+/* Today's Pulse — the day-level timeline and its week selector; see OPERATIONS_HUB_REDESIGN_PLAN.md §2.2. */
+.week-strip { display: flex; gap: 0.35rem; margin-block-end: 1.5rem; }
+.week-strip__day { flex: 1; display: grid; justify-items: center; gap: 0.2rem; border-radius: var(--radius-control); padding: 0.4rem 0.2rem; border: 1px solid transparent; font-size: 0.72rem; color: var(--color-text-muted); transition: border-color var(--duration-standard) var(--ease-standard), background-color var(--duration-standard) var(--ease-standard); }
+.week-strip__day:hover { background: var(--color-surface-muted); }
+.week-strip__number { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-text); }
+.week-strip__day--today { border-color: var(--brand-amber); }
+.week-strip__day--selected { background: var(--brand-forest); border-color: var(--brand-forest); }
+.week-strip__day--selected .week-strip__label, .week-strip__day--selected .week-strip__number { color: var(--color-on-primary); }
+
+.pulse-timeline { display: grid; gap: 0; list-style: none; margin: 0; padding: 0; }
+.pulse-timeline__row { position: relative; display: flex; gap: 0.75rem; padding-block-end: 1.25rem; }
+.pulse-timeline__row:last-child .pulse-timeline__line { display: none; }
+.pulse-timeline__line { position: absolute; inset-block-start: 1rem; inset-block-end: 0; inset-inline-start: 3.5rem; width: 1px; background: var(--color-border); }
+.pulse-timeline__time { flex: 0 0 2.5rem; padding-block-start: 0.15rem; text-align: end; font-size: 0.72rem; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.pulse-timeline__dot { flex: 0 0 auto; width: 0.5rem; height: 0.5rem; margin-block-start: 0.35rem; border-radius: 999px; background: var(--color-border-strong); }
+.pulse-timeline__dot--event { background: var(--brand-amber); }
+.pulse-timeline__content { flex: 1; min-width: 0; display: grid; gap: 0.3rem; }
+.pulse-timeline__title { font-size: 0.85rem; color: var(--color-text); }
+.pulse-timeline__title--event { font-weight: 700; color: var(--brand-forest); }
+.pulse-timeline__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--color-text-muted); }
+.pulse-timeline__capacity { font-variant-numeric: tabular-nums; }
+.pulse-timeline__conflict { color: var(--color-error-text); font-weight: 700; }
+
+.audience-chip { display: inline-flex; align-items: center; border-radius: 999px; padding: 0.1rem 0.55rem; font-size: 0.68rem; font-weight: 700; }
+.audience-chip--children { background: var(--color-success-bg); color: var(--color-success-text); }
+.audience-chip--youth { background: var(--color-warning-bg); color: var(--color-warning-text); }
+.audience-chip--adults { background: var(--color-info-bg); color: var(--color-info-text); }
 .calendar-item { display: grid; gap: 0.1rem; min-inline-size: 0; border-inline-start: 0.25rem solid; padding: 0.45rem 0.5rem; font-size: 0.72rem; line-height: 1.35; transition: background-color 140ms ease, border-color 140ms ease; }
 .calendar-item:hover { filter: saturate(1.12); }
-.calendar-item--event { border-color: var(--brand-olive); background: var(--color-success-bg); }
+.calendar-item--children { border-color: var(--brand-olive); background: var(--color-success-bg); }
+.calendar-item--youth { border-color: var(--brand-amber); background: var(--color-warning-bg); }
+.calendar-item--adults { border-color: var(--color-info-text); background: var(--color-info-bg); }
 .calendar-item--request { border-color: var(--brand-amber); background: var(--color-warning-bg); }
 .calendar-item--booking { border-color: #596bab; background: #edf0fb; }
 .calendar-item--conflict { border-color: var(--color-error-text); background: var(--color-error-bg); }
@@ -602,7 +692,10 @@ body {
 }
 
 .date-time-timezone {
-  flex: none;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-inline-start: 0.5rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: var(--color-surface);
@@ -874,7 +967,7 @@ body {
   position: fixed;
   inset-block: 0;
   inset-inline-start: 0;
-  width: min(48rem, 94vw);
+  width: min(76rem, 96vw);
   max-width: none;
   height: 100%;
   max-height: none;
@@ -888,9 +981,9 @@ body {
   translate: 100% 0;
   transition:
     translate var(--duration-panel) var(--ease-standard),
-    opacity 220ms ease,
-    overlay 320ms allow-discrete,
-    display 320ms allow-discrete;
+    opacity var(--duration-standard) var(--ease-standard),
+    overlay var(--duration-panel) allow-discrete,
+    display var(--duration-panel) allow-discrete;
 }
 
 .event-panel[open] {
@@ -908,9 +1001,9 @@ body {
 .event-panel::backdrop {
   background: rgb(24 54 30 / 0);
   transition:
-    background-color 320ms ease,
-    overlay 320ms allow-discrete,
-    display 320ms allow-discrete;
+    background-color var(--duration-panel) var(--ease-standard),
+    overlay var(--duration-panel) allow-discrete,
+    display var(--duration-panel) allow-discrete;
 }
 
 .event-panel[open]::backdrop {
@@ -932,7 +1025,7 @@ body {
 
 .event-panel__close {
   position: sticky;
-  top: 0;
+  inset-block-start: 0;
   z-index: 2;
   display: grid;
   margin-inline-start: auto;
@@ -950,14 +1043,6 @@ body {
 .event-panel__close:hover {
   border-color: var(--brand-olive);
   background: var(--color-info-bg);
-}
-
-.event-panel__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: start;
-  justify-content: space-between;
-  gap: 1rem;
 }
 
 .event-panel__section-nav {
@@ -981,21 +1066,6 @@ body {
   background: var(--color-info-bg);
 }
 
-.event-panel__section {
-  scroll-margin-block-start: 1rem;
-  border-block-start: 1px solid var(--color-border);
-  padding-block-start: 2rem;
-}
-
-.event-panel__section-title {
-  margin-block-end: 1rem;
-  border-inline-start: 4px solid var(--brand-olive);
-  padding-inline-start: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--brand-forest);
-}
-
 .event-panel .toast-region {
   /* .event-panel has an active `translate`, which establishes a containing block for
      fixed-position descendants — this anchors the nested toast region to the panel's
@@ -1008,6 +1078,126 @@ body {
     width: 100vw;
     border-inline-end: 0;
   }
+}
+
+/* Calendar overlay — a centered dialog on the same Overlay primitive as .event-panel, opened as
+   a quick reference from the pulse rail and dismissed the same way; see redesign plan §2.3/Phase 3. */
+.calendar-overlay {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(880px, 94vw);
+  max-width: none;
+  height: fit-content;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  padding: 0;
+  box-shadow: var(--shadow-overlay);
+  opacity: 0;
+  scale: 0.97;
+  transition:
+    scale var(--duration-panel) var(--ease-standard),
+    opacity var(--duration-standard) var(--ease-standard),
+    overlay var(--duration-panel) allow-discrete,
+    display var(--duration-panel) allow-discrete;
+}
+
+.calendar-overlay[open] {
+  opacity: 1;
+  scale: 1;
+}
+
+@starting-style {
+  .calendar-overlay[open] {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+
+.calendar-overlay::backdrop {
+  background: rgb(24 54 30 / 0);
+  transition:
+    background-color var(--duration-panel) var(--ease-standard),
+    overlay var(--duration-panel) allow-discrete,
+    display var(--duration-panel) allow-discrete;
+}
+
+.calendar-overlay[open]::backdrop {
+  background: rgb(24 54 30 / 0.42);
+}
+
+@starting-style {
+  .calendar-overlay[open]::backdrop {
+    background: rgb(24 54 30 / 0);
+  }
+}
+
+/* The dialog itself (.calendar-overlay above) owns the scroll boundary, so this stays a plain
+   block — no second max-height/overflow layer here, which is what clipped content previously. */
+.calendar-overlay__body {
+  position: relative;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+/* Title + month nav share one row with the close button — a real flex sibling now, not an
+   absolutely-positioned corner hack — so `justify-content: space-between` alone keeps them apart. */
+.calendar-overlay__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block-end: 1rem;
+  margin-block-end: 1.25rem;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.calendar-overlay__header-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.calendar-overlay__title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--brand-forest);
+}
+
+.calendar-overlay__close {
+  flex: 0 0 auto;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--brand-forest);
+}
+
+.calendar-overlay__close:hover {
+  border-color: var(--brand-olive);
+  background: var(--color-info-bg);
+}
+
+.calendar-overlay__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.calendar-overlay [role="grid"] > div {
+  min-height: 90px;
 }
 
 .check-in-summary {
@@ -1050,6 +1240,7 @@ body {
 }
 
 .event-quick-status {
+  position: relative;
   min-width: 9.25rem;
 }
 
@@ -1091,18 +1282,49 @@ body {
 }
 
 .event-quick-status__panel {
+  position: absolute;
+  z-index: 20;
+  inset-inline-end: 0;
+  top: calc(100% + 0.5rem);
   display: grid;
+  width: max-content;
   min-width: min(18rem, 76vw);
   gap: 0.65rem;
-  margin-block-start: 0.65rem;
-  border-inline-start: 0.2rem solid var(--brand-amber);
-  padding-inline-start: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  padding: 0.85rem;
+  box-shadow: var(--shadow-raised);
   animation: admin-reveal var(--duration-standard) var(--ease-standard) both;
 }
 
 .event-quick-status__panel .admin-confirm-action {
   max-width: 18rem;
 }
+
+/* Events list — card view; see EVENTS_OVERHAUL_PLAN.md §3. */
+.event-filter-bar { display: flex; flex-wrap: wrap; gap: 0.85rem; align-items: center; justify-content: space-between; }
+.event-filter-seg { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; border: 1px solid var(--color-border); border-radius: 999px; padding: 0.3rem; background: var(--color-surface); }
+.event-filter-seg__option { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 999px; padding: 0.4rem 0.9rem; font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted); white-space: nowrap; transition: background-color var(--duration-standard) var(--ease-standard), color var(--duration-standard) var(--ease-standard); }
+.event-filter-seg__option:hover { color: var(--brand-forest); }
+.event-filter-seg__option--active { background: var(--brand-forest); color: var(--color-on-primary); }
+.event-filter-seg__count { font-variant-numeric: tabular-nums; opacity: 0.75; font-size: 0.75rem; }
+.event-search { min-width: 14rem; flex: 1 1 14rem; max-width: 20rem; }
+
+.event-list { display: grid; gap: 0.9rem; }
+.event-card { display: grid; gap: 0.65rem; border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface); padding: 1.15rem 1.3rem; transition: border-color var(--duration-standard) var(--ease-standard), box-shadow var(--duration-standard) var(--ease-standard); }
+.event-card:hover, .event-card:focus-within { border-color: var(--brand-olive); box-shadow: var(--shadow-soft); }
+.event-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.event-card__when { font-size: 0.78rem; color: var(--color-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.event-card__title { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.35; color: var(--brand-forest); }
+.event-card__meta { margin: 0; font-size: 0.82rem; color: var(--color-text-muted); }
+.event-card__capacity { display: flex; align-items: center; gap: 0.7rem; }
+.capacity-meter { flex: 1; height: var(--meter-height); min-width: 4rem; border-radius: 999px; background: var(--meter-track); overflow: hidden; }
+.capacity-meter__fill { height: 100%; border-radius: 999px; background: var(--meter-fill); transition: width var(--duration-standard) var(--ease-standard); }
+.capacity-meter__fill--warn { background: var(--meter-fill-warn); }
+.capacity-meter__fill--full { background: var(--meter-fill-full); }
+.event-card__capacity-label { flex: none; font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-text); }
+.event-card__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; border-top: 1px solid var(--divider-hairline); padding-top: 0.8rem; }
 
 @media (max-width: 1023px) {
   .responsive-table-shell {
@@ -1191,18 +1413,6 @@ body {
   .responsive-admin-table tbody td[data-label="الإجراءات"] .button-quiet,
   .responsive-admin-table tbody td[data-label="الإجراءات"] .button-danger {
     flex: 1 1 9rem;
-  }
-
-  .responsive-admin-table .event-quick-status {
-    flex: 1 1 100%;
-  }
-
-  .responsive-admin-table .event-quick-status > summary {
-    width: 100%;
-  }
-
-  .responsive-admin-table .event-quick-status__panel {
-    min-width: 0;
   }
 }
 
@@ -1683,3 +1893,234 @@ body {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Skeletons — Suspense fallbacks. Tinted from the surface tokens so a streaming
+   region reads as the page settling rather than as grey filler. The shimmer is a
+   background-position sweep (compositor-friendly) and is disabled wholesale by the
+   prefers-reduced-motion block at the end of this file.
+   --------------------------------------------------------------------------- */
+@keyframes skeleton-sweep {
+  from { background-position-x: 200%; }
+  to { background-position-x: -100%; }
+}
+
+.skeleton {
+  border-radius: 999px;
+  background-color: var(--color-surface-muted);
+  background-image: linear-gradient(
+    to left,
+    transparent 20%,
+    color-mix(in srgb, var(--color-surface) 70%, transparent) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s linear infinite;
+}
+
+.skeleton--text { block-size: 0.75rem; }
+.skeleton--text-short { inline-size: 60%; }
+
+.skeleton-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-resting);
+  min-block-size: 6rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Event Inspector — the event management workspace inside .event-panel.
+   A calm header over a master/rail grid. Spacing is carried entirely by `gap` on
+   the grid containers; there are no separator borders or margin chains between
+   regions, and every offset is a logical property so the RTL layout is the
+   authored one rather than a mirrored LTR one.
+   --------------------------------------------------------------------------- */
+.event-inspector {
+  display: grid;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.event-inspector__header {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.event-inspector__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+}
+
+.event-inspector__title {
+  margin-block-start: 0.35rem;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--brand-forest);
+  text-wrap: balance;
+}
+
+.event-inspector__when {
+  margin-block-start: 0.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.event-inspector__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.event-inspector__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.event-inspector__layout {
+  display: grid;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .event-inspector__layout {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+}
+
+.event-inspector__main {
+  display: grid;
+  gap: 1.25rem;
+  min-inline-size: 0;
+}
+
+.event-inspector__tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-block-end: 1px solid var(--divider-hairline);
+  padding-block-end: 0.4rem;
+}
+
+.event-inspector__tab {
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  padding: 0.55rem 0.95rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-standard) var(--ease-standard),
+    color var(--duration-standard) var(--ease-standard);
+}
+
+.event-inspector__tab:hover { background: var(--color-info-bg); color: var(--brand-forest); }
+
+.event-inspector__tab[aria-selected="true"] {
+  background: var(--forest-100);
+  color: var(--brand-forest);
+  font-weight: 700;
+}
+
+.event-inspector__tab-count {
+  margin-inline-start: 0.4rem;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.event-inspector__panel { display: grid; gap: 1.25rem; min-inline-size: 0; }
+
+.event-inspector__panel-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+}
+
+.event-inspector__panel-lede { color: var(--color-text-muted); font-size: 0.9rem; }
+
+/* Sticky overview rail. Offset by the panel's own scroll padding so the first card
+   clears the sticky close button instead of sliding under it. */
+.event-inspector__rail {
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+}
+
+@media (min-width: 64rem) {
+  .event-inspector__rail {
+    position: sticky;
+    inset-block-start: 3.5rem;
+  }
+}
+
+.event-inspector__card {
+  display: grid;
+  gap: 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow-resting);
+}
+
+.event-inspector__card-label {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.event-inspector__card-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--brand-forest);
+  font-variant-numeric: tabular-nums;
+}
+
+.event-inspector__card-note { color: var(--color-text-muted); font-size: 0.85rem; }
+
+.event-inspector__meter {
+  block-size: var(--meter-height-lg);
+  border-radius: 999px;
+  background: var(--meter-track);
+  overflow: hidden;
+}
+
+.event-inspector__meter-fill {
+  block-size: 100%;
+  border-radius: 999px;
+  background: var(--meter-fill);
+  transition: inline-size var(--duration-panel) var(--ease-standard);
+}
+
+.event-inspector__meter-fill--warn { background: var(--meter-fill-warn); }
+.event-inspector__meter-fill--full { background: var(--meter-fill-full); }
+
+.event-inspector__meta { display: grid; gap: 0.7rem; }
+
+.event-inspector__meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.event-inspector__meta-row dt { color: var(--color-text-muted); }
+.event-inspector__meta-row dd { font-weight: 600; text-align: end; }

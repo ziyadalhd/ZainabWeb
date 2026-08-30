@@ -17,7 +17,6 @@ import { saveGlobalReminderTemplateAction } from "@/app/(dashboard)/admin/(prote
 
 export const metadata: Metadata = { title: "الإعدادات" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 type SettingsTab = "content" | "templates" | "security" | "interested" | "surveys";
 

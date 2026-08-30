@@ -5,7 +5,6 @@ import { ResetPasswordForm } from "@/features/admin/components/ResetPasswordForm
 
 export const metadata: Metadata = { title: "استعادة كلمة المرور" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default function ResetPasswordPage() {
   return (

@@ -1,21 +1,28 @@
 import type { AdminServiceRequest, Event, Registration } from "@/lib/domain/types";
-import { formatArabicNumber, formatSeatCapacity } from "@/lib/format/date";
+import { formatArabicEventTimeRange, formatArabicNumber, formatArabicRequestedSchedule, formatSeatCapacity } from "@/lib/format/date";
+import { formatDeadlineLabel, formatElapsedLabel, formatRelativeEventDay } from "@/features/admin/relative-time";
 
-export type AttentionTone = "urgent" | "warning" | "neutral";
+export type TriageTone = "urgent" | "warning" | "neutral";
+export type TriageIcon = "clock" | "envelope" | "card" | "request" | "draft" | "seat";
 
-export interface AttentionMember {
+export type TriageAction =
+  | { kind: "link"; variant: "primary" | "secondary"; label: string; href: string }
+  | { kind: "confirm-invitation"; variant: "primary" | "secondary"; label: string; registrationId: string }
+  | { kind: "revoke-invitation"; variant: "primary" | "secondary"; label: string; registrationId: string };
+
+export interface TriageItem {
   id: string;
-  description: string;
-  href: string;
+  icon: TriageIcon;
+  tone: TriageTone;
+  /** The person or event this item is about — always the headline, never the category. */
+  subjectName: string;
+  /** A short, self-timed tag, e.g. "تنتهي الدعوة خلال ٤٠ دقيقة". */
+  urgencyLabel: string;
+  /** A self-contained sentence: enough context to decide without navigating anywhere. */
+  context: string;
+  actions: readonly TriageAction[];
+  /** Sort key only — nearest deadline first, across every category. */
   deadline: number;
-}
-
-export interface AttentionGroup {
-  id: string;
-  tone: AttentionTone;
-  title: string;
-  deadline: number;
-  members: readonly AttentionMember[];
 }
 
 export interface RecentItem {
@@ -26,155 +33,193 @@ export interface RecentItem {
   href: string;
 }
 
-function buildAttentionGroup(
-  id: string,
-  tone: AttentionTone,
-  members: readonly AttentionMember[],
-  singleTitle: string,
-  pluralTitle: (count: number) => string,
-): AttentionGroup | null {
-  if (members.length === 0) return null;
-  return {
-    id,
-    tone,
-    title: members.length === 1 ? singleTitle : pluralTitle(members.length),
-    deadline: Math.min(...members.map((member) => member.deadline)),
-    members,
-  };
-}
-
-function withinHours(value: string, now: number, hours: number) {
+function withinHours(value: string, now: number, hours: number): boolean {
   const timestamp = new Date(value).getTime();
   return timestamp >= now && timestamp <= now + hours * 60 * 60 * 1000;
 }
 
-function withinPreviousHours(value: string, now: number, hours: number) {
+function withinPreviousHours(value: string, now: number, hours: number): boolean {
   const timestamp = new Date(value).getTime();
   return timestamp <= now && timestamp >= now - hours * 60 * 60 * 1000;
 }
 
-export function buildAttentionGroups(
+function requestKindLabel(kind: AdminServiceRequest["kind"]): string {
+  return kind === "workshop_application" ? "طلب ورشة" : kind === "space_booking" ? "حجز مساحة" : "طلب قديم";
+}
+
+function requestContext(request: AdminServiceRequest): string {
+  if (request.kind === "workshop_application") {
+    return request.workshopTargetAudience
+      ? `تقترح ورشة «${request.workshopTitle ?? "بلا عنوان"}» — ${request.workshopTargetAudience}.`
+      : `تقترح ورشة «${request.workshopTitle ?? "بلا عنوان"}».`;
+  }
+  const occasion = request.useOrOccasionType ?? "مناسبة خاصة";
+  const attendees = request.attendeeCount ? ` لعدد ${formatArabicNumber(request.attendeeCount)}` : "";
+  const schedule = formatArabicRequestedSchedule(request.requestedDate, request.requestedStartTime, request.requestedEndTime);
+  return `${occasion}${attendees} — ${schedule}.`;
+}
+
+export function buildTriageItems(
   events: readonly Event[],
   registrations: readonly Registration[],
   requests: readonly AdminServiceRequest[],
   now: number,
-): AttentionGroup[] {
+): TriageItem[] {
+  const eventsById = new Map(events.map((event) => [event.id, event]));
   const upcomingEvents = events
     .filter((event) => event.publicationStatus !== "archived" && new Date(event.startsAt).getTime() >= now)
     .sort((first, second) => new Date(first.startsAt).getTime() - new Date(second.startsAt).getTime());
-  const upcomingUnpaid = registrations.filter(
-    (registration) =>
-      registration.status === "registered" &&
-      new Date(registration.eventStartsAt).getTime() >= now &&
-      registration.priceHalalasAtBooking > 0 &&
-      registration.paymentStatus === "unpaid",
-  );
-  const newRequests = requests.filter((request) => request.status === "new" && !request.contactedAt);
-  const unconfirmedRegistrations = registrations.filter(
-    (registration) => registration.status === "registered" && new Date(registration.eventStartsAt).getTime() >= now && !registration.confirmationSentAt,
-  );
 
-  const confirmationMembers: AttentionMember[] = unconfirmedRegistrations.map((registration) => ({
-    id: `confirmation-${registration.id}`,
-    description: `${registration.attendeeName} — ${registration.eventTitle}`,
-    href: `/admin/registrations?view=upcoming&id=${registration.id}`,
-    deadline: new Date(registration.eventStartsAt).getTime(),
-  }));
+  const items: TriageItem[] = [];
 
-  const requestMembers: AttentionMember[] = newRequests.map((request) => ({
-    id: `request-${request.id}`,
-    description: `${request.requesterName} — ${request.kind === "workshop_application" ? "طلب ورشة" : "طلب حجز مساحة"}`,
-    href: "/admin/requests",
-    deadline: new Date(request.createdAt).getTime(),
-  }));
-
-  const draftMembers: AttentionMember[] = events
-    .filter((event) => event.publicationStatus === "draft" && (event.endsAt === null || event.priceHalalas === null))
-    .map((event) => ({
-      id: `draft-${event.id}`,
-      description: `أكملي بيانات «${event.title}» قبل نشرها.`,
-      href: `/admin/events?event=${event.id}#event-section-settings`,
-      deadline: new Date(event.startsAt).getTime(),
-    }));
-
-  const seatMembers: AttentionMember[] = upcomingEvents
-    .filter(
-      (event) =>
-        event.activeReservationCount < event.capacity &&
-        registrations.some((registration) => registration.eventId === event.id && registration.status === "waitlisted"),
-    )
-    .map((event) => ({
-      id: `seat-${event.id}`,
-      description: `«${event.title}» لديها ${formatSeatCapacity(event.capacity - event.activeReservationCount)} متاحة. ادعي بديلة من مساحة التواصل.`,
-      href: `/admin/events?event=${event.id}#event-section-communications`,
-      deadline: new Date(event.startsAt).getTime(),
-    }));
-
-  const inviteMembers: AttentionMember[] = registrations
-    .filter((registration) => registration.status === "invited" && registration.invitationExpiresAt && withinHours(registration.invitationExpiresAt, now, 24))
-    .map((registration) => ({
+  // Waitlist invitations expiring soon — the design's primary card shape: the guest is the
+  // headline, the deadline is minute-precise, and both the confirming and reverting action are
+  // real, inline, one-click mutations (no navigation).
+  for (const registration of registrations) {
+    if (registration.status !== "invited" || !registration.invitationExpiresAt) continue;
+    if (!withinHours(registration.invitationExpiresAt, now, 24)) continue;
+    const deadline = new Date(registration.invitationExpiresAt).getTime();
+    const event = eventsById.get(registration.eventId);
+    const schedule = event
+      ? `${formatRelativeEventDay(event.startsAt, now)} ${formatArabicEventTimeRange(event.startsAt)}، السعة ${formatArabicNumber(event.activeReservationCount)}/${formatArabicNumber(event.capacity)}`
+      : formatRelativeEventDay(registration.eventStartsAt, now);
+    items.push({
       id: `invite-${registration.id}`,
-      description: `${registration.attendeeName} — ${registration.eventTitle}`,
-      href: `/admin/registrations?view=waitlist&id=${registration.id}`,
-      deadline: new Date(registration.invitationExpiresAt as string).getTime(),
-    }));
+      icon: "clock",
+      tone: "urgent",
+      subjectName: registration.attendeeName,
+      urgencyLabel: `تنتهي الدعوة ${formatDeadlineLabel(deadline, now)}`,
+      context: `على قائمة انتظار «${registration.eventTitle}» — ${schedule}.`,
+      actions: [
+        { kind: "revoke-invitation", variant: "secondary", label: "إعادة للقائمة", registrationId: registration.id },
+        { kind: "confirm-invitation", variant: "primary", label: "تأكيد الدعوة", registrationId: registration.id },
+      ],
+      deadline,
+    });
+  }
 
-  const reminderMembers: AttentionMember[] = upcomingEvents
-    .filter(
-      (event) =>
-        withinHours(event.startsAt, now, 24) &&
-        registrations.some(
-          (registration) => registration.eventId === event.id && registration.status === "registered" && registration.latestReminderPreparedAt === null,
-        ),
-    )
-    .map((event) => ({
+  // New, uncontacted service requests.
+  for (const request of requests) {
+    if (request.status !== "new" || request.contactedAt) continue;
+    const deadline = new Date(request.createdAt).getTime();
+    items.push({
+      id: `request-${request.id}`,
+      icon: "request",
+      tone: "urgent",
+      subjectName: request.requesterName,
+      urgencyLabel: `${requestKindLabel(request.kind)} — ${formatElapsedLabel(deadline, now)}`,
+      context: requestContext(request),
+      actions: [{ kind: "link", variant: "primary", label: "مراجعة الطلب", href: `/admin/requests?id=${encodeURIComponent(request.id)}` }],
+      deadline,
+    });
+  }
+
+  // Draft events missing what publishing requires.
+  for (const event of events) {
+    if (event.publicationStatus !== "draft") continue;
+    if (event.endsAt !== null && event.priceHalalas !== null) continue;
+    const deadline = new Date(event.startsAt).getTime();
+    const missing = [event.endsAt === null ? "موعد الانتهاء" : null, event.priceHalalas === null ? "السعر" : null].filter(
+      (value): value is string => value !== null,
+    );
+    items.push({
+      id: `draft-${event.id}`,
+      icon: "draft",
+      tone: "warning",
+      subjectName: event.title,
+      urgencyLabel: `تبدأ ${formatDeadlineLabel(deadline, now)}`,
+      context: `أكملي ${missing.join(" و")} قبل نشرها.`,
+      actions: [{ kind: "link", variant: "primary", label: "إكمال الإعدادات", href: `/admin/events?event=${event.id}#event-section-settings` }],
+      deadline,
+    });
+  }
+
+  // Available seats with a guest still waiting on the list.
+  for (const event of upcomingEvents) {
+    if (event.activeReservationCount >= event.capacity) continue;
+    if (!registrations.some((registration) => registration.eventId === event.id && registration.status === "waitlisted")) continue;
+    const deadline = new Date(event.startsAt).getTime();
+    items.push({
+      id: `seat-${event.id}`,
+      icon: "seat",
+      tone: "urgent",
+      subjectName: event.title,
+      urgencyLabel: `تبدأ ${formatDeadlineLabel(deadline, now)}`,
+      context: `${formatSeatCapacity(event.capacity - event.activeReservationCount)} متاحة مع ضيوف على قائمة الانتظار. ادعي بديلة من مساحة التواصل.`,
+      actions: [{ kind: "link", variant: "primary", label: "فتح مساحة التواصل", href: `/admin/events?event=${event.id}#event-section-communications` }],
+      deadline,
+    });
+  }
+
+  // Events starting within 24 hours with at least one registered guest lacking a prepared
+  // reminder. Event-level rather than per-guest: the task is preparing the event's reminders,
+  // not any single registrant's.
+  for (const event of upcomingEvents) {
+    if (!withinHours(event.startsAt, now, 24)) continue;
+    const unprepared = registrations.filter(
+      (registration) => registration.eventId === event.id && registration.status === "registered" && registration.latestReminderPreparedAt === null,
+    );
+    if (unprepared.length === 0) continue;
+    const deadline = new Date(event.startsAt).getTime();
+    items.push({
       id: `reminder-${event.id}`,
-      description: `فعالية «${event.title}» تبدأ خلال ٢٤ ساعة.`,
-      href: `/admin/events?event=${event.id}#event-section-communications`,
-      deadline: new Date(event.startsAt).getTime(),
-    }));
+      icon: "envelope",
+      tone: "urgent",
+      subjectName: event.title,
+      urgencyLabel: `تبدأ ${formatDeadlineLabel(deadline, now)}`,
+      context: `${formatArabicNumber(unprepared.length)} من المسجَّلات بلا تذكير مُجهّز. جهّزيه من مساحة التواصل.`,
+      actions: [{ kind: "link", variant: "primary", label: "فتح مساحة التواصل", href: `/admin/events?event=${event.id}#event-section-communications` }],
+      deadline,
+    });
+  }
 
-  const paymentMembers: AttentionMember[] =
-    upcomingUnpaid.length > 0
-      ? [
-          {
-            id: "payments",
-            description: `${formatArabicNumber(upcomingUnpaid.length)} حجوزات مدفوعة لم يُسجّل دفعها بعد.`,
-            href: "/admin/registrations?view=upcoming",
-            deadline: Math.min(...upcomingUnpaid.map((registration) => new Date(registration.eventStartsAt).getTime())),
-          },
-        ]
-      : [];
+  // Registered guests whose WhatsApp confirmation hasn't been sent yet.
+  for (const registration of registrations) {
+    if (registration.status !== "registered" || registration.confirmationSentAt) continue;
+    if (new Date(registration.eventStartsAt).getTime() < now) continue;
+    const deadline = new Date(registration.eventStartsAt).getTime();
+    const event = eventsById.get(registration.eventId);
+    items.push({
+      id: `confirmation-${registration.id}`,
+      icon: "envelope",
+      tone: "urgent",
+      subjectName: registration.attendeeName,
+      urgencyLabel: `سجّلت ${formatElapsedLabel(new Date(registration.createdAt).getTime(), now)}`,
+      context: `تسجيل جديد في «${registration.eventTitle}» — ${formatRelativeEventDay(registration.eventStartsAt, now)} ${formatArabicEventTimeRange(registration.eventStartsAt)}. يحتاج تأكيد واتساب.`,
+      actions: [
+        {
+          kind: "link",
+          variant: "primary",
+          label: "فتح مساحة التواصل",
+          href: `/admin/events?event=${event?.id ?? registration.eventId}#event-section-communications`,
+        },
+      ],
+      deadline,
+    });
+  }
 
-  const attention: AttentionGroup[] = [
-    buildAttentionGroup("invite", "warning", inviteMembers, "دعوة انتظار تنتهي قريبًا", (count) => `${formatArabicNumber(count)} دعوات انتظار تنتهي قريبًا`),
-    buildAttentionGroup(
-      "reminder",
-      "urgent",
-      reminderMembers,
-      "تذكيرات قريبة لم تُجهّز",
-      (count) => `${formatArabicNumber(count)} فعاليات لديها تذكيرات قريبة لم تُجهّز`,
-    ),
-    buildAttentionGroup(
-      "confirmation",
-      "urgent",
-      confirmationMembers,
-      "تسجيل جديد يحتاج تأكيد واتساب",
-      (count) => `${formatArabicNumber(count)} تسجيلات تنتظر تأكيد واتساب`,
-    ),
-    buildAttentionGroup("request", "urgent", requestMembers, "طلب يحتاج تواصلًا", (count) => `${formatArabicNumber(count)} طلبات تحتاج تواصلًا`),
-    buildAttentionGroup("draft", "warning", draftMembers, "مسودة غير جاهزة للنشر", (count) => `${formatArabicNumber(count)} مسودات غير جاهزة للنشر`),
-    buildAttentionGroup(
-      "seat",
-      "urgent",
-      seatMembers,
-      "مقعد متاح مع قائمة انتظار",
-      (count) => `${formatArabicNumber(count)} فعاليات لديها مقاعد متاحة مع قائمة انتظار`,
-    ),
-    buildAttentionGroup("payment", "neutral", paymentMembers, "دفعات تحتاج تسجيلًا", () => "دفعات تحتاج تسجيلًا"),
-  ].filter((group): group is AttentionGroup => group !== null);
-  attention.sort((first, second) => first.deadline - second.deadline);
-  return attention;
+  // Unpaid, upcoming, priced registrations — one card per guest, each with its own precise
+  // destination to record the payment, rather than one uncountable aggregate.
+  for (const registration of registrations) {
+    if (registration.status !== "registered" || registration.paymentStatus !== "unpaid" || registration.priceHalalasAtBooking <= 0) continue;
+    if (new Date(registration.eventStartsAt).getTime() < now) continue;
+    const deadline = new Date(registration.eventStartsAt).getTime();
+    items.push({
+      id: `payment-${registration.id}`,
+      icon: "card",
+      tone: "neutral",
+      subjectName: registration.attendeeName,
+      urgencyLabel: "دفعة معلّقة",
+      context: `لم تُستكمل دفعة «${registration.eventTitle}» — ${formatRelativeEventDay(registration.eventStartsAt, now)} ${formatArabicEventTimeRange(registration.eventStartsAt)}.`,
+      actions: [
+        { kind: "link", variant: "primary", label: "متابعة الدفع", href: `/admin/registrations?view=upcoming&id=${registration.id}` },
+      ],
+      deadline,
+    });
+  }
+
+  items.sort((first, second) => first.deadline - second.deadline);
+  return items;
 }
 
 export function buildRecentItems(

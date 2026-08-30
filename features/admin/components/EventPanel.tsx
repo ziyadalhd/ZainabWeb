@@ -1,8 +1,5 @@
-"use client";
-
-import { useEffect, useRef, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { ToastProvider } from "@/components/ui/ToastProvider";
+import type { ReactNode } from "react";
+import { Overlay } from "@/features/admin/components/Overlay";
 
 interface EventPanelProps {
   closeHref: string;
@@ -12,50 +9,17 @@ interface EventPanelProps {
 }
 
 export function EventPanel({ closeHref, triggerId, label, children }: EventPanelProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog || dialog.open) return;
-    dialog.showModal();
-    document.body.style.overflow = "hidden";
-    const hash = window.location.hash.slice(1);
-    if (hash) document.getElementById(hash)?.scrollIntoView({ block: "start" });
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const handleClose = () => {
-      if (triggerId) document.getElementById(triggerId)?.focus();
-      router.push(closeHref, { scroll: false });
-    };
-    dialog.addEventListener("close", handleClose);
-    return () => dialog.removeEventListener("close", handleClose);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-bind only when the destination or trigger changes, not on every router identity change
-  }, [closeHref, triggerId]);
-
   return (
-    <dialog
-      ref={dialogRef}
+    <Overlay
+      closeHref={closeHref}
+      triggerId={triggerId}
+      label={label}
       className="event-panel"
-      aria-label={label}
-      onClick={(clickEvent) => {
-        if (clickEvent.target === dialogRef.current) dialogRef.current?.close();
-      }}
+      bodyClassName="event-panel__body"
+      closeButtonClassName="event-panel__close"
+      closeLabel="إغلاق مساحة الفعالية"
     >
-      <ToastProvider>
-        <div className="event-panel__body">
-          <button type="button" className="event-panel__close" onClick={() => dialogRef.current?.close()} aria-label="إغلاق مساحة الفعالية">
-            <span aria-hidden="true">✕</span>
-          </button>
-          {children}
-        </div>
-      </ToastProvider>
-    </dialog>
+      {children}
+    </Overlay>
   );
 }

@@ -4,8 +4,10 @@ import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { requireAdmin } from "@/lib/auth/require-admin";
 
+// Every admin surface renders per-admin operational data through a cookie-scoped Supabase client,
+// so nothing under this layout is cacheable. Latency is addressed by streaming (Suspense
+// boundaries inside each page), not by relaxing this.
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default async function ProtectedAdminLayout({ children }: Readonly<{ children: ReactNode }>) {
   await requireAdmin();

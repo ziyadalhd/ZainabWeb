@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { AdminEventRepository, EventCatalog } from "@/lib/data/contracts";
+import type { AdminEventRepository, DeleteEventOutcome, EventCatalog } from "@/lib/data/contracts";
 import { loadFailed, ok, type RepositoryResult } from "@/lib/data/result";
 import { logRepositoryFailure } from "@/lib/observability/logger";
 import {
@@ -77,6 +77,9 @@ function toEventWrite(input: EventInput) {
 function failDataAccess(): never {
   throw new Error("تعذر الوصول إلى بيانات الفعاليات حاليًا.");
 }
+
+/** Postgres SQLSTATE for a foreign-key violation — an `on delete restrict` refusal. */
+const FOREIGN_KEY_VIOLATION = "23503";
 
 export class SupabaseEventRepository implements EventCatalog, AdminEventRepository {
   constructor(private readonly client: SupabaseClient<Database>) {}
@@ -218,6 +221,32 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
   }
 
+  async duplicate(id: string): Promise<Event> {
+    const { data: source, error: sourceError } = await this.client.from("events").select("*").eq("id", id).single();
+    if (sourceError || !source) failDataAccess();
+
+    const { data, error } = await this.client
+      .from("events")
+      .insert({
+        title: `${source.title} (نسخة)`,
+        event_kind: source.event_kind,
+        audience: source.audience,
+        event_type_label: source.event_type_label,
+        starts_at: new Date().toISOString(),
+        ends_at: null,
+        capacity: source.capacity,
+        price_halalas: source.price_halalas,
+        registration_status: source.registration_status,
+        publication_status: "draft",
+      })
+      .select("*")
+      .single();
+
+    if (error) failDataAccess();
+    const state = await this.getState(data.id);
+    return mapEventRow(data, state, null);
+  }
+
   async setPosterPath(id: string, posterPath: string): Promise<void> {
     const { error } = await this.client
       .from("events")
@@ -237,6 +266,33 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     if (error) failDataAccess();
     const state = await this.getState(data.id);
     return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
+  }
+
+  async delete(id: string): Promise<DeleteEventOutcome> {
+    const { data: existing, error: readError } = await this.client.from("events").select("poster_path").eq("id", id).maybeSingle();
+    if (readError) failDataAccess();
+    if (!existing) return { deleted: false, reason: "not-found" };
+
+    // Checked before the delete so the common case gets the accurate reason rather than a raw
+    // constraint error, and re-checked by the database itself through the `on delete restrict`
+    // foreign keys — which is what makes a registration arriving between these two statements safe.
+    const [{ count: registrationCount, error: registrationError }, { count: feedbackCount, error: feedbackError }] = await Promise.all([
+      this.client.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", id),
+      this.client.from("event_feedback_links").select("id", { count: "exact", head: true }).eq("event_id", id),
+    ]);
+    if (registrationError || feedbackError) failDataAccess();
+    if ((registrationCount ?? 0) > 0 || (feedbackCount ?? 0) > 0) return { deleted: false, reason: "has-attendees" };
+
+    const { data: deleted, error } = await this.client.from("events").delete().eq("id", id).select("id").maybeSingle();
+    if (error) {
+      if (error.code === FOREIGN_KEY_VIOLATION) return { deleted: false, reason: "has-attendees" };
+      failDataAccess();
+    }
+    // RLS filters a forbidden delete to zero rows instead of raising, so an empty result here means
+    // the row is not visible to this caller — indistinguishable from, and reported as, not-found.
+    if (!deleted) return { deleted: false, reason: "not-found" };
+
+    return { deleted: true, posterPath: existing.poster_path };
   }
 
   private async getState(eventId: string): Promise<EventStateRow> {

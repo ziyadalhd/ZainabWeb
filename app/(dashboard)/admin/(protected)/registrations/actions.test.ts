@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
   cancel: vi.fn(),
   revokeInvitation: vi.fn(),
+  confirmInvitation: vi.fn(),
   confirmAttendance: vi.fn(),
   recordCheckIn: vi.fn(),
   setPaymentStatus: vi.fn(),
@@ -17,6 +18,7 @@ vi.mock("@/lib/supabase/registrations", () => ({
   createAdminRegistrationRepository: vi.fn(async () => ({
     cancel: mocks.cancel,
     revokeInvitation: mocks.revokeInvitation,
+    confirmInvitation: mocks.confirmInvitation,
     confirmAttendance: mocks.confirmAttendance,
     recordCheckIn: mocks.recordCheckIn,
     setPaymentStatus: mocks.setPaymentStatus,
@@ -26,6 +28,7 @@ vi.mock("@/lib/supabase/registrations", () => ({
 import {
   cancelRegistrationAction,
   confirmAttendanceAction,
+  confirmInvitationAction,
   recordCheckInAction,
   revokeInvitationAction,
   setRegistrationPaymentStatusAction,
@@ -82,6 +85,21 @@ describe("confirmAttendanceAction", () => {
     const result = await confirmAttendanceAction(validId, idleActionResult, new FormData());
     expect(result).toEqual({ status: "success" });
     expect(mocks.confirmAttendance).toHaveBeenCalledWith(validId);
+  });
+});
+
+describe("confirmInvitationAction", () => {
+  it("confirms the invitation on the guest's behalf and returns success", async () => {
+    const result = await confirmInvitationAction(validId, idleActionResult, new FormData());
+    expect(result).toEqual({ status: "success" });
+    expect(mocks.confirmInvitation).toHaveBeenCalledWith(validId);
+  });
+
+  it("returns an error result when the repository rejects (e.g. the invitation already expired)", async () => {
+    mocks.confirmInvitation.mockRejectedValueOnce(new Error("invitation_unavailable"));
+
+    const result = await confirmInvitationAction(validId, idleActionResult, new FormData());
+    expect(result).toEqual({ status: "error" });
   });
 });
 

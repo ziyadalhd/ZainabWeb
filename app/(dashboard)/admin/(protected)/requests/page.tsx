@@ -11,7 +11,6 @@ import { markServiceRequestContactedAction } from "@/app/(dashboard)/admin/(prot
 
 export const metadata: Metadata = { title: "الطلبات" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 const pageSize = 25;
 
 function getKind(value: string | undefined): "all" | "space_booking" | "workshop_application" {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAttentionGroups, buildRecentItems } from "@/features/admin/attention-items";
+import { buildRecentItems, buildTriageItems } from "@/features/admin/attention-items";
 import type { AdminServiceRequest, Event, Registration } from "@/lib/domain/types";
 
 const now = new Date("2026-08-20T12:00:00.000Z").getTime();
@@ -86,76 +86,85 @@ function makeRequest(overrides: Partial<AdminServiceRequest> = {}): AdminService
   };
 }
 
-describe("buildAttentionGroups", () => {
+describe("buildTriageItems", () => {
   it("returns nothing when there is no work to do", () => {
-    expect(buildAttentionGroups([], [], [], now)).toEqual([]);
+    expect(buildTriageItems([], [], [], now)).toEqual([]);
   });
 
-  it("flags a registered attendee with no confirmation sent, carrying the registration's identity", () => {
+  it("headlines a registered attendee with no confirmation sent by their own name, not the category", () => {
+    const event = makeEvent();
     const registration = makeRegistration({ confirmationSentAt: null });
-    const [group] = buildAttentionGroups([], [registration], [], now);
+    const [item] = buildTriageItems([event], [registration], [], now);
 
-    expect(group?.title).toBe("تسجيل جديد يحتاج تأكيد واتساب");
-    expect(group?.members).toHaveLength(1);
-    expect(group?.members[0]?.href).toBe(`/admin/registrations?view=upcoming&id=${registration.id}`);
-  });
-
-  it("groups multiple unconfirmed registrations into one row with a count, each member carrying its own identity", () => {
-    const first = makeRegistration({ id: "unconfirmed-1", confirmationSentAt: null });
-    const second = makeRegistration({ id: "unconfirmed-2", confirmationSentAt: null, attendeeName: "سارة" });
-    const [group] = buildAttentionGroups([], [first, second], [], now);
-
-    expect(group?.title).toBe("٢ تسجيلات تنتظر تأكيد واتساب");
-    expect(group?.members.map((member) => member.href)).toEqual([
-      `/admin/registrations?view=upcoming&id=${first.id}`,
-      `/admin/registrations?view=upcoming&id=${second.id}`,
+    expect(item?.subjectName).toBe(registration.attendeeName);
+    expect(item?.actions).toEqual([
+      { kind: "link", variant: "primary", label: "فتح مساحة التواصل", href: `/admin/events?event=${event.id}#event-section-communications` },
     ]);
   });
 
-  it("flags a new, uncontacted service request", () => {
-    const request = makeRequest({ status: "new", contactedAt: null });
-    const [group] = buildAttentionGroups([], [], [request], now);
+  it("gives every unconfirmed registration its own card, never a grouped count", () => {
+    const first = makeRegistration({ id: "unconfirmed-1", confirmationSentAt: null });
+    const second = makeRegistration({ id: "unconfirmed-2", confirmationSentAt: null, attendeeName: "سارة" });
+    const items = buildTriageItems([], [first, second], [], now);
 
-    expect(group?.title).toBe("طلب يحتاج تواصلًا");
-    expect(group?.members[0]?.href).toBe("/admin/requests");
+    expect(items).toHaveLength(2);
+    expect(items.map((item) => item.subjectName)).toEqual([first.attendeeName, second.attendeeName]);
+  });
+
+  it("headlines a new, uncontacted service request by the requester's name and links straight to it", () => {
+    const request = makeRequest({ status: "new", contactedAt: null });
+    const [item] = buildTriageItems([], [], [request], now);
+
+    expect(item?.subjectName).toBe(request.requesterName);
+    expect(item?.urgencyLabel).toContain("حجز مساحة");
+    expect(item?.actions).toEqual([
+      { kind: "link", variant: "primary", label: "مراجعة الطلب", href: `/admin/requests?id=${encodeURIComponent(request.id)}` },
+    ]);
   });
 
   it("does not flag a service request that has already been contacted", () => {
     const request = makeRequest({ status: "new", contactedAt: "2026-08-19T01:00:00.000Z" });
-    expect(buildAttentionGroups([], [], [request], now)).toEqual([]);
+    expect(buildTriageItems([], [], [request], now)).toEqual([]);
   });
 
   it("flags a draft event missing an end time or price, linking to the panel's settings section", () => {
     const event = makeEvent({ publicationStatus: "draft", endsAt: null });
-    const [group] = buildAttentionGroups([event], [], [], now);
+    const [item] = buildTriageItems([event], [], [], now);
 
-    expect(group?.title).toBe("مسودة غير جاهزة للنشر");
-    expect(group?.members[0]?.href).toBe(`/admin/events?event=${event.id}#event-section-settings`);
+    expect(item?.subjectName).toBe(event.title);
+    expect(item?.context).toContain("موعد الانتهاء");
+    expect(item?.actions).toEqual([{ kind: "link", variant: "primary", label: "إكمال الإعدادات", href: `/admin/events?event=${event.id}#event-section-settings` }]);
   });
 
   it("flags an event with an available seat while a registrant waits, linking to the panel's communications section", () => {
     const event = makeEvent({ capacity: 10, activeReservationCount: 8 });
     const waitlisted = makeRegistration({ id: "waitlisted-1", eventId: event.id, status: "waitlisted" });
-    const [group] = buildAttentionGroups([event], [waitlisted], [], now);
+    const [item] = buildTriageItems([event], [waitlisted], [], now);
 
-    expect(group?.title).toBe("مقعد متاح مع قائمة انتظار");
-    expect(group?.members[0]?.href).toBe(`/admin/events?event=${event.id}#event-section-communications`);
+    expect(item?.subjectName).toBe(event.title);
+    expect(item?.actions).toEqual([{ kind: "link", variant: "primary", label: "فتح مساحة التواصل", href: `/admin/events?event=${event.id}#event-section-communications` }]);
   });
 
   it("does not flag capacity when no one is waiting", () => {
     const event = makeEvent({ capacity: 10, activeReservationCount: 8 });
-    expect(buildAttentionGroups([event], [], [], now)).toEqual([]);
+    expect(buildTriageItems([event], [], [], now)).toEqual([]);
   });
 
-  it("flags a waitlist invitation expiring within 24 hours, carrying the registration's identity", () => {
+  it("flags a waitlist invitation expiring within 24 hours, with confirm and revoke as inline actions", () => {
+    const event = makeEvent();
     const registration = makeRegistration({
+      eventId: event.id,
       status: "invited",
-      invitationExpiresAt: new Date(now + 6 * 60 * 60 * 1000).toISOString(),
+      invitationExpiresAt: new Date(now + 40 * 60 * 1000).toISOString(),
     });
-    const [group] = buildAttentionGroups([], [registration], [], now);
+    const [item] = buildTriageItems([event], [registration], [], now);
 
-    expect(group?.title).toBe("دعوة انتظار تنتهي قريبًا");
-    expect(group?.members[0]?.href).toBe(`/admin/registrations?view=waitlist&id=${registration.id}`);
+    expect(item?.subjectName).toBe(registration.attendeeName);
+    expect(item?.urgencyLabel).toBe("تنتهي الدعوة خلال ٤٠ دقيقة");
+    expect(item?.actions).toEqual([
+      { kind: "revoke-invitation", variant: "secondary", label: "إعادة للقائمة", registrationId: registration.id },
+      { kind: "confirm-invitation", variant: "primary", label: "تأكيد الدعوة", registrationId: registration.id },
+    ]);
   });
 
   it("flags an unprepared reminder for an event starting within 24 hours, linking to the panel's communications section", () => {
@@ -165,26 +174,30 @@ describe("buildAttentionGroups", () => {
       eventStartsAt: event.startsAt,
       latestReminderPreparedAt: null,
     });
-    const [group] = buildAttentionGroups([event], [registration], [], now);
+    const [item] = buildTriageItems([event], [registration], [], now);
 
-    expect(group?.title).toBe("تذكيرات قريبة لم تُجهّز");
-    expect(group?.members[0]?.href).toBe(`/admin/events?event=${event.id}#event-section-communications`);
+    expect(item?.subjectName).toBe(event.title);
+    expect(item?.actions).toEqual([{ kind: "link", variant: "primary", label: "فتح مساحة التواصل", href: `/admin/events?event=${event.id}#event-section-communications` }]);
   });
 
-  it("aggregates unpaid upcoming paid registrations into a single item", () => {
+  it("gives every unpaid upcoming registration its own card with a precise link, never an aggregate count", () => {
     const first = makeRegistration({ id: "paid-1", priceHalalasAtBooking: 5000, paymentStatus: "unpaid" });
     const second = makeRegistration({ id: "paid-2", priceHalalasAtBooking: 5000, paymentStatus: "unpaid" });
-    const [group] = buildAttentionGroups([], [first, second], [], now);
+    const items = buildTriageItems([], [first, second], [], now);
 
-    expect(group?.members[0]?.description).toContain("٢ حجوزات مدفوعة لم يُسجّل دفعها بعد");
+    expect(items).toHaveLength(2);
+    expect(items.map((item) => item.actions)).toEqual([
+      [{ kind: "link", variant: "primary", label: "متابعة الدفع", href: `/admin/registrations?view=upcoming&id=${first.id}` }],
+      [{ kind: "link", variant: "primary", label: "متابعة الدفع", href: `/admin/registrations?view=upcoming&id=${second.id}` }],
+    ]);
   });
 
-  it("does not aggregate a payment item when the registration is free", () => {
+  it("does not flag a payment item when the registration is free", () => {
     const registration = makeRegistration({ priceHalalasAtBooking: 0, paymentStatus: "unpaid" });
-    expect(buildAttentionGroups([], [registration], [], now)).toEqual([]);
+    expect(buildTriageItems([], [registration], [], now)).toEqual([]);
   });
 
-  it("sorts groups by nearest deadline rather than category order", () => {
+  it("sorts items by nearest deadline rather than category order — the priority logic carried over unchanged", () => {
     const soonEvent = makeEvent({
       id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
       publicationStatus: "draft",
@@ -196,9 +209,9 @@ describe("buildAttentionGroups", () => {
       status: "invited",
       invitationExpiresAt: new Date(now + 20 * 60 * 60 * 1000).toISOString(),
     });
-    const groups = buildAttentionGroups([soonEvent], [laterInvite], [], now);
+    const items = buildTriageItems([soonEvent], [laterInvite], [], now);
 
-    expect(groups.map((group) => group.id)).toEqual(["draft", "invite"]);
+    expect(items.map((item) => item.id)).toEqual([`draft-${soonEvent.id}`, `invite-${laterInvite.id}`]);
   });
 });
 

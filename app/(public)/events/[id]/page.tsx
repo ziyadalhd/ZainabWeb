@@ -4,8 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PosterFrame } from "@/components/ui/PosterFrame";
 import { EventRegistrationForm } from "@/features/events/components/EventRegistrationForm";
-import { eventAvailabilityPresentation } from "@/features/events/event-presentation";
-import type { EventAudience } from "@/lib/domain/types";
+import { eventAudienceLabels, eventAvailabilityPresentation } from "@/features/events/event-presentation";
 import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
@@ -16,12 +15,6 @@ import { createEventCatalog } from "@/lib/supabase/events";
 import { registerForEventAction } from "@/app/(public)/events/[id]/actions";
 
 export const dynamic = "force-dynamic";
-
-const audienceLabels: Record<EventAudience, string> = {
-  adults: "الكبار",
-  youth: "اليافعون",
-  children: "الصغار",
-};
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -42,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   }
 
-  const description = `${event.eventTypeLabel} لفئة ${audienceLabels[event.audience]} في نادي بَيْن الثقافي.`;
+  const description = `${event.eventTypeLabel} لفئة ${eventAudienceLabels[event.audience]} في نادي بَيْن الثقافي.`;
   return {
     title: event.title,
     description,
@@ -90,7 +83,7 @@ export default async function EventDetailsPage({
           ) : null}
           <div className="p-5 sm:p-9">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="border-r-4 border-[var(--brand-amber)] pr-3 text-sm font-extrabold text-[var(--brand-forest)]">{audienceLabels[event.audience]}</span>
+              <span className="border-r-4 border-[var(--brand-amber)] pr-3 text-sm font-extrabold text-[var(--brand-forest)]">{eventAudienceLabels[event.audience]}</span>
               <span className="text-sm font-extrabold text-[var(--brand-olive)]">{availability.status}</span>
             </div>
             <p className="eyebrow mt-8">{event.eventTypeLabel}</p>

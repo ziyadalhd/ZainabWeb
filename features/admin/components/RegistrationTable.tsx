@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useOptimistic } from "react";
+import { useOptimistic, useState } from "react";
 import type { Registration } from "@/lib/domain/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -19,6 +19,7 @@ export interface RegistrationTableActions {
   confirmAttendance: (id: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
   recordCheckIn: (id: string, outcome: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
   revokeInvitation: (id: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
+  confirmInvitation: (id: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
   setPaymentStatus: (id: string, state: RegistrationPaymentActionState, formData: FormData) => Promise<RegistrationPaymentActionState>;
 }
 
@@ -48,29 +49,41 @@ function RegistrationActions({
 }) {
   const canConfirmAttendance = mode === "current" && registration.attendanceStatus === "pending";
   const canCheckIn = mode === "current" && registration.checkInStatus !== "checked_in";
-  const canRevoke = mode === "waitlist" && registration.status === "invited";
+  const canRevokeOrConfirmInvitation = mode === "waitlist" && registration.status === "invited";
   // Every available action stays visible (no hidden menu — see the A11 test below), but exactly
   // one is styled as the row's confident "next step"; the rest recede to secondary/danger.
-  const primaryAction: "confirm" | "checkIn" | "revoke" | null = canConfirmAttendance
+  // Confirming the invitation (the guest accepted by phone or WhatsApp) is that next step for an
+  // invited row, ahead of revoking it — mirroring the design's primary/secondary pairing.
+  const primaryAction: "confirm" | "checkIn" | "confirmInvitation" | null = canConfirmAttendance
     ? "confirm"
     : canCheckIn
       ? "checkIn"
-      : canRevoke
-        ? "revoke"
+      : canRevokeOrConfirmInvitation
+        ? "confirmInvitation"
         : null;
 
   return (
     <div className="flex flex-wrap gap-2">
-      {canRevoke ? (
+      {canRevokeOrConfirmInvitation ? (
         <ConfirmDialog
           triggerLabel="سحب الدعوة"
-          triggerClassName={`${primaryAction === "revoke" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
+          triggerClassName="button-secondary min-h-10 px-3 py-2 text-sm"
           tone="default"
           title="سحب الدعوة"
           description={`هل تريدين سحب دعوة ${registration.attendeeName} وإعادتها لقائمة الانتظار؟`}
           confirmLabel="سحب الدعوة"
           action={actions.revokeInvitation.bind(null, registration.id)}
           successMessage="تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار."
+          onSuccess={onChanged}
+        />
+      ) : null}
+      {canRevokeOrConfirmInvitation ? (
+        <ActionButton
+          action={actions.confirmInvitation.bind(null, registration.id)}
+          label="تأكيد الدعوة"
+          pendingLabel="جارٍ التأكيد…"
+          className={`${primaryAction === "confirmInvitation" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
+          successMessage={`تم تأكيد دعوة ${registration.attendeeName} وتحويل المقعد إلى مسجَّل.`}
           onSuccess={onChanged}
         />
       ) : null}
@@ -228,6 +241,7 @@ interface RegistrationPatch {
 export function RegistrationTable({ registrations, mode, selectedId, registrationHrefs, actions }: RegistrationTableProps) {
   const router = useRouter();
   const { pushToast } = useToast();
+  const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
   const onChanged = () => router.refresh();
   // Applies each mutation to a local, transition-scoped copy of the list the instant an action is
   // submitted, so the row/badge updates before the server round trip (triggered by onChanged below)
@@ -236,7 +250,7 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
     current.map((registration) => (registration.id === patch.id ? { ...registration, ...patch.changes } : registration)),
   );
 
-  // These four actions optimistically flip a status field that also gates which action controls
+  // These actions optimistically flip a status field that also gates which action controls
   // are rendered (e.g. the cancel dialog disappears once status becomes "cancelled") — so the
   // ConfirmDialog/ActionButton that submitted the action unmounts before its own success/error
   // effect can run. Completion (toast + real refresh) is handled here instead, in this
@@ -265,6 +279,12 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
       runGatingAction({ id, changes: { status: "waitlisted" } }, "تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار.", () =>
         actions.revokeInvitation(id, state, formData),
       ),
+    confirmInvitation: (id, state, formData) =>
+      runGatingAction(
+        { id, changes: { status: "registered" } },
+        "تم تأكيد الدعوة وتحويل المقعد إلى مسجَّل.",
+        () => actions.confirmInvitation(id, state, formData),
+      ),
     setPaymentStatus: (id, state, formData) => {
       // Payment status doesn't gate any control's visibility, so the form stays mounted and its
       // own success/error handling (inline, not a toast) already works correctly.
@@ -275,7 +295,11 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
   };
 
   if (registrations.length === 0) return <EmptyState title="لا توجد تسجيلات هنا" description="ستظهر الأسماء هنا عندما تصل تسجيلات لهذه القائمة." />;
-  const selected = optimisticRegistrations.find((registration) => registration.id === selectedId) ?? optimisticRegistrations[0]!;
+  // Selection is local: picking a row used to be a navigation, so every click re-ran the whole
+  // server page just to move the detail pane. `localSelectedId` wins once the admin has clicked;
+  // until then the `selectedId` prop (from the URL) decides, which keeps rows deep-linkable.
+  const activeId = localSelectedId ?? selectedId;
+  const selected = optimisticRegistrations.find((registration) => registration.id === activeId) ?? optimisticRegistrations[0]!;
   return (
     <div className="registration-master-detail">
       <aside className="registration-master-list" aria-label="نتائج التسجيلات">
@@ -289,6 +313,12 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
               href={registrationHrefs[registration.id] ?? "#"}
               aria-current={active ? "page" : undefined}
               className={className}
+              onClick={(clickEvent) => {
+                // Keep the href (deep links, middle-click, no-JS) but swap the pane in this frame
+                // instead of paying for a server round trip.
+                clickEvent.preventDefault();
+                setLocalSelectedId(registration.id);
+              }}
             >
               <span className="grid gap-0.5">
                 <strong>{registration.attendeeName}</strong>

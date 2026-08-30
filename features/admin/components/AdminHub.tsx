@@ -1,7 +1,8 @@
 import Link from "next/link";
-import type { CalendarItem } from "@/features/admin/calendar-items";
-import { CalendarMonthGrid } from "@/features/admin/components/CalendarMonthGrid";
-import { buildAttentionGroups, buildRecentItems } from "@/features/admin/attention-items";
+import { DayPulse } from "@/features/admin/components/DayPulse";
+import { TriageStream, type TriageRegistrationActions } from "@/features/admin/components/TriageStream";
+import { buildRecentItems, buildTriageItems } from "@/features/admin/attention-items";
+import type { PulseItem } from "@/features/admin/day-pulse";
 import type { AdminServiceRequest, Event, Registration } from "@/lib/domain/types";
 import { formatArabicDateTime, formatArabicNumber } from "@/lib/format/date";
 
@@ -10,11 +11,12 @@ interface AdminHubProps {
   registrations: readonly Registration[];
   requests: readonly AdminServiceRequest[];
   now: number;
-  calendarItems: readonly CalendarItem[];
-  month: Date;
-  monthHrefPrevious: string;
-  monthHrefNext: string;
-  monthHrefCurrent: string;
+  pulseItems: readonly PulseItem[];
+  selectedDay: Date;
+  today: Date;
+  dayHrefFor: (day: Date) => string;
+  calendarHref: string;
+  registrationActions: TriageRegistrationActions;
 }
 
 export function AdminHub({
@@ -22,86 +24,47 @@ export function AdminHub({
   registrations,
   requests,
   now,
-  calendarItems,
-  month,
-  monthHrefPrevious,
-  monthHrefNext,
-  monthHrefCurrent,
+  pulseItems,
+  selectedDay,
+  today,
+  dayHrefFor,
+  calendarHref,
+  registrationActions,
 }: AdminHubProps) {
-  const attention = buildAttentionGroups(events, registrations, requests, now);
+  const triageItems = buildTriageItems(events, registrations, requests, now);
   const recent = buildRecentItems(registrations, requests, now, 3);
 
   return (
-    <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.6fr)_minmax(19rem,0.85fr)]">
-      <section aria-labelledby="admin-hub-calendar-heading">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 id="admin-hub-calendar-heading" className="sr-only">
-            التقويم
-          </h2>
-          <nav aria-label="التنقل بين أشهر التقويم" className="flex flex-wrap gap-2">
-            <Link className="button-quiet" href={monthHrefPrevious}>
-              الشهر السابق
+    <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.9fr)_minmax(19rem,1fr)]">
+      <section aria-labelledby="triage-heading">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">قائمة التشغيل</p>
+            <h2 id="triage-heading" className="mt-2 text-2xl font-bold text-[var(--brand-forest)]">
+              يحتاج معالجة
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="data-value text-sm font-medium muted-copy">{formatArabicNumber(triageItems.length)} مهام</span>
+            <Link href="/admin/events/new" className="button-primary">
+              فعالية جديدة
             </Link>
-            <Link className="button-quiet" href={monthHrefNext}>
-              الشهر التالي
-            </Link>
-            <Link className="button-secondary" href={monthHrefCurrent}>
-              الشهر الحالي
-            </Link>
-          </nav>
-          <Link href="/admin/events/new" className="button-primary">
-            فعالية جديدة
-          </Link>
+          </div>
         </div>
-        <CalendarMonthGrid items={calendarItems} month={month} />
+        <TriageStream items={triageItems} registrationActions={registrationActions} />
       </section>
 
-      <aside aria-labelledby="attention-heading" className="grid content-start gap-8">
+      <aside aria-labelledby="pulse-heading" className="grid content-start gap-8">
         <section>
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <p className="eyebrow">قائمة التشغيل</p>
-              <h2 id="attention-heading" className="mt-2 text-2xl font-bold text-[var(--brand-forest)]">
-                يحتاج معالجة
-              </h2>
-            </div>
-            <span className="data-value text-sm font-medium muted-copy">{formatArabicNumber(attention.length)} مهام</span>
+          <h2 id="pulse-heading" className="eyebrow mb-4">
+            نبض اليوم
+          </h2>
+          <DayPulse items={pulseItems} selectedDay={selectedDay} today={today} hrefFor={dayHrefFor} />
+          <div className="mt-6 border-t border-[var(--color-border)] pt-4">
+            <Link href={calendarHref} className="button-quiet block text-center">
+              عرض التقويم الكامل
+            </Link>
           </div>
-          {attention.length ? (
-            <div className="grid gap-4">
-              {attention.map((group) =>
-                group.members.length === 1 ? (
-                  <Link key={group.id} href={group.members[0]!.href} className={`attention-item attention-item--${group.tone}`}>
-                    <span className="attention-item__dot" aria-hidden="true" />
-                    <span>
-                      <strong>{group.title}</strong>
-                      <small>{group.members[0]!.description}</small>
-                    </span>
-                    <span aria-hidden="true">←</span>
-                  </Link>
-                ) : (
-                  <details key={group.id} className={`attention-item attention-item--group attention-item--${group.tone}`}>
-                    <summary>
-                      <span className="attention-item__dot" aria-hidden="true" />
-                      <strong>{group.title}</strong>
-                    </summary>
-                    <div className="attention-item__members">
-                      {group.members.map((member) => (
-                        <Link key={member.id} href={member.href} className="attention-item__member">
-                          {member.description}
-                        </Link>
-                      ))}
-                    </div>
-                  </details>
-                ),
-              )}
-            </div>
-          ) : (
-            <div className="card-surface px-5 py-7">
-              <p className="font-bold">لا توجد مهام تحتاج معالجة الآن.</p>
-              <p className="mt-1 text-sm muted-copy">راجعي التقويم أو أنشئي فعالية جديدة عند الحاجة.</p>
-            </div>
-          )}
         </section>
 
         <section aria-labelledby="recent-heading">

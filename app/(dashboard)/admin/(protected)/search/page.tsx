@@ -12,7 +12,6 @@ import { createAdminServiceRequestRepository } from "@/lib/supabase/service-requ
 
 export const metadata: Metadata = { title: "البحث" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 const resultLimit = 8;
 

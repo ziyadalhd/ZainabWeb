@@ -11,6 +11,7 @@ import { createAdminRegistrationRepository } from "@/lib/supabase/registrations"
 import {
   cancelRegistrationAction,
   confirmAttendanceAction,
+  confirmInvitationAction,
   recordCheckInAction,
   revokeInvitationAction,
   setRegistrationPaymentStatusAction,
@@ -18,7 +19,6 @@ import {
 
 export const metadata: Metadata = { title: "التسجيلات" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 type RegistrationView = "upcoming" | "waitlist" | "previous";
 
@@ -31,6 +31,7 @@ const views: ReadonlyArray<{ id: RegistrationView; label: string }> = [
 const registrationActions = {
   cancelRegistration: cancelRegistrationAction,
   confirmAttendance: confirmAttendanceAction,
+  confirmInvitation: confirmInvitationAction,
   recordCheckIn: recordCheckInAction,
   revokeInvitation: revokeInvitationAction,
   setPaymentStatus: setRegistrationPaymentStatusAction,

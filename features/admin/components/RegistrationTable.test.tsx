@@ -22,6 +22,7 @@ const actions: RegistrationTableActions = {
   confirmAttendance: vi.fn(async () => ({ status: "success" as const })),
   recordCheckIn: vi.fn(async () => ({ status: "success" as const })),
   revokeInvitation: vi.fn(async () => ({ status: "success" as const })),
+  confirmInvitation: vi.fn(async () => ({ status: "success" as const })),
   setPaymentStatus: vi.fn(async () => ({ saved: true as const })),
 };
 
@@ -89,6 +90,23 @@ describe("RegistrationTable", () => {
     expect(screen.queryByText("إجراءات إضافية")).not.toBeInTheDocument();
   });
 
+  it("offers both revoke and admin-confirm actions for an invited waitlist row, confirm styled as primary", async () => {
+    const invited: Registration = { ...registration, status: "invited", invitationExpiresAt: "2026-08-12T21:00:00.000Z" };
+    renderTable({ registrations: [invited], mode: "waitlist", registrationHrefs: hrefsFor([invited]), actions });
+
+    const revoke = screen.getByRole("button", { name: "سحب الدعوة" });
+    const confirm = screen.getByRole("button", { name: "تأكيد الدعوة" });
+    expect(revoke).toBeInTheDocument();
+    expect(confirm.className).toContain("button-primary");
+    expect(revoke.className).toContain("button-secondary");
+
+    fireEvent.click(confirm);
+
+    await waitFor(() => expect(actions.confirmInvitation).toHaveBeenCalledWith(invited.id, expect.anything(), expect.anything()));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("تم تأكيد الدعوة"));
+    expect(refresh).toHaveBeenCalled();
+  });
+
   it("shows previous-registration payment status without offering cancellation or payment actions", () => {
     renderTable({ registrations: [registration], mode: "previous", registrationHrefs: hrefsFor([registration]), actions });
 
@@ -106,5 +124,35 @@ describe("RegistrationTable", () => {
       .map((link) => link.getAttribute("href"))
       .filter((value) => value?.startsWith("/admin/registrations?id="));
     expect(rosterHrefs).toEqual([href(registration), href(secondRegistration)]);
+  });
+
+  it("swaps the detail pane locally on click, without navigating or refreshing", () => {
+    const secondRegistration: Registration = { ...registration, id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", attendeeName: "مشاركة أخرى" };
+    renderTable({ registrations: [registration, secondRegistration], mode: "current", registrationHrefs: hrefsFor([registration, secondRegistration]), actions });
+
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("مشاركة");
+
+    fireEvent.click(screen.getByRole("link", { name: /مشاركة أخرى/ }));
+
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("مشاركة أخرى");
+    // A navigation would have gone through router.push, which the mock does not expose; a
+    // server round trip would have gone through refresh. Selection must touch neither.
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("prefers the URL-provided selection until the admin picks a different row", () => {
+    const secondRegistration: Registration = { ...registration, id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", attendeeName: "مشاركة أخرى" };
+    renderTable({
+      registrations: [registration, secondRegistration],
+      mode: "current",
+      selectedId: secondRegistration.id,
+      registrationHrefs: hrefsFor([registration, secondRegistration]),
+      actions,
+    });
+
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("مشاركة أخرى");
+
+    fireEvent.click(screen.getAllByRole("link")[0]!);
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("مشاركة");
   });
 });

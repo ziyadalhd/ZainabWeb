@@ -18,9 +18,9 @@ describe("EventList", () => {
   it("renders event cards and all approved audience labels", () => {
     render(<EventList events={events} />);
     expect(screen.getAllByRole("article")).toHaveLength(3);
-    expect(screen.getByText("الكبار")).toBeInTheDocument();
-    expect(screen.getByText("اليافعون")).toBeInTheDocument();
-    expect(screen.getByText("الصغار")).toBeInTheDocument();
+    expect(screen.getByText("للبالغات")).toBeInTheDocument();
+    expect(screen.getByText("للفتيات")).toBeInTheDocument();
+    expect(screen.getByText("للأطفال")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /احجزي مكانك: لقاء للكبار/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /انضمي لقائمة الانتظار: ورشة لليافعين/ })).toBeInTheDocument();
     expect(screen.getByText("التسجيل متاح")).toBeInTheDocument();

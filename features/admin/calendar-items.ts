@@ -1,4 +1,4 @@
-import type { AdminServiceRequest, Event, ServiceRequestStatus } from "@/lib/domain/types";
+import type { AdminServiceRequest, Event, EventAudience, ServiceRequestStatus } from "@/lib/domain/types";
 
 export type CalendarItemKind = "event" | "request" | "booking";
 
@@ -14,6 +14,8 @@ export interface CalendarItem {
   conflictCount: number;
   capacity?: number;
   activeReservationCount?: number;
+  /** Set for event-kind items only — service requests have no audience concept. */
+  audience?: EventAudience;
 }
 
 const scheduledRequestStatuses: readonly ServiceRequestStatus[] = ["new", "under_review", "accepted"];
@@ -48,6 +50,7 @@ export function buildCalendarItems(
         conflictCount: 0,
         capacity: event.capacity,
         activeReservationCount: event.activeReservationCount,
+        audience: event.audience,
       })),
     ...requests
       .filter((request) => request.kind !== "workshop_application" && scheduledRequestStatuses.includes(request.status))

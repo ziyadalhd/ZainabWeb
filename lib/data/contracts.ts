@@ -39,13 +39,27 @@ export interface EventCatalog {
   getUpcomingEvent(id: string): Promise<Event | null>;
 }
 
+/**
+ * Why deletion can fail without being an error:
+ * - `not-found` — no such event, or it was already deleted.
+ * - `has-attendees` — someone has registered for it, or it collected feedback. Both foreign keys
+ *   are `on delete restrict`, so the database refuses the delete. Per AGENTS.md §263 an event with
+ *   attendee history is cancelled, never hard-deleted; the caller should say so rather than retry.
+ */
+export type DeleteEventOutcome =
+  | { deleted: true; posterPath: string | null }
+  | { deleted: false; reason: "not-found" | "has-attendees" };
+
 export interface AdminEventRepository {
   list(): Promise<RepositoryResult<readonly Event[]>>;
   get(id: string): Promise<Event | null>;
   create(input: EventInput): Promise<Event>;
   update(id: string, input: EventInput): Promise<Event>;
+  duplicate(id: string): Promise<Event>;
   changeStatus(id: string, status: EventPublicationStatus): Promise<Event>;
   setPosterPath(id: string, posterPath: string): Promise<void>;
+  /** Hard-deletes an event. Returns the poster path (if any) so the caller can clean up storage. */
+  delete(id: string): Promise<DeleteEventOutcome>;
 }
 
 export interface RegistrationService {
@@ -67,6 +81,7 @@ export interface AdminRegistrationRepository {
   cancel(id: string): Promise<void>;
   invite(id: string): Promise<WaitlistInvitationReceipt>;
   revokeInvitation(id: string): Promise<void>;
+  confirmInvitation(id: string): Promise<void>;
   confirmAttendance(id: string): Promise<void>;
   recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void>;
   setPaymentStatus(id: string, status: RegistrationPaymentStatus): Promise<void>;

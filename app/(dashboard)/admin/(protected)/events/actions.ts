@@ -16,7 +16,7 @@ export type EventFormActionError =
 
 export interface EventFormActionState {
   status: "idle" | "success" | "error";
-  error?: EventFormActionError;
+  errors?: readonly EventFormActionError[];
   eventId?: string;
 }
 
@@ -35,13 +35,13 @@ function revalidateEventViews() {
 export async function createEventAction(_previousState: EventFormActionState, formData: FormData): Promise<EventFormActionState> {
   await requireAdmin();
   const input = validateEventInput(formData);
-  if (!input.ok) return { status: "error", error: input.error };
+  if (!input.ok) return { status: "error", errors: input.errors };
 
   const posterRaw = formData.get("poster");
   const hasPoster = posterRaw instanceof File && posterRaw.size > 0;
   if (hasPoster) {
     const posterCheck = validateEventPoster(posterRaw);
-    if (!posterCheck.ok) return { status: "error", error: "save" };
+    if (!posterCheck.ok) return { status: "error", errors: ["save"] };
   }
 
   let createdEventId: string;
@@ -60,7 +60,7 @@ export async function createEventAction(_previousState: EventFormActionState, fo
       }
     }
   } catch {
-    return { status: "error", error: "save" };
+    return { status: "error", errors: ["save"] };
   }
 
   revalidateEventViews();
@@ -69,15 +69,15 @@ export async function createEventAction(_previousState: EventFormActionState, fo
 
 export async function updateEventAction(id: string, _previousState: EventFormActionState, formData: FormData): Promise<EventFormActionState> {
   await requireAdmin();
-  if (!isEntityId(id)) return { status: "error", error: "save" };
+  if (!isEntityId(id)) return { status: "error", errors: ["save"] };
   const input = validateEventInput(formData);
-  if (!input.ok) return { status: "error", error: input.error };
+  if (!input.ok) return { status: "error", errors: input.errors };
 
   const posterRaw = formData.get("poster");
   const hasPoster = posterRaw instanceof File && posterRaw.size > 0;
   if (hasPoster) {
     const posterCheck = validateEventPoster(posterRaw);
-    if (!posterCheck.ok) return { status: "error", error: "save" };
+    if (!posterCheck.ok) return { status: "error", errors: ["save"] };
   }
 
   try {
@@ -98,7 +98,7 @@ export async function updateEventAction(id: string, _previousState: EventFormAct
       }
     }
   } catch {
-    return { status: "error", error: "save" };
+    return { status: "error", errors: ["save"] };
   }
 
   revalidateEventViews();
@@ -130,6 +130,79 @@ export async function changeEventStatusAction(
     await repository.changeStatus(id, requestedStatus);
   } catch {
     return { status: "error", message: statusChangeErrorMessages.status };
+  }
+
+  revalidateEventViews();
+  return { status: "success" };
+}
+
+export interface DuplicateEventActionState {
+  status: "idle" | "success" | "error";
+  eventId?: string;
+}
+
+export async function duplicateEventAction(
+  id: string,
+  _previousState: DuplicateEventActionState,
+  _formData: FormData,
+): Promise<DuplicateEventActionState> {
+  void _previousState;
+  void _formData;
+  await requireAdmin();
+  if (!isEntityId(id)) return { status: "error" };
+
+  let duplicatedEventId: string;
+  try {
+    const repository = await createAdminEventRepository();
+    const duplicated = await repository.duplicate(id);
+    duplicatedEventId = duplicated.id;
+  } catch {
+    return { status: "error" };
+  }
+
+  revalidateEventViews();
+  return { status: "success", eventId: duplicatedEventId };
+}
+
+const deleteErrorMessages = {
+  notFound: "لم نعثر على هذه الفعالية. ربما حُذفت من قبل.",
+  hasAttendees: "لا يمكن حذف فعالية لها تسجيلات أو تقييمات. ألغِ الفعالية أو أرشفها بدلًا من ذلك حتى تبقى سجلات المسجلات محفوظة.",
+  failed: "تعذر حذف الفعالية. حدّث الصفحة وحاول مرة أخرى.",
+} as const;
+
+/**
+ * Hard-deletes an event, then removes its poster from storage.
+ *
+ * Only ever succeeds for an event with no attendee history: `registrations.event_id` and
+ * `event_feedback_links.event_id` are `on delete restrict`, and the repository checks both up front
+ * so the admin gets a reason rather than a constraint error. This is the application half of
+ * AGENTS.md §263 — an event anyone registered for is cancelled, never deleted.
+ *
+ * Storage cleanup runs after the row is gone and is best-effort: an orphaned poster object is
+ * recoverable, whereas failing the action after the row is already deleted would report a
+ * successful deletion as an error.
+ */
+export async function deleteEventAction(id: string, _previousState: ActionResult, _formData: FormData): Promise<ActionResult> {
+  void _previousState;
+  void _formData;
+  await requireAdmin();
+  if (!isEntityId(id)) return { status: "error", message: deleteErrorMessages.notFound };
+
+  let posterPath: string | null;
+  try {
+    const repository = await createAdminEventRepository();
+    const outcome = await repository.delete(id);
+    if (!outcome.deleted) {
+      return { status: "error", message: outcome.reason === "not-found" ? deleteErrorMessages.notFound : deleteErrorMessages.hasAttendees };
+    }
+    posterPath = outcome.posterPath;
+  } catch {
+    return { status: "error", message: deleteErrorMessages.failed };
+  }
+
+  if (posterPath) {
+    const client = await createSupabaseServerClient();
+    await new SupabaseEventPosterStorage(client).remove(posterPath).catch(() => undefined);
   }
 
   revalidateEventViews();

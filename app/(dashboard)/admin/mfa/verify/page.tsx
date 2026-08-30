@@ -7,7 +7,6 @@ import { requireAdminFirstFactor } from "@/lib/auth/require-admin";
 
 export const metadata: Metadata = { title: "التحقق بخطوتين" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default async function AdminMfaVerifyPage() {
   const session = await requireAdminFirstFactor();

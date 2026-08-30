@@ -2,13 +2,15 @@ import Link from "next/link";
 import type { CalendarItem } from "@/features/admin/calendar-items";
 import { formatArabicEventDate, formatArabicNumber, formatArabicTime, getRiyadhDateParts } from "@/lib/format/date";
 
-const weekDays = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+// Saturday-first, matching the Saudi week order already used by Today's Pulse's WeekStrip —
+// the rightmost column in this RTL grid is Saturday, reading right to left through Friday.
+const weekDays = ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
 const monthFormatter = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { month: "long", year: "numeric", timeZone: "Asia/Riyadh" });
 const itemLabels = { event: "فعالية", request: "طلب قيد المراجعة", booking: "حجز مقبول" } as const;
 
 function itemClassName(item: CalendarItem): string {
   if (item.conflictCount > 0) return "calendar-item calendar-item--conflict";
-  if (item.kind === "event") return "calendar-item calendar-item--event";
+  if (item.kind === "event") return `calendar-item calendar-item--${item.audience ?? "adults"}`;
   if (item.kind === "booking") return "calendar-item calendar-item--booking";
   return "calendar-item calendar-item--request";
 }
@@ -32,14 +34,27 @@ function CalendarItemLink({ item }: { item: CalendarItem }) {
   );
 }
 
-export function CalendarMonthGrid({ items, month = new Date(), today = new Date() }: { items: readonly CalendarItem[]; month?: Date; today?: Date }) {
+export function CalendarMonthGrid({
+  items,
+  month = new Date(),
+  today = new Date(),
+  showTitle = true,
+}: {
+  items: readonly CalendarItem[];
+  month?: Date;
+  today?: Date;
+  /** False when a consumer (the calendar overlay) already renders the month title itself. */
+  showTitle?: boolean;
+}) {
   const monthParts = getRiyadhDateParts(month);
   const year = monthParts.year;
   const monthIndex = monthParts.month - 1;
   const todayParts = getRiyadhDateParts(today);
   const isToday = (day: number) => todayParts.year === year && todayParts.month === monthIndex + 1 && todayParts.day === day;
   const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
-  const firstDayOffset = new Date(Date.UTC(year, monthIndex, 1)).getUTCDay();
+  // Blank cells before day 1, counted from Saturday (0) rather than getUTCDay()'s Sunday (0) —
+  // same conversion as day-pulse.ts's weekOf(), so the two calendars agree on where a week starts.
+  const firstDayOffset = (new Date(Date.UTC(year, monthIndex, 1)).getUTCDay() + 1) % 7;
   const cells = Array.from({ length: firstDayOffset + daysInMonth }, (_, index) => (index < firstDayOffset ? null : index - firstDayOffset + 1));
   const itemsByDay = Array.from({ length: daysInMonth }, (_, index) => {
     const day = index + 1;
@@ -56,20 +71,31 @@ export function CalendarMonthGrid({ items, month = new Date(), today = new Date(
 
   return (
     <section
-      aria-labelledby="calendar-title"
+      aria-label={showTitle ? undefined : monthFormatter.format(month)}
+      aria-labelledby={showTitle ? "calendar-title" : undefined}
       className="border border-t-4 border-[var(--color-border)] border-t-[var(--brand-amber)] bg-[var(--color-surface)] p-4 shadow-raised sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--brand-olive)] pb-4">
-        <div>
-          <h2 id="calendar-title" className="text-2xl font-bold text-[var(--brand-forest)]">
-            {monthFormatter.format(month)}
-          </h2>
-          <p className="mt-1 text-sm muted-copy">فعاليات وطلبات الحجز والحجوزات المقبولة في موضع واحد.</p>
-        </div>
+        {showTitle ? (
+          <div>
+            <h2 id="calendar-title" className="text-2xl font-bold text-[var(--brand-forest)]">
+              {monthFormatter.format(month)}
+            </h2>
+            <p className="mt-1 text-sm muted-copy">فعاليات وطلبات الحجز والحجوزات المقبولة في موضع واحد.</p>
+          </div>
+        ) : null}
         <div className="calendar-legend" aria-label="دليل التقويم">
           <span>
-            <i className="calendar-legend__event" />
-            فعالية
+            <i className="calendar-legend__children" />
+            فعالية للصغار
+          </span>
+          <span>
+            <i className="calendar-legend__youth" />
+            فعالية لليافعين
+          </span>
+          <span>
+            <i className="calendar-legend__adults" />
+            فعالية للكبار
           </span>
           <span>
             <i className="calendar-legend__request" />

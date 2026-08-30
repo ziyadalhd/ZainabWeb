@@ -45,24 +45,32 @@ describe("event input", () => {
     });
     const invalid = validFormData();
     invalid.set("audience", "all");
-    expect(validateEventInput(invalid)).toEqual({ ok: false, error: "audience" });
+    expect(validateEventInput(invalid)).toEqual({ ok: false, errors: ["audience"] });
     invalid.set("audience", "adults");
     invalid.set("kind", "other");
-    expect(validateEventInput(invalid)).toEqual({ ok: false, error: "kind" });
+    expect(validateEventInput(invalid)).toEqual({ ok: false, errors: ["kind"] });
   });
 
   it("rejects fractional capacity and values above the approved maximum", () => {
     const invalid = validFormData();
     invalid.set("capacity", "1.5");
-    expect(validateEventInput(invalid)).toEqual({ ok: false, error: "capacity" });
+    expect(validateEventInput(invalid)).toEqual({ ok: false, errors: ["capacity"] });
     invalid.set("capacity", "51");
-    expect(validateEventInput(invalid)).toEqual({ ok: false, error: "capacity" });
+    expect(validateEventInput(invalid)).toEqual({ ok: false, errors: ["capacity"] });
   });
 
   it("rejects an end time that is not after the start", () => {
     const invalid = validFormData();
     invalid.set("endTime", "18:00");
-    expect(validateEventInput(invalid)).toEqual({ ok: false, error: "endsAt" });
+    expect(validateEventInput(invalid)).toEqual({ ok: false, errors: ["endsAt"] });
+  });
+
+  it("reports every failing field in one pass instead of stopping at the first", () => {
+    const invalid = validFormData();
+    invalid.set("title", "");
+    invalid.set("capacity", "0");
+    invalid.set("priceSar", "not-a-price");
+    expect(validateEventInput(invalid)).toEqual({ ok: false, errors: ["title", "capacity", "priceHalalas"] });
   });
 
   it("accepts free events and Arabic price digits", () => {

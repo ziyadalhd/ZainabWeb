@@ -13,7 +13,10 @@ function revalidateRegistrationViews() {
   revalidatePath("/admin/registrations");
 }
 
-async function runRegistrationMutation(id: string, operation: "cancel" | "revoke" | "confirm"): Promise<ActionResult> {
+async function runRegistrationMutation(
+  id: string,
+  operation: "cancel" | "revoke" | "confirm" | "confirm-invitation",
+): Promise<ActionResult> {
   await requireAdmin();
   if (!isEntityId(id)) return { status: "error", message: "معرف التسجيل غير صالح." };
 
@@ -22,6 +25,7 @@ async function runRegistrationMutation(id: string, operation: "cancel" | "revoke
     if (operation === "cancel") await repository.cancel(id);
     if (operation === "revoke") await repository.revokeInvitation(id);
     if (operation === "confirm") await repository.confirmAttendance(id);
+    if (operation === "confirm-invitation") await repository.confirmInvitation(id);
   } catch {
     return { status: "error" };
   }
@@ -46,6 +50,12 @@ export async function confirmAttendanceAction(id: string, _state: ActionResult, 
   void _state;
   void _formData;
   return runRegistrationMutation(id, "confirm");
+}
+
+export async function confirmInvitationAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
+  void _state;
+  void _formData;
+  return runRegistrationMutation(id, "confirm-invitation");
 }
 
 export interface RegistrationPaymentActionState {

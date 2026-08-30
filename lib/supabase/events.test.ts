@@ -94,3 +94,88 @@ describe("SupabaseEventRepository.list", () => {
     expect(result.ok && result.data).toEqual([mapEventRow(row, state)]);
   });
 });
+
+interface DeleteFixture {
+  /** `events` row read for its poster path; null means the event does not exist. */
+  event?: { data: unknown; error?: unknown };
+  registrationCount?: { count: number | null; error?: unknown };
+  feedbackCount?: { count: number | null; error?: unknown };
+  /** Result of the delete itself. An empty `data` stands for a row RLS filtered away. */
+  deleted?: { data: unknown; error?: unknown };
+}
+
+/**
+ * A per-table stub for the delete path. `select(...)` and `delete(...)` set the mode, `eq` chains,
+ * `maybeSingle()` resolves a single row, and awaiting the builder directly resolves the head/count
+ * query — which is the shape `delete()` actually calls.
+ */
+function fakeDeleteClient(fixture: DeleteFixture): SupabaseClient<Database> {
+  return {
+    from: (table: string) => {
+      let deleting = false;
+      const builder: Record<string, unknown> = {
+        select: () => builder,
+        delete: () => {
+          deleting = true;
+          return builder;
+        },
+        eq: () => builder,
+        maybeSingle: () =>
+          Promise.resolve(deleting ? (fixture.deleted ?? { data: { id: "x" }, error: null }) : (fixture.event ?? { data: null, error: null })),
+        then: (onFulfilled: (value: unknown) => unknown, onRejected?: (reason: unknown) => unknown) => {
+          const counts = table === "registrations" ? fixture.registrationCount : fixture.feedbackCount;
+          return Promise.resolve({ count: counts?.count ?? 0, error: counts?.error ?? null }).then(onFulfilled, onRejected);
+        },
+      };
+      return builder;
+    },
+  } as unknown as SupabaseClient<Database>;
+}
+
+describe("SupabaseEventRepository.delete", () => {
+  it("reports not-found for an event that does not exist", async () => {
+    const repository = new SupabaseEventRepository(fakeDeleteClient({ event: { data: null, error: null } }));
+
+    await expect(repository.delete(row.id)).resolves.toEqual({ deleted: false, reason: "not-found" });
+  });
+
+  it("refuses to delete an event that has registrations", async () => {
+    const repository = new SupabaseEventRepository(
+      fakeDeleteClient({ event: { data: { poster_path: null }, error: null }, registrationCount: { count: 3 } }),
+    );
+
+    await expect(repository.delete(row.id)).resolves.toEqual({ deleted: false, reason: "has-attendees" });
+  });
+
+  it("refuses to delete an event that collected feedback even with no registrations", async () => {
+    const repository = new SupabaseEventRepository(
+      fakeDeleteClient({ event: { data: { poster_path: null }, error: null }, registrationCount: { count: 0 }, feedbackCount: { count: 1 } }),
+    );
+
+    await expect(repository.delete(row.id)).resolves.toEqual({ deleted: false, reason: "has-attendees" });
+  });
+
+  it("maps a foreign-key violation from a race to the same has-attendees refusal", async () => {
+    const repository = new SupabaseEventRepository(
+      fakeDeleteClient({ event: { data: { poster_path: null }, error: null }, deleted: { data: null, error: { code: "23503" } } }),
+    );
+
+    await expect(repository.delete(row.id)).resolves.toEqual({ deleted: false, reason: "has-attendees" });
+  });
+
+  it("treats a delete that RLS filtered to zero rows as not-found rather than success", async () => {
+    const repository = new SupabaseEventRepository(
+      fakeDeleteClient({ event: { data: { poster_path: null }, error: null }, deleted: { data: null, error: null } }),
+    );
+
+    await expect(repository.delete(row.id)).resolves.toEqual({ deleted: false, reason: "not-found" });
+  });
+
+  it("returns the poster path so the caller can clean up storage", async () => {
+    const repository = new SupabaseEventRepository(
+      fakeDeleteClient({ event: { data: { poster_path: "events/poster.png" }, error: null }, deleted: { data: { id: row.id }, error: null } }),
+    );
+
+    await expect(repository.delete(row.id)).resolves.toEqual({ deleted: true, posterPath: "events/poster.png" });
+  });
+});

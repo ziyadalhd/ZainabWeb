@@ -10,11 +10,13 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push: vi.fn() }
 const mocks = vi.hoisted(() => ({
   updateEventAction: vi.fn(async () => ({ status: "success" as const, eventId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" })),
   uploadEventPosterAction: vi.fn(async () => ({})),
+  deleteEventAction: vi.fn(async () => ({ status: "success" as const })),
 }));
 
 vi.mock("@/app/(dashboard)/admin/(protected)/events/actions", () => ({
   updateEventAction: mocks.updateEventAction,
   uploadEventPosterAction: mocks.uploadEventPosterAction,
+  deleteEventAction: mocks.deleteEventAction,
 }));
 
 const event: Event = {
@@ -65,5 +67,23 @@ describe("EventSettingsSection", () => {
     await screen.findByRole("button", { name: "تعديل الإعدادات" });
     expect(screen.queryByRole("textbox", { name: "عنوان الفعالية" })).not.toBeInTheDocument();
     expect(refresh).toHaveBeenCalled();
+  });
+
+  it("offers deletion from a separate danger zone that points at cancellation for live events", () => {
+    renderSection();
+
+    expect(screen.getByText("منطقة الحذف")).toBeInTheDocument();
+    expect(screen.getByText(/الحذف نهائي ولا يمكن التراجع عنه/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "حذف الفعالية" })).toBeInTheDocument();
+  });
+
+  it("does not delete when the danger-zone trigger is clicked — it only opens the confirmation", () => {
+    mocks.deleteEventAction.mockClear();
+    renderSection();
+
+    fireEvent.click(screen.getByRole("button", { name: "حذف الفعالية" }));
+
+    expect(mocks.deleteEventAction).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 });

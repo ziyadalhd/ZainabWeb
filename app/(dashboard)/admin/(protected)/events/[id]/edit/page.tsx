@@ -2,15 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DeleteEventButton } from "@/features/admin/components/DeleteEventButton";
 import { EventForm } from "@/features/admin/components/EventForm";
-import { EventPosterForm } from "@/features/admin/components/EventPosterForm";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminEventRepository } from "@/lib/supabase/events";
-import { updateEventAction, uploadEventPosterAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
+import { deleteEventAction, updateEventAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
 
 export const metadata: Metadata = { title: "تعديل الفعالية" };
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
@@ -34,7 +33,24 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
       </nav>
       <PageHeader eyebrow="إدارة الفعاليات" title="تعديل الفعالية" />
       <EventForm action={updateEventAction.bind(null, id)} event={event} submitLabel="حفظ التعديلات" />
-      <EventPosterForm eventTitle={event.title} posterUrl={event.posterUrl} action={uploadEventPosterAction.bind(null, id)} />
+      <section aria-labelledby="delete-event-heading" className="card-surface mt-8 p-6">
+        <h2 id="delete-event-heading" className="text-xl font-bold text-[var(--color-error-text)]">
+          منطقة الحذف
+        </h2>
+        <p className="mt-3 muted-copy">
+          الحذف نهائي ولا يمكن التراجع عنه، وهو متاح فقط لفعالية لا تسجيلات ولا تقييمات لها. للفعاليات التي بدأ التسجيل فيها،
+          استخدمي الإلغاء من مساحة الفعالية.
+        </p>
+        <div className="mt-5">
+          <DeleteEventButton
+            eventId={event.id}
+            eventTitle={event.title}
+            attendeeCount={event.activeReservationCount}
+            action={deleteEventAction}
+            triggerClassName="button-danger"
+          />
+        </div>
+      </section>
     </main>
   );
 }
