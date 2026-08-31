@@ -12,11 +12,10 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { formatArabicDateTime, formatArabicNumber } from "@/lib/format/date";
 import type { RegistrationPaymentActionState } from "@/app/(dashboard)/admin/(protected)/registrations/actions";
 import type { ActionResult } from "@/lib/data/action-result";
-import { RegistrationPaymentStatusForm } from "@/features/admin/components/RegistrationPaymentStatusForm";
+import { RegistrationQuickToggles } from "@/features/admin/components/RegistrationQuickToggles";
 
 export interface RegistrationTableActions {
   cancelRegistration: (id: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
-  confirmAttendance: (id: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
   recordCheckIn: (id: string, outcome: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
   revokeInvitation: (id: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
   confirmInvitation: (id: string, state: ActionResult, formData: FormData) => Promise<ActionResult>;
@@ -36,6 +35,11 @@ interface RegistrationTableProps {
   actions: RegistrationTableActions;
 }
 
+/**
+ * The actions that are not one of the two roster switches: invitation handling for a waitlisted row,
+ * and cancellation, which sits behind a disclosure because it is destructive and rarely the reason
+ * the admin opened this pane.
+ */
 function RegistrationActions({
   registration,
   mode,
@@ -47,24 +51,22 @@ function RegistrationActions({
   actions: RegistrationTableActions;
   onChanged: () => void;
 }) {
-  const canConfirmAttendance = mode === "current" && registration.attendanceStatus === "pending";
-  const canCheckIn = mode === "current" && registration.checkInStatus !== "checked_in";
-  const canRevokeOrConfirmInvitation = mode === "waitlist" && registration.status === "invited";
-  // Every available action stays visible (no hidden menu — see the A11 test below), but exactly
-  // one is styled as the row's confident "next step"; the rest recede to secondary/danger.
-  // Confirming the invitation (the guest accepted by phone or WhatsApp) is that next step for an
-  // invited row, ahead of revoking it — mirroring the design's primary/secondary pairing.
-  const primaryAction: "confirm" | "checkIn" | "confirmInvitation" | null = canConfirmAttendance
-    ? "confirm"
-    : canCheckIn
-      ? "checkIn"
-      : canRevokeOrConfirmInvitation
-        ? "confirmInvitation"
-        : null;
+  const invited = mode === "waitlist" && registration.status === "invited";
+  const cancellable = (mode === "current" || mode === "waitlist") && registration.status !== "cancelled";
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {canRevokeOrConfirmInvitation ? (
+    <div className="flex flex-wrap items-center gap-2">
+      {invited ? (
+        <ActionButton
+          action={actions.confirmInvitation.bind(null, registration.id)}
+          label="تأكيد الدعوة"
+          pendingLabel="جارٍ التأكيد…"
+          className="button-primary min-h-10 px-3 py-2 text-sm"
+          successMessage={`تم تأكيد دعوة ${registration.attendeeName} وتحويل المقعد إلى مسجَّل.`}
+          onSuccess={onChanged}
+        />
+      ) : null}
+      {invited ? (
         <ConfirmDialog
           triggerLabel="سحب الدعوة"
           triggerClassName="button-secondary min-h-10 px-3 py-2 text-sm"
@@ -77,59 +79,21 @@ function RegistrationActions({
           onSuccess={onChanged}
         />
       ) : null}
-      {canRevokeOrConfirmInvitation ? (
-        <ActionButton
-          action={actions.confirmInvitation.bind(null, registration.id)}
-          label="تأكيد الدعوة"
-          pendingLabel="جارٍ التأكيد…"
-          className={`${primaryAction === "confirmInvitation" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
-          successMessage={`تم تأكيد دعوة ${registration.attendeeName} وتحويل المقعد إلى مسجَّل.`}
-          onSuccess={onChanged}
-        />
-      ) : null}
-      {canConfirmAttendance ? (
-        <ActionButton
-          action={actions.confirmAttendance.bind(null, registration.id)}
-          label="تأكيد الحضور"
-          pendingLabel="جارٍ التأكيد…"
-          className={`${primaryAction === "confirm" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
-          successMessage="تم تأكيد الحضور."
-          onSuccess={onChanged}
-        />
-      ) : null}
-      {canCheckIn ? (
-        <ActionButton
-          action={actions.recordCheckIn.bind(null, registration.id, "checked_in")}
-          label="تسجيل الحضور"
-          pendingLabel="جارٍ الحفظ…"
-          className={`${primaryAction === "checkIn" ? "button-primary" : "button-secondary"} min-h-10 px-3 py-2 text-sm`}
-          successMessage="تم حفظ حالة الحضور."
-          onSuccess={onChanged}
-        />
-      ) : null}
-      {mode === "current" && registration.checkInStatus !== "absent" ? (
-        <ConfirmDialog
-          triggerLabel="تسجيل الغياب"
-          triggerClassName="button-secondary min-h-10 px-3 py-2 text-sm"
-          tone="default"
-          title="تسجيل الغياب"
-          description={`هل أنت متأكدة أن ${registration.attendeeName} لم تحضر الفعالية؟`}
-          confirmLabel="تسجيل الغياب"
-          action={actions.recordCheckIn.bind(null, registration.id, "absent")}
-          successMessage="تم حفظ حالة الحضور."
-          onSuccess={onChanged}
-        />
-      ) : null}
-      {(mode === "current" || mode === "waitlist") && registration.status !== "cancelled" ? (
-        <ConfirmDialog
-          triggerLabel="إلغاء التسجيل"
-          title="إلغاء التسجيل"
-          description={`هل تريدين إلغاء تسجيل ${registration.attendeeName}؟ لا يمكن التراجع عن هذا الإجراء.`}
-          confirmLabel="إلغاء التسجيل"
-          action={actions.cancelRegistration.bind(null, registration.id)}
-          successMessage="تم إلغاء التسجيل، ويمكن الآن اختيار بديلة من قائمة الانتظار."
-          onSuccess={onChanged}
-        />
+      {cancellable ? (
+        <details className="registration-more">
+          <summary>المزيد</summary>
+          <div className="registration-more__panel">
+            <ConfirmDialog
+              triggerLabel="إلغاء التسجيل"
+              title="إلغاء التسجيل"
+              description={`هل تريدين إلغاء تسجيل ${registration.attendeeName}؟ لا يمكن التراجع عن هذا الإجراء.`}
+              confirmLabel="إلغاء التسجيل"
+              action={actions.cancelRegistration.bind(null, registration.id)}
+              successMessage="تم إلغاء التسجيل، ويمكن الآن اختيار بديلة من قائمة الانتظار."
+              onSuccess={onChanged}
+            />
+          </div>
+        </details>
       ) : null}
     </div>
   );
@@ -156,7 +120,6 @@ function RegistrationDetails({
         </div>
         <div className="grid justify-items-start gap-2">
           <StatusBadge status={registration.status} />
-          {registration.status === "registered" ? <StatusBadge status={registration.attendanceStatus} /> : null}
           {registration.status === "registered" ? (
             <StatusBadge status={registration.checkInStatus === "pending" ? "check_in_pending" : registration.checkInStatus} />
           ) : null}
@@ -167,24 +130,12 @@ function RegistrationDetails({
           <dt className="muted-copy">موعد الفعالية</dt>
           <dd className="mt-1 font-bold">{formatArabicDateTime(registration.eventStartsAt)}</dd>
         </div>
-        <div>
-          <dt className="muted-copy">الدفع</dt>
-          <dd className="mt-1">
-            {registration.status === "registered" ? (
-              mode === "previous" ? (
-                <StatusBadge status={registration.paymentStatus} />
-              ) : (
-                <RegistrationPaymentStatusForm
-                  registrationId={registration.id}
-                  currentStatus={registration.paymentStatus}
-                  action={actions.setPaymentStatus.bind(null, registration.id)}
-                />
-              )
-            ) : (
-              "—"
-            )}
-          </dd>
-        </div>
+        {mode === "previous" || registration.status !== "registered" ? (
+          <div>
+            <dt className="muted-copy">الدفع</dt>
+            <dd className="mt-1">{registration.status === "registered" ? <StatusBadge status={registration.paymentStatus} /> : "—"}</dd>
+          </div>
+        ) : null}
         <div>
           <dt className="muted-copy">الجوال</dt>
           <dd className="data-value mt-1 font-bold" dir="ltr">
@@ -225,8 +176,10 @@ function RegistrationDetails({
           </dd>
         </div>
       </dl>
-      <div className="mt-6">
-        <p className="mb-3 text-sm font-medium">الإجراءات</p>
+      <div className="mt-6 grid gap-4">
+        {mode !== "previous" && registration.status === "registered" ? (
+          <RegistrationQuickToggles registration={registration} actions={actions} />
+        ) : null}
         <RegistrationActions registration={registration} mode={mode} actions={actions} onChanged={onChanged} />
       </div>
     </article>
@@ -269,8 +222,6 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
       runGatingAction({ id, changes: { status: "cancelled" } }, "تم إلغاء التسجيل، ويمكن الآن اختيار بديلة من قائمة الانتظار.", () =>
         actions.cancelRegistration(id, state, formData),
       ),
-    confirmAttendance: (id, state, formData) =>
-      runGatingAction({ id, changes: { attendanceStatus: "confirmed" } }, "تم تأكيد الحضور.", () => actions.confirmAttendance(id, state, formData)),
     recordCheckIn: (id, outcome, state, formData) =>
       runGatingAction({ id, changes: { checkInStatus: outcome as Registration["checkInStatus"] } }, "تم حفظ حالة الحضور.", () =>
         actions.recordCheckIn(id, outcome, state, formData),
@@ -285,12 +236,14 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
         "تم تأكيد الدعوة وتحويل المقعد إلى مسجَّل.",
         () => actions.confirmInvitation(id, state, formData),
       ),
-    setPaymentStatus: (id, state, formData) => {
-      // Payment status doesn't gate any control's visibility, so the form stays mounted and its
-      // own success/error handling (inline, not a toast) already works correctly.
+    setPaymentStatus: async (id, state, formData) => {
       const nextStatus = formData.get("paymentStatus");
       if (typeof nextStatus === "string") applyPatch({ id, changes: { paymentStatus: nextStatus as Registration["paymentStatus"] } });
-      return actions.setPaymentStatus(id, state, formData);
+      const result = await actions.setPaymentStatus(id, state, formData);
+      if (result.error) pushToast("تعذر حفظ حالة الدفع. حاولي مرة أخرى.", "error");
+      else pushToast(nextStatus === "paid_in_full" ? "سُجّل الدفع." : "أُلغي تسجيل الدفع.", "success");
+      onChanged();
+      return result;
     },
   };
 

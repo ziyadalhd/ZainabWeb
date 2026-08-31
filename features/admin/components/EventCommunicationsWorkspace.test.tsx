@@ -3,14 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EventCommunicationsWorkspace } from "@/features/admin/components/EventCommunicationsWorkspace";
 import type { Event, Registration } from "@/lib/domain/types";
 
-const actions = vi.hoisted(() => ({
-  open: vi.fn(),
-  markSent: vi.fn(),
-}));
+const actions = vi.hoisted(() => ({ send: vi.fn() }));
 
 vi.mock("@/app/(dashboard)/admin/(protected)/events/[id]/message-actions", () => ({
-  openManualWhatsAppMessageAction: actions.open,
-  markManualMessageSentAction: actions.markSent,
+  sendManualWhatsAppMessageAction: actions.send,
 }));
 
 const event: Event = {
@@ -59,17 +55,16 @@ const registration: Registration = {
 
 describe("EventCommunicationsWorkspace", () => {
   beforeEach(() => {
-    actions.open.mockReset();
-    actions.markSent.mockReset();
+    actions.send.mockReset();
   });
 
-  it("opens one prepared واتساب message then records sent separately", async () => {
-    actions.open.mockResolvedValue({
+  it("opens واتساب and records the send in a single click", async () => {
+    actions.send.mockResolvedValue({
       messageId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
       kind: "confirmation",
       securePath: "/bookings/secure-person-token",
+      sentAt: "2099-08-02T13:00:00.000Z",
     });
-    actions.markSent.mockResolvedValue({ sentAt: "2099-08-02T13:00:00.000Z" });
     const popup = {
       close: vi.fn(),
       document: {
@@ -83,21 +78,44 @@ describe("EventCommunicationsWorkspace", () => {
 
     render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} reminderTemplate={null} now="2099-08-01T12:00:00.000Z" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "فتح الرسالة في واتساب" }));
-    await screen.findByRole("button", { name: "تم الإرسال" });
-    expect(actions.open).toHaveBeenCalledWith(event.id, registration.id, "confirmation");
+    fireEvent.click(screen.getByRole("button", { name: "فتح في واتساب" }));
+
+    await waitFor(() => expect(actions.send).toHaveBeenCalledWith(event.id, registration.id, "confirmation"));
     expect(popup.location.href).toContain("https://wa.me/966500000001");
     expect(popup.location.href).toContain("secure-person-token");
+    // No second confirmation step: the row is already recorded as sent, and the only button left
+    // is the re-open escape hatch.
+    await waitFor(() => expect(screen.getAllByText("سُجّل الإرسال", { selector: ".message-state" })).toHaveLength(2));
+    expect(screen.queryByRole("button", { name: "تم الإرسال" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "إعادة الفتح في واتساب" })).toBeInTheDocument();
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "تم الإرسال" }));
-    await waitFor(() => expect(actions.markSent).toHaveBeenCalledWith(event.id, "dddddddd-dddd-4ddd-8ddd-dddddddddddd"));
-    await waitFor(() => expect(screen.getAllByText("أُرسلت يدويًا", { selector: ".message-state" })).toHaveLength(2));
+  it("keeps واتساب open with the right message when only the bookkeeping fails", async () => {
+    actions.send.mockResolvedValue({
+      messageId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      kind: "confirmation",
+      securePath: "/bookings/secure-person-token",
+      error: "save",
+    });
+    const popup = {
+      close: vi.fn(),
+      document: { body: { textContent: "" }, documentElement: { dir: "", lang: "" }, title: "" },
+      location: { href: "" },
+    };
+    vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
+
+    render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} reminderTemplate={null} now="2099-08-01T12:00:00.000Z" />);
+    fireEvent.click(screen.getByRole("button", { name: "فتح في واتساب" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("تعذر تسجيلها كمرسلة");
+    expect(popup.location.href).toContain("https://wa.me/966500000001");
+    expect(popup.close).not.toHaveBeenCalled();
   });
 
   it("does not claim delivery or reading anywhere in the workflow", () => {
     render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} reminderTemplate={null} now="2099-08-01T12:00:00.000Z" />);
 
     expect(screen.queryByText(/تم التسليم|تمت القراءة/)).not.toBeInTheDocument();
-    expect(screen.getByText(/فتح واتساب لا يعني أن الرسالة أُرسلت أو وصلت/)).toBeInTheDocument();
+    expect(screen.getByText(/التسجيل لا يعني أن الرسالة وصلت/)).toBeInTheDocument();
   });
 });

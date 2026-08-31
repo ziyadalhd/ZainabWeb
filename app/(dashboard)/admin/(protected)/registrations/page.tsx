@@ -10,7 +10,6 @@ import { createAdminEventRepository } from "@/lib/supabase/events";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
 import {
   cancelRegistrationAction,
-  confirmAttendanceAction,
   confirmInvitationAction,
   recordCheckInAction,
   revokeInvitationAction,
@@ -30,7 +29,6 @@ const views: ReadonlyArray<{ id: RegistrationView; label: string }> = [
 
 const registrationActions = {
   cancelRegistration: cancelRegistrationAction,
-  confirmAttendance: confirmAttendanceAction,
   confirmInvitation: confirmInvitationAction,
   recordCheckIn: recordCheckInAction,
   revokeInvitation: revokeInvitationAction,

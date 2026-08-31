@@ -6,7 +6,6 @@ import { loadEventWorkspace } from "@/features/admin/event-workspace";
 import { changeEventStatusAction } from "@/app/(dashboard)/admin/(protected)/events/actions";
 import {
   cancelRegistrationAction,
-  confirmAttendanceAction,
   confirmInvitationAction,
   recordCheckInAction,
   revokeInvitationAction,
@@ -15,7 +14,6 @@ import {
 
 const registrationActions: RegistrationTableActions = {
   cancelRegistration: cancelRegistrationAction,
-  confirmAttendance: confirmAttendanceAction,
   confirmInvitation: confirmInvitationAction,
   recordCheckIn: recordCheckInAction,
   revokeInvitation: revokeInvitationAction,

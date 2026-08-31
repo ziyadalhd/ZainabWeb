@@ -6,7 +6,7 @@ import { DeleteEventButton, type DeleteEventAction } from "@/features/admin/comp
 import { DuplicateEventButton, type DuplicateEventAction } from "@/features/admin/components/DuplicateEventButton";
 import { LifecycleBadge } from "@/features/admin/components/LifecycleBadge";
 import { eventLifecycle } from "@/features/admin/event-lifecycle";
-import { EventStatusQuickActions, type EventStatusAction } from "@/features/admin/components/EventStatusQuickActions";
+import { EventStatusControl, type EventStatusAction } from "@/features/admin/components/EventStatusControl";
 import { formatArabicEventDate, formatArabicEventTimeRange, formatEventPrice, isSameRiyadhDate } from "@/lib/format/date";
 
 interface EventListCardProps {
@@ -56,7 +56,7 @@ export function EventListCard({ event, now, statusAction, duplicateAction, delet
             وضع اليوم
           </Link>
         ) : null}
-        <EventStatusQuickActions event={event} action={statusAction} />
+        <EventStatusControl event={event} action={statusAction} />
         <DeleteEventButton
           eventId={event.id}
           eventTitle={event.title}

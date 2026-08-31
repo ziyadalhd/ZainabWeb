@@ -6,11 +6,10 @@ interface MessageRecipientQueueProps {
   selectedId: string | undefined;
   kind: ManualMessageKind;
   isSent: (registration: Registration) => boolean;
-  isWaiting: (registration: Registration) => boolean;
   onSelect: (registrationId: string) => void;
 }
 
-export function MessageRecipientQueue({ recipients, selectedId, isSent, isWaiting, onSelect }: MessageRecipientQueueProps) {
+export function MessageRecipientQueue({ recipients, selectedId, isSent, onSelect }: MessageRecipientQueueProps) {
   return (
     <aside className="message-recipient-queue" aria-label="قائمة المستلمات">
       <div className="message-recipient-queue__heading">
@@ -20,7 +19,6 @@ export function MessageRecipientQueue({ recipients, selectedId, isSent, isWaitin
       <div className="message-recipient-queue__items">
         {recipients.map((registration) => {
           const sent = isSent(registration);
-          const waiting = !sent && isWaiting(registration);
           return (
             <button
               type="button"
@@ -32,9 +30,7 @@ export function MessageRecipientQueue({ recipients, selectedId, isSent, isWaitin
                 <strong>{registration.attendeeName}</strong>
                 <small dir="ltr">{registration.phoneE164}</small>
               </span>
-              <small className={sent ? "message-state message-state--sent" : waiting ? "message-state message-state--waiting" : "message-state"}>
-                {sent ? "أُرسلت يدويًا" : waiting ? "بانتظار التأكيد" : "تحتاج إرسالًا"}
-              </small>
+              <small className={sent ? "message-state message-state--sent" : "message-state"}>{sent ? "سُجّل الإرسال" : "تحتاج إرسالًا"}</small>
             </button>
           );
         })}

@@ -15,6 +15,7 @@ import type {
   RegistrationInput,
   RegistrationReceipt,
   RegistrationPaymentStatus,
+  RegistrationPulse,
   EventFeedbackLinkReceipt,
   ManualMessageKind,
   ManualMessageReceipt,
@@ -241,6 +242,30 @@ implements RegistrationService, AdminRegistrationRepository {
       logRepositoryFailure("Registrations.list", err);
       return loadFailed();
     }
+  }
+
+  /**
+   * A count of held seats plus the newest holder — everything the admin roster needs to notice an
+   * arrival, and nothing more. One filtered query with an exact count and a `limit(1)`, so the
+   * polling in `useRegistrationPulse` costs a fraction of a full `listForEvent`, and no attendee
+   * data beyond a single name leaves the server on a poll that finds nothing new.
+   */
+  async pulseForEvent(eventId: string): Promise<RepositoryResult<RegistrationPulse>> {
+    const { data, count, error } = await this.client
+      .from("registrations")
+      .select("id,attendee_name", { count: "exact" })
+      .eq("event_id", eventId)
+      .in("status", ["registered", "invited"])
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (error || !data) {
+      logRepositoryFailure("Registrations.pulseForEvent", error);
+      return loadFailed();
+    }
+
+    const latest = data[0];
+    return ok({ activeCount: count ?? 0, latestId: latest?.id ?? null, latestName: latest?.attendee_name ?? null });
   }
 
   async listForEvent(eventId: string): Promise<RepositoryResult<readonly Registration[]>> {

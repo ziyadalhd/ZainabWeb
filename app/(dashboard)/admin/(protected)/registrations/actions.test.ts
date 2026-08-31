@@ -7,7 +7,6 @@ const mocks = vi.hoisted(() => ({
   cancel: vi.fn(),
   revokeInvitation: vi.fn(),
   confirmInvitation: vi.fn(),
-  confirmAttendance: vi.fn(),
   recordCheckIn: vi.fn(),
   setPaymentStatus: vi.fn(),
 }));
@@ -19,7 +18,6 @@ vi.mock("@/lib/supabase/registrations", () => ({
     cancel: mocks.cancel,
     revokeInvitation: mocks.revokeInvitation,
     confirmInvitation: mocks.confirmInvitation,
-    confirmAttendance: mocks.confirmAttendance,
     recordCheckIn: mocks.recordCheckIn,
     setPaymentStatus: mocks.setPaymentStatus,
   })),
@@ -27,7 +25,6 @@ vi.mock("@/lib/supabase/registrations", () => ({
 
 import {
   cancelRegistrationAction,
-  confirmAttendanceAction,
   confirmInvitationAction,
   recordCheckInAction,
   revokeInvitationAction,
@@ -77,14 +74,6 @@ describe("revokeInvitationAction", () => {
     const result = await revokeInvitationAction(validId, idleActionResult, new FormData());
     expect(result).toEqual({ status: "success" });
     expect(mocks.revokeInvitation).toHaveBeenCalledWith(validId);
-  });
-});
-
-describe("confirmAttendanceAction", () => {
-  it("confirms and returns success", async () => {
-    const result = await confirmAttendanceAction(validId, idleActionResult, new FormData());
-    expect(result).toEqual({ status: "success" });
-    expect(mocks.confirmAttendance).toHaveBeenCalledWith(validId);
   });
 });
 

@@ -29,7 +29,6 @@ function revalidateEventViews() {
   revalidatePath("/events");
   revalidatePath("/admin");
   revalidatePath("/admin/events");
-  revalidatePath("/admin/events/[id]", "page");
 }
 
 export async function createEventAction(_previousState: EventFormActionState, formData: FormData): Promise<EventFormActionState> {

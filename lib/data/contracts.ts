@@ -13,6 +13,7 @@ import type {
   ManualMessageRecord,
   IsoDateTime,
   RegistrationPaymentStatus,
+  RegistrationPulse,
   InterestedContactInput,
   InterestedContactReceipt,
   AdminInterestedContact,
@@ -74,6 +75,7 @@ export interface RegistrationService {
 export interface AdminRegistrationRepository {
   list(): Promise<RepositoryResult<readonly Registration[]>>;
   listForEvent(eventId: string): Promise<RepositoryResult<readonly Registration[]>>;
+  pulseForEvent(eventId: string): Promise<RepositoryResult<RegistrationPulse>>;
   listPage(filter: AdminRegistrationListFilter): Promise<RepositoryResult<PaginatedResult<Registration>>>;
   listManualMessagesForEvent(eventId: string): Promise<RepositoryResult<readonly ManualMessageRecord[]>>;
   prepareManualMessage(id: string, kind: ManualMessageKind): Promise<ManualMessageReceipt>;
@@ -82,7 +84,6 @@ export interface AdminRegistrationRepository {
   invite(id: string): Promise<WaitlistInvitationReceipt>;
   revokeInvitation(id: string): Promise<void>;
   confirmInvitation(id: string): Promise<void>;
-  confirmAttendance(id: string): Promise<void>;
   recordCheckIn(id: string, outcome: "checked_in" | "absent"): Promise<void>;
   setPaymentStatus(id: string, status: RegistrationPaymentStatus): Promise<void>;
 }

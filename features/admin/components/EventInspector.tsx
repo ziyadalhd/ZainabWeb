@@ -7,8 +7,9 @@ import { EventInspectorTabs, type InspectorTab } from "@/features/admin/componen
 import { EventReminderTemplateForm } from "@/features/admin/components/EventReminderTemplateForm";
 import { EventSettingsSection } from "@/features/admin/components/EventSettingsSection";
 import { LifecycleBadge } from "@/features/admin/components/LifecycleBadge";
+import { RegistrationPulseBanner } from "@/features/admin/components/RegistrationPulseBanner";
 import { RegistrationTable, type RegistrationTableActions } from "@/features/admin/components/RegistrationTable";
-import type { EventStatusAction } from "@/features/admin/components/EventStatusQuickActions";
+import type { EventStatusAction } from "@/features/admin/components/EventStatusControl";
 import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEventFeedbackTable";
 import { capacityRatio, capacityTone } from "@/features/admin/capacity";
 import { eventLifecycle } from "@/features/admin/event-lifecycle";
@@ -135,44 +136,52 @@ export function EventInspector({
     allRegistrations.map((registration) => [registration.id, `/admin/events?event=${event.id}&id=${registration.id}`]),
   );
 
+  // Three panels, not five. The waitlist rides along with the roster (it is the same list of people
+  // in a different state, and it is empty most of the time) and the feedback table sits with the
+  // rest of the after-the-event settings — so the switcher only ever asks which of three jobs the
+  // admin is doing: managing who is coming, messaging them, or changing the event itself.
   const tabs: InspectorTab[] = [
     {
       id: "roster",
-      label: "قائمة الحضور والتسجيلات",
+      label: "التسجيلات",
       count: formatArabicNumber(registered.length),
-      lede: "اختاري مسجِّلة لعرض بياناتها، وسجّلي الحضور أو حالة الدفع من لوحة التفاصيل.",
+      lede: "اختاري مسجِّلة لعرض بياناتها، ثم بدّلي الحضور أو الدفع مباشرة.",
       content: (
-        <RegistrationTable
-          registrations={registered}
-          mode="current"
-          selectedId={selectedRegistrationId}
-          registrationHrefs={registrationHrefs}
-          actions={registrationActions}
-        />
-      ),
-    },
-    {
-      id: "waitlist",
-      label: "قائمة الانتظار",
-      count: formatArabicNumber(waitlist.length),
-      lede:
-        remaining === 0
-          ? "اكتمل العدد. ستتاح الدعوات فور إلغاء أحد المقاعد."
-          : `${formatArabicNumber(remaining)} مقعدًا متاحًا — ادعي من قائمة الانتظار من قسم التواصل.`,
-      content: (
-        <RegistrationTable
-          registrations={waitlist}
-          mode="waitlist"
-          selectedId={selectedRegistrationId}
-          registrationHrefs={registrationHrefs}
-          actions={registrationActions}
-        />
+        <>
+          <RegistrationPulseBanner eventId={event.id} initialCount={event.activeReservationCount} capacity={event.capacity} />
+          <RegistrationTable
+            registrations={registered}
+            mode="current"
+            selectedId={selectedRegistrationId}
+            registrationHrefs={registrationHrefs}
+            actions={registrationActions}
+          />
+          {waitlist.length > 0 ? (
+            <section className="mt-8" aria-label="قائمة الانتظار">
+              <h3 className="text-lg font-bold">قائمة الانتظار ({formatArabicNumber(waitlist.length)})</h3>
+              <p className="mt-1 text-sm muted-copy">
+                {remaining === 0
+                  ? "اكتمل العدد. ستتاح الدعوات فور إلغاء أحد المقاعد."
+                  : `${formatArabicNumber(remaining)} مقعدًا متاحًا — ادعي من هنا ثم أرسلي الدعوة من قسم التواصل.`}
+              </p>
+              <div className="mt-4">
+                <RegistrationTable
+                  registrations={waitlist}
+                  mode="waitlist"
+                  selectedId={selectedRegistrationId}
+                  registrationHrefs={registrationHrefs}
+                  actions={registrationActions}
+                />
+              </div>
+            </section>
+          ) : null}
+        </>
       ),
     },
     {
       id: "communications",
-      label: "التواصل والتذكير",
-      lede: "جهّزي رسائل واتساب اليدوية وتابعي ما أُرسل منها.",
+      label: "التواصل",
+      lede: "افتحي رسالة واتساب بضغطة واحدة؛ يُسجَّل الإرسال تلقائيًا.",
       content: manualMessages ? (
         <>
           <EventCommunicationsWorkspace
@@ -189,14 +198,20 @@ export function EventInspector({
       ),
     },
     {
-      id: "feedback",
-      label: "التقييمات",
-      content: feedback ? <AdminEventFeedbackTable responses={feedback} /> : <LoadErrorNotice description="تعذر تحميل التقييمات." />,
-    },
-    {
       id: "settings",
       label: "الإعدادات",
-      content: <EventSettingsSection event={event} statusAction={statusAction} />,
+      lede: "بيانات الفعالية وحالة النشر والتقييمات.",
+      content: (
+        <div className="grid gap-5">
+          <EventSettingsSection event={event} statusAction={statusAction} />
+          <section className="card-surface p-6" aria-label="التقييمات">
+            <h3 className="text-xl font-bold">التقييمات</h3>
+            <div className="mt-4">
+              {feedback ? <AdminEventFeedbackTable responses={feedback} /> : <LoadErrorNotice description="تعذر تحميل التقييمات." />}
+            </div>
+          </section>
+        </div>
+      ),
     },
   ];
 

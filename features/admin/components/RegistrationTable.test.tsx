@@ -19,7 +19,6 @@ function renderTable(props: React.ComponentProps<typeof RegistrationTable>) {
 
 const actions: RegistrationTableActions = {
   cancelRegistration: vi.fn(async () => ({ status: "success" as const })),
-  confirmAttendance: vi.fn(async () => ({ status: "success" as const })),
   recordCheckIn: vi.fn(async () => ({ status: "success" as const })),
   revokeInvitation: vi.fn(async () => ({ status: "success" as const })),
   confirmInvitation: vi.fn(async () => ({ status: "success" as const })),
@@ -75,19 +74,48 @@ describe("RegistrationTable", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it("shows separate attendance confirmation and operational check-in controls, with no hidden action menu (A11)", () => {
+  it("offers exactly two switches and one destructive option — no duplicate attendance buttons, no payment save step", () => {
     renderTable({ registrations: [registration], mode: "current", registrationHrefs: hrefsFor([registration]), actions });
 
-    expect(screen.getByText("بانتظار التأكيد")).toBeInTheDocument();
-    expect(screen.getByText("لم يسجل الحضور")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "تأكيد الحضور" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "تسجيل الحضور" })).toBeInTheDocument();
-    // Cancel and mark-absent are confirm-dialog triggers; the dialog's own confirm button
-    // shares the label but stays inaccessible (native dialog: not([open]) { display: none })
-    // until the dialog opens, so only the trigger is queryable here.
-    expect(screen.getByRole("button", { name: "تسجيل الغياب" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "إلغاء التسجيل" })).toBeInTheDocument();
-    expect(screen.queryByText("إجراءات إضافية")).not.toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "الحضور" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("switch", { name: "الدفع" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("switch", { name: "الحضور" })).toHaveTextContent("لم يحضر");
+    expect(screen.getByRole("switch", { name: "الدفع" })).toHaveTextContent("غير مدفوع");
+
+    for (const gone of ["تأكيد الحضور", "تسجيل الحضور", "تسجيل الغياب", "حفظ الدفع"]) {
+      expect(screen.queryByRole("button", { name: gone })).not.toBeInTheDocument();
+    }
+    expect(screen.getByText("المزيد")).toBeInTheDocument();
+  });
+
+  it("writes the check-in the moment its switch is flipped, with no submit step", async () => {
+    renderTable({ registrations: [registration], mode: "current", registrationHrefs: hrefsFor([registration]), actions });
+
+    fireEvent.click(screen.getByRole("switch", { name: "الحضور" }));
+
+    await waitFor(() => expect(actions.recordCheckIn).toHaveBeenCalledWith(registration.id, "checked_in", expect.anything(), expect.anything()));
+    // The optimistic patch lands without waiting for the server.
+    expect(screen.getByRole("switch", { name: "الحضور" })).toHaveAttribute("aria-checked", "true");
+    await waitFor(() => expect(refresh).toHaveBeenCalled());
+  });
+
+  it("writes the payment the moment its switch is flipped, and toasts the outcome", async () => {
+    renderTable({ registrations: [registration], mode: "current", registrationHrefs: hrefsFor([registration]), actions });
+
+    fireEvent.click(screen.getByRole("switch", { name: "الدفع" }));
+
+    await waitFor(() => expect(actions.setPaymentStatus).toHaveBeenCalledWith(registration.id, expect.anything(), expect.anything()));
+    const submitted = vi.mocked(actions.setPaymentStatus).mock.calls[0]![2] as FormData;
+    expect(submitted.get("paymentStatus")).toBe("paid_in_full");
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("سُجّل الدفع."));
+  });
+
+  it("keeps a recorded deposit visible rather than showing it as unpaid", () => {
+    const deposit: Registration = { ...registration, paymentStatus: "deposit_paid" };
+    renderTable({ registrations: [deposit], mode: "current", registrationHrefs: hrefsFor([deposit]), actions });
+
+    expect(screen.getByRole("switch", { name: "الدفع" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getAllByText("دُفع العربون").some((node) => node.classList.contains("registration-toggles__chip"))).toBe(true);
   });
 
   it("offers both revoke and admin-confirm actions for an invited waitlist row, confirm styled as primary", async () => {

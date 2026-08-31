@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { EventInspector } from "@/features/admin/components/EventInspector";
 import { ToastProvider } from "@/components/ui/ToastProvider";
@@ -50,7 +50,6 @@ function registration(id: string, overrides: Partial<Registration> = {}): Regist
 
 const registrationActions = {
   cancelRegistration: vi.fn(async () => ({ status: "success" as const })),
-  confirmAttendance: vi.fn(async () => ({ status: "success" as const })),
   confirmInvitation: vi.fn(async () => ({ status: "success" as const })),
   recordCheckIn: vi.fn(async () => ({ status: "success" as const })),
   revokeInvitation: vi.fn(async () => ({ status: "success" as const })),
@@ -100,25 +99,30 @@ describe("EventInspector", () => {
     expect(screen.getByText(/سدّدت بالكامل ١ · متبقٍ ١/)).toBeInTheDocument();
   });
 
-  it("exposes roster, waitlist and communications as tabs and shows the roster first", () => {
+  it("collapses the workspace into three tabs and shows the roster first", () => {
     renderInspector();
     const tabs = screen.getAllByRole("tab").map((tab) => tab.textContent);
-    expect(tabs[0]).toContain("قائمة الحضور والتسجيلات");
-    expect(tabs[1]).toContain("قائمة الانتظار");
-    expect(tabs[2]).toContain("التواصل والتذكير");
-    expect(screen.getByRole("tab", { name: /قائمة الحضور والتسجيلات/ })).toHaveAttribute("aria-selected", "true");
+    expect(tabs).toHaveLength(3);
+    expect(tabs[0]).toContain("التسجيلات");
+    expect(tabs[1]).toContain("التواصل");
+    expect(tabs[2]).toContain("الإعدادات");
+    expect(screen.getByRole("tab", { name: /التسجيلات/ })).toHaveAttribute("aria-selected", "true");
   });
 
-  it("surfaces the remaining-seat count on the waitlist tab", () => {
+  it("surfaces the remaining-seat count beside the waitlist, inside the roster panel", () => {
     renderInspector();
-    fireEvent.click(screen.getByRole("tab", { name: /قائمة الانتظار/ }));
-    expect(screen.getByText(/٤ مقعدًا متاحًا — ادعي من قائمة الانتظار/)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "قائمة الانتظار" })).toBeInTheDocument();
+    expect(screen.getByText(/٤ مقعدًا متاحًا — ادعي من هنا/)).toBeInTheDocument();
   });
 
   it("tells the admin the waitlist is blocked when the event is full", () => {
     renderInspector({ event: { ...event, activeReservationCount: 20 } });
-    fireEvent.click(screen.getByRole("tab", { name: /قائمة الانتظار/ }));
     expect(screen.getByText("اكتمل العدد. ستتاح الدعوات فور إلغاء أحد المقاعد.")).toBeInTheDocument();
+  });
+
+  it("hides the waitlist section entirely when nobody is waiting", () => {
+    renderInspector({ waitlist: [] });
+    expect(screen.queryByRole("region", { name: "قائمة الانتظار" })).not.toBeInTheDocument();
   });
 
   it("offers the live-day action only on the event's own day", () => {

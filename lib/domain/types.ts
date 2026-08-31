@@ -62,6 +62,13 @@ export interface RegistrationReceipt {
   managementToken: string;
 }
 
+/** The minimum an admin screen needs to notice that a new registration has landed. */
+export interface RegistrationPulse {
+  activeCount: number;
+  latestId: EntityId | null;
+  latestName: string | null;
+}
+
 export interface Registration {
   id: EntityId;
   reference: EntityId;

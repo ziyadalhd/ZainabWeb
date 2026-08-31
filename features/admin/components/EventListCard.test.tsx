@@ -56,11 +56,10 @@ describe("EventListCard", () => {
     expect(screen.getByText("مباشرة الآن")).toBeInTheDocument();
   });
 
-  it("opens the quick status actions and publishes a ready draft", () => {
+  it("offers publish and archive directly for a ready draft", () => {
     renderCard({ event: { ...event, endsAt: "2026-08-10T17:00:00.000Z", priceHalalas: 0 } });
-    fireEvent.click(screen.getByText("تغيير الحالة"));
-    expect(screen.getByRole("button", { name: "نشر الفعالية" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "أرشفة الفعالية" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "نشر" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "أرشفة" })).toBeInTheDocument();
   });
 
   it("shows the duplicate action and hides the live check-in link for a far-future event", () => {
@@ -81,9 +80,8 @@ describe("EventListCard", () => {
 
   it("keeps cancellation behind an explicit confirmation", () => {
     renderCard({ event: { ...event, publicationStatus: "published" } });
-    fireEvent.click(screen.getByText("تغيير الحالة"));
-    fireEvent.click(screen.getByRole("button", { name: "إلغاء الفعالية" }));
-    expect(screen.getByRole("form", { name: "تأكيد إلغاء الفعالية" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "إلغاء" }));
+    expect(screen.getByRole("group", { name: "تأكيد إلغاء" })).toBeInTheDocument();
     expect(screen.getByText(/ستتوقف التسجيلات/)).toBeInTheDocument();
   });
 });

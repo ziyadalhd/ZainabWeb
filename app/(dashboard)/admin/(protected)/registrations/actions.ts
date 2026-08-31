@@ -15,7 +15,7 @@ function revalidateRegistrationViews() {
 
 async function runRegistrationMutation(
   id: string,
-  operation: "cancel" | "revoke" | "confirm" | "confirm-invitation",
+  operation: "cancel" | "revoke" | "confirm-invitation",
 ): Promise<ActionResult> {
   await requireAdmin();
   if (!isEntityId(id)) return { status: "error", message: "معرف التسجيل غير صالح." };
@@ -24,7 +24,6 @@ async function runRegistrationMutation(
     const repository = await createAdminRegistrationRepository();
     if (operation === "cancel") await repository.cancel(id);
     if (operation === "revoke") await repository.revokeInvitation(id);
-    if (operation === "confirm") await repository.confirmAttendance(id);
     if (operation === "confirm-invitation") await repository.confirmInvitation(id);
   } catch {
     return { status: "error" };
@@ -44,12 +43,6 @@ export async function revokeInvitationAction(id: string, _state: ActionResult, _
   void _state;
   void _formData;
   return runRegistrationMutation(id, "revoke");
-}
-
-export async function confirmAttendanceAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
-  void _state;
-  void _formData;
-  return runRegistrationMutation(id, "confirm");
 }
 
 export async function confirmInvitationAction(id: string, _state: ActionResult, _formData: FormData): Promise<ActionResult> {
