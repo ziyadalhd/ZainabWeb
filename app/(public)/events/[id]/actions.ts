@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { EventAudience, RegistrationStatus } from "@/lib/domain/types";
 import { validateRegistrationInput } from "@/lib/domain/registration-input";
+import { notifyNewRegistration } from "@/lib/notifications/admin-alerts";
 import { createEventCatalog } from "@/lib/supabase/events";
 import {
   createRegistrationService,
@@ -55,6 +56,11 @@ export async function registerForEventAction(
     const receipt = await service.register(eventId, input.value);
     revalidatePath("/admin");
     revalidatePath("/admin/registrations");
+    await notifyNewRegistration({
+      attendeeName: input.value.attendeeName,
+      eventTitle: event.title,
+      status: receipt.status,
+    });
     return {
       reference: receipt.reference,
       status: receipt.status,
