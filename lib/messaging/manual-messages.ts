@@ -1,5 +1,9 @@
 import type { ManualMessageKind, ManualMessageRecordKind } from "@/lib/domain/types";
-import { buildEventCancellationMessage, renderRegistrationReminderTemplate } from "@/lib/messaging/registration-reminder";
+import {
+  buildEventCancellationMessage,
+  buildRegistrationReminderMessage,
+  renderRegistrationReminderTemplate,
+} from "@/lib/messaging/registration-reminder";
 
 export const manualMessageKinds = [
   "confirmation",
@@ -52,7 +56,7 @@ export function buildManualMessageContent({
   if (!secureUrl) throw new Error("manual_message_secure_url_required");
 
   if (kind === "confirmation") {
-    return `السلام عليكم ${attendeeName}،\nتم تسجيلك في فعالية «${eventTitle}».\nيمكنك تأكيد الحضور أو الاعتذار وإدارة تسجيلك من الرابط الآمن:\n${secureUrl}`;
+    return `يا هلا فيكِ ${attendeeName}، 🤍\nسعدنا جداً بانضمامك معنا في فعالية «${eventTitle}»!\n\nيسعدنا تأكيد حضورك، أو إدارته والاعتذار في حال طرأ عليك ظرف، من خلال الرابط التالي:\n${secureUrl}\n\nولإتمام تسجيلك بكل راحة، يمكنك التحويل مسبقاً على الحساب التالي:\nرقم الآيبان:\nSA75 8000 0201 6080 1626 0868\n\n(ملاحظة: يمكنك إتمام التحويل البنكي، أو الدفع مباشرة عند وصولك للمقر).\n\nنتطلع لتواجدك بفارغ الصبر! ✨`;
   }
 
   if (kind === "reminder_24h" || kind === "reminder_3h") {
@@ -62,15 +66,15 @@ export function buildManualMessageContent({
           eventTitle,
           managementUrl: secureUrl,
         })
-      : `السلام عليكم ${attendeeName}،\nحياكِ في فعالية ${eventTitle}.\nلا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن هناك مشاركات في قائمة الانتظار.\nيمكنك تأكيد الحضور أو الاعتذار من هنا:\n${secureUrl}`;
+      : buildRegistrationReminderMessage({ attendeeName, eventTitle, managementUrl: secureUrl });
     return `${kind === "reminder_24h" ? "تذكير قبل ٢٤ ساعة" : "تذكير قبل ٣ ساعات"}\n${reminder}`;
   }
 
   if (kind === "waitlist_invitation") {
-    return `السلام عليكم ${attendeeName}، توفر مقعد في فعالية ${eventTitle}. الدعوة صالحة لمدة ٦ ساعات، ويمكن قبولها من الرابط: ${secureUrl}`;
+    return `يا هلا ${attendeeName} 🤍\nعندنا خبر سعيد! توفر مقعد في فعالية «${eventTitle}» وحبينا نبدأ فيك.\n\nالدعوة صالحة لمدة ٦ ساعات فقط، فبادري بقبولها من الرابط قبل ما تنتهي:\n${secureUrl}\n\nنتحمس نشوفك معنا! ✨`;
   }
 
-  return `السلام عليكم ${attendeeName}، نشكركِ على حضور فعالية «${eventTitle}» في نادي بَيْن الثقافي. يهمنا رأيكِ لتطوير تجاربنا القادمة عبر هذا الرابط: ${secureUrl}`;
+  return `يا هلا ${attendeeName} 🤍\nكم سعدنا بحضورك فعالية «${eventTitle}» في نادي بَيْن الثقافي!\n\nرأيك يهمنا كثير، ويساعدنا نطور فعالياتنا القادمة عشانك. شاركينا انطباعك من هنا:\n${secureUrl}\n\nشكراً من القلب لتواجدك معنا 🤍`;
 }
 
 export function getDefaultManualMessageKind(input: {

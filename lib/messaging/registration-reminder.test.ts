@@ -12,10 +12,10 @@ describe("registration reminder message", () => {
       managementUrl: "https://example.test/bookings/person-specific-token",
     });
 
-    expect(message).toContain("السلام عليكم سارة");
-    expect(message).toContain("حياكِ في فعالية أمسية الشعر");
-    expect(message).toContain("لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور");
-    expect(message).toContain("مشاركات في قائمة الانتظار");
+    expect(message).toContain("يا هلا سارة");
+    expect(message).toContain("فعالية «أمسية الشعر»");
+    expect(message).toContain("نتمنى تأكيد حضورك فقط إذا كنتِ متأكدة");
+    expect(message).toContain("قائمة الانتظار");
     expect(message).toContain("https://example.test/bookings/person-specific-token");
     expect(message).not.toContain("الرابط الآمن");
     expect(message).not.toContain("الخاص بك");

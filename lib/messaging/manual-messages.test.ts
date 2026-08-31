@@ -29,9 +29,10 @@ describe("manual event messages", () => {
       secureUrl: "https://example.test/bookings/secure-token",
     });
 
-    expect(message).toContain("تم تسجيلك");
-    expect(message).toContain("نورة");
+    expect(message).toContain("يا هلا فيكِ نورة");
+    expect(message).toContain("فعالية «مجالسة مع كتاب»");
     expect(message).toContain("https://example.test/bookings/secure-token");
+    expect(message).toContain("SA75 8000 0201 6080 1626 0868");
   });
 
   it("uses the approved standard cancellation message without a custom reason", () => {
@@ -43,7 +44,7 @@ describe("manual event messages", () => {
       secureUrl: null,
     });
 
-    expect(message).toContain("أُلغيت فعالية أمسية ثقافية");
+    expect(message).toContain("تم إلغاء فعالية أمسية ثقافية");
     expect(message).not.toContain("السبب");
     expect(message).not.toContain("undefined");
   });
