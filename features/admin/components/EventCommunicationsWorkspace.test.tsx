@@ -80,8 +80,11 @@ describe("EventCommunicationsWorkspace", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "فتح في واتساب" }));
 
-    await waitFor(() => expect(actions.send).toHaveBeenCalledWith(event.id, registration.id, "confirmation"));
-    expect(popup.location.href).toContain("https://wa.me/966500000001");
+    // The waiting tab is pointed at the composed URL only after the action resolves, so this waits
+    // on the href itself. Waiting merely for the action to have been *called* resolves a microtask
+    // too early and makes the assertion race the assignment.
+    await waitFor(() => expect(popup.location.href).toContain("https://wa.me/966500000001"));
+    expect(actions.send).toHaveBeenCalledWith(event.id, registration.id, "confirmation");
     expect(popup.location.href).toContain("secure-person-token");
     // No second confirmation step: the row is already recorded as sent, and the only button left
     // is the re-open escape hatch.

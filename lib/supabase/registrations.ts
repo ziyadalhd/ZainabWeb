@@ -10,6 +10,7 @@ import {
   isRegistrationStatus,
 } from "@/lib/domain/registration-input";
 import type {
+  AdminPulse,
   BookingDetails,
   Registration,
   RegistrationInput,
@@ -250,6 +251,38 @@ implements RegistrationService, AdminRegistrationRepository {
    * polling in `useRegistrationPulse` costs a fraction of a full `listForEvent`, and no attendee
    * data beyond a single name leaves the server on a poll that finds nothing new.
    */
+  /**
+   * The newest held seat anywhere on the platform, plus the platform-wide held-seat count.
+   *
+   * The dashboard-wide twin of `pulseForEvent`, backing the global listener in the admin layout.
+   * One query: an exact count over the filtered set, the newest row, and that row's event title
+   * embedded through the `registrations_event_id_fkey` relationship — so a poll that finds nothing
+   * new costs a single round trip and returns one name at most.
+   */
+  async pulseLatest(): Promise<RepositoryResult<AdminPulse>> {
+    const { data, count, error } = await this.client
+      .from("registrations")
+      .select("id,attendee_name,created_at,event_id,events(title)", { count: "exact" })
+      .in("status", ["registered", "invited"])
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (error || !data) {
+      logRepositoryFailure("Registrations.pulseLatest", error);
+      return loadFailed();
+    }
+
+    const latest = data[0];
+    return ok({
+      activeCount: count ?? 0,
+      latestRegistrationId: latest?.id ?? null,
+      attendeeName: latest?.attendee_name ?? null,
+      eventId: latest?.event_id ?? null,
+      eventTitle: latest?.events?.title ?? null,
+      timestamp: latest?.created_at ?? null,
+    });
+  }
+
   async pulseForEvent(eventId: string): Promise<RepositoryResult<RegistrationPulse>> {
     const { data, count, error } = await this.client
       .from("registrations")

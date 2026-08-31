@@ -62,6 +62,16 @@ export interface RegistrationReceipt {
   managementToken: string;
 }
 
+/** The minimum any admin screen needs to notice that a new registration has landed, dashboard-wide. */
+export interface AdminPulse {
+  activeCount: number;
+  latestRegistrationId: EntityId | null;
+  attendeeName: string | null;
+  eventId: EntityId | null;
+  eventTitle: string | null;
+  timestamp: IsoDateTime | null;
+}
+
 /** The minimum an admin screen needs to notice that a new registration has landed. */
 export interface RegistrationPulse {
   activeCount: number;

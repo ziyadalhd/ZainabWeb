@@ -28,4 +28,42 @@ if (typeof HTMLDialogElement !== "undefined") {
   }
 }
 
+// jsdom does not implement PointerEvent, so testing-library falls back to a bare Event for
+// pointerdown/pointermove — dropping pointerId and the client coordinates that drag handlers read.
+// Deriving it from MouseEvent restores both.
+if (typeof window !== "undefined" && typeof window.PointerEvent === "undefined") {
+  class JsdomPointerEvent extends MouseEvent implements PointerEvent {
+    readonly pointerId: number;
+    readonly pointerType: string;
+    readonly isPrimary: boolean;
+    readonly width = 1;
+    readonly height = 1;
+    readonly pressure = 0;
+    readonly tangentialPressure = 0;
+    readonly tiltX = 0;
+    readonly tiltY = 0;
+    readonly twist = 0;
+    readonly altitudeAngle = 0;
+    readonly azimuthAngle = 0;
+
+    constructor(type: string, init: PointerEventInit = {}) {
+      super(type, init);
+      this.pointerId = init.pointerId ?? 0;
+      this.pointerType = init.pointerType ?? "mouse";
+      this.isPrimary = init.isPrimary ?? true;
+    }
+
+    getCoalescedEvents(): PointerEvent[] {
+      return [];
+    }
+
+    getPredictedEvents(): PointerEvent[] {
+      return [];
+    }
+  }
+
+  window.PointerEvent = JsdomPointerEvent as unknown as typeof PointerEvent;
+  globalThis.PointerEvent = window.PointerEvent;
+}
+
 afterEach(() => cleanup());

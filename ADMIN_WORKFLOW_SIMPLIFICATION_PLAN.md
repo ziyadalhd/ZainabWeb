@@ -68,20 +68,53 @@ Chosen mechanism: **lightweight polling**, not Supabase Realtime.
 
 Realtime would need `registrations` added to the `supabase_realtime` publication — pushing rows of
 personal data over a socket, and widening the surface that RLS has to hold. `AGENTS.md` §14 keeps
-attendee data narrow on purpose. Polling a single admin-only endpoint that returns counts and one
-name gets the same result with no schema change and no new exposure.
+attendee data narrow on purpose. Polling admin-only endpoints that return counts and one name gets
+the same result with no schema change and no new exposure.
 
-- `GET /admin/events/[id]/pulse` — an admin-guarded route handler returning
-  `{ activeCount, capacity, latestId, latestName }`. Nothing else leaves the server.
-- `useRegistrationPulse` polls it every 15s, pauses while the tab is hidden, and resumes on focus.
-- On a rise in `activeCount`: a live badge appears above the roster, a toast names the new
-  registrant, a short two-tone WebAudio chime plays, and `router.refresh()` pulls the real rows in.
-- The chime plays by default and is muted from the banner itself; it is never played on the first
-  poll after mount, which only establishes the baseline. Audio is best-effort — a browser that
-  blocks it before a user gesture still gets the badge and the toast.
+### One notifier, dashboard-wide
 
-The roster, the seat counters, and the capacity meter all read from the refreshed server data, so
-they stay in one consistent state rather than drifting apart.
+Announcing is a single job owned in a single place. `AdminPulseListener` mounts once in the
+protected admin layout, inside the `ToastProvider` and above every admin page, so a registration
+announces itself whether the admin is on the hub, the requests queue, or the settings form — and
+announces exactly **once**, no matter how many screens are watching.
+
+- `GET /admin/pulse` — admin-guarded, returns
+  `{ activeCount, latestRegistrationId, attendeeName, eventId, eventTitle, timestamp }` for the
+  newest held seat across every event. One query: an exact count, a `limit(1)`, and the event title
+  embedded through `registrations_event_id_fkey`. Nothing else leaves the server — no phone, no
+  email, no guardian record.
+- `usePoll` is the shared loop behind both pulse hooks: fetch on an interval, pause entirely while
+  the tab is hidden, catch up on `visibilitychange`, and swallow a failed poll because the next tick
+  retries.
+- `useAdminPulse` polls it every 15s and detects an arrival by **the newest registration's id
+  changing**, not by the count rising — a registration landing in the same tick as a cancellation
+  leaves the count flat and is still an arrival worth announcing.
+- On an arrival: the WebAudio chime fires, a toast names the guest and their event
+  (`تسجيل جديد: زياد في فعالية مساء بين`) and carries a `فتح الفعالية` link straight to that event's
+  inspector, and `router.refresh()` runs once.
+- The first response after mount only establishes the baseline; it never announces.
+
+### Live overview refresh
+
+That single `router.refresh()` re-runs whichever `force-dynamic` admin page is currently mounted, so
+the hub's attendee totals, expected revenue, seat-fill meters, and day-pulse cards all re-read from
+one refreshed server render. No page-specific wiring, and no manual reload.
+
+### The event-scoped band
+
+`RegistrationPulseBanner` in the inspector keeps its own event-scoped poll
+(`GET /admin/events/[id]/pulse`) for the seat count and the arrivals tally on the roster the admin is
+actually working. It is a **silent counter** — no chime, no toast, no refresh — because the global
+listener already owns those, and the badge is what usefully persists after a toast has faded.
+
+### Sound
+
+The chime plays by default and is muted from a control inside the toast itself: offered at the one
+moment it is relevant, to an admin who just heard it, and costing no permanent chrome anywhere. The
+choice persists in `localStorage`, read at announce time rather than held in React state (nothing
+renders from it, and reading storage during render would desync the first client paint from the
+server's). Audio is best-effort throughout — a browser that blocks it before a user gesture still
+gets the badge and the toast.
 
 ## 3. One-click WhatsApp dispatch
 
@@ -133,6 +166,50 @@ brief does not touch them.
   quiet secondary menu — no disclosure widget to open before acting.
 - `المزيد` secondary menus hold only the destructive and rare actions.
 - Copy: labels state the outcome (`نشر`, `إلغاء`, `أرشفة`) rather than describing the mechanism.
+
+## 6. Poster framing
+
+Every surface that shows a poster uses one fixed aspect (`aspect-[4/5]`), so an unframed upload gets
+whatever `object-fit` decides — a portrait photo letterboxed against a blurred backdrop, a wide
+banner with its subject cropped out at the sides. Selecting a file now opens a framing tool instead
+of accepting the file as-is.
+
+- `lib/media/crop-geometry.ts` — the maths, free of the DOM: cover scale, display size, offset
+  clamping, and the export width. The frame is authoritative and the image is scaled to *cover* it,
+  so a source of any shape yields the same undistorted output rectangle; whatever does not fit is
+  cropped, never squeezed.
+- `lib/media/crop-image.ts` — draws the framed region to a canvas and returns an optimised `File`.
+  WebP first, JPEG when the browser cannot encode WebP, and the filename is rewritten to match what
+  was actually encoded. Export width is capped at the source pixels visible through the frame, so
+  zooming in makes a smaller file rather than an upscaled, softer one.
+- `components/ui/ImageCropper.tsx` — the modal: drag to pan, wheel or slider to zoom, quarter-turn
+  rotate, reset, and rule-of-thirds guides. Interaction runs on a CSS transform so dragging stays
+  smooth on a large image; the canvas runs once, on apply, from the same numbers.
+- `features/admin/components/EventPosterField.tsx` — the shared picker used by both `EventForm` and
+  `EventPosterForm`. The cropped file is loaded into the existing `name="poster"` input via
+  `DataTransfer`, keeping the poster on the ordinary multipart path — same field, same server
+  action, same validation — with no server change at all. The original file is retained so
+  `إعادة ضبط الإطار` re-frames the full image rather than re-cropping an already-cropped one.
+
+Offsets and the preview use physical `left`/`top` and a physical `translate`, since CSS `transform`
+is not direction-aware and mixing logical properties would flip the drag under RTL.
+
+### The object URL's lifetime
+
+The cropper's `<img>` gets its `src` from an effect keyed on the file, not from a URL cached in
+state. State outlives an effect's cleanup, and React Strict Mode mounts effects, tears them down,
+and mounts them again — so a URL minted once during render and revoked by that teardown left the
+image pointing at a dead blob for the rest of the component's life, which is a broken-image
+placeholder in every development run. Re-running the effect mints a fresh URL, which is what makes
+the teardown safe: the URL is released when the file changes or the cropper closes, never in
+between.
+
+`src` is assigned imperatively so it lands after commit, by which point React has attached the
+`load` and `error` handlers — the decode can never finish before something is listening. Every
+dimension-dependent value is derived in `load` and nowhere else, since `naturalWidth` is 0 until
+then. A failed load retries once through `FileReader.readAsDataURL`, and a second failure — or a
+decoded-but-empty image — reports it and leaves the cropper cancellable with the confirm button
+inert, rather than stuck on a placeholder that never resolves.
 
 ## Verification
 

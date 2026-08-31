@@ -1,4 +1,5 @@
 import type {
+  AdminPulse,
   Event,
   EventInput,
   EventPublicationStatus,
@@ -76,6 +77,7 @@ export interface AdminRegistrationRepository {
   list(): Promise<RepositoryResult<readonly Registration[]>>;
   listForEvent(eventId: string): Promise<RepositoryResult<readonly Registration[]>>;
   pulseForEvent(eventId: string): Promise<RepositoryResult<RegistrationPulse>>;
+  pulseLatest(): Promise<RepositoryResult<AdminPulse>>;
   listPage(filter: AdminRegistrationListFilter): Promise<RepositoryResult<PaginatedResult<Registration>>>;
   listManualMessagesForEvent(eventId: string): Promise<RepositoryResult<readonly ManualMessageRecord[]>>;
   prepareManualMessage(id: string, kind: ManualMessageKind): Promise<ManualMessageReceipt>;

@@ -1,10 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EventInspector } from "@/features/admin/components/EventInspector";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import type { Event, Registration } from "@/lib/domain/types";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
+
+// The roster panel mounts RegistrationPulseBanner, which starts a real 15-second poll. These tests
+// finish in milliseconds so it never normally fires, but on a loaded machine a test can outlive the
+// interval and hit an unmocked fetch — a flake that depends on how busy the box is. Stubbing it
+// keeps the suite deterministic; the polling itself is covered in RegistrationPulseBanner.test.tsx.
+beforeEach(() => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({ ok: true, json: async () => ({ activeCount: 0, latestId: null, latestName: null }) }) as Response),
+  );
+});
+
+afterEach(() => vi.unstubAllGlobals());
 
 const now = "2026-08-05T12:00:00.000Z";
 
@@ -59,20 +72,20 @@ const registrationActions = {
 function renderInspector(overrides: Partial<React.ComponentProps<typeof EventInspector>> = {}) {
   return render(
     <ToastProvider>
-    <EventInspector
-      event={event}
-      registered={[registration("r1", { paymentStatus: "paid_in_full" }), registration("r2")]}
-      waitlist={[registration("w1", { status: "waitlisted" })]}
-      allRegistrations={[]}
-      feedback={[]}
-      manualMessages={null}
-      eventTemplate={null}
-      globalTemplate={null}
-      now={now}
-      registrationActions={registrationActions}
-      statusAction={vi.fn(async () => ({ status: "success" as const }))}
-      {...overrides}
-    />
+      <EventInspector
+        event={event}
+        registered={[registration("r1", { paymentStatus: "paid_in_full" }), registration("r2")]}
+        waitlist={[registration("w1", { status: "waitlisted" })]}
+        allRegistrations={[]}
+        feedback={[]}
+        manualMessages={null}
+        eventTemplate={null}
+        globalTemplate={null}
+        now={now}
+        registrationActions={registrationActions}
+        statusAction={vi.fn(async () => ({ status: "success" as const }))}
+        {...overrides}
+      />
     </ToastProvider>,
   );
 }

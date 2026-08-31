@@ -3,8 +3,8 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Event, EventAudience } from "@/lib/domain/types";
-import { PosterFrame } from "@/components/ui/PosterFrame";
 import { useToast } from "@/components/ui/ToastProvider";
+import { EventPosterField } from "@/features/admin/components/EventPosterField";
 import { EventCardView } from "@/features/events/components/EventCardView";
 import { eventAudienceLabels } from "@/features/events/event-presentation";
 import { isEventAudience, parsePriceSarToHalalas, riyadhDateAndTimeToIso } from "@/lib/domain/event-input";
@@ -97,6 +97,7 @@ function readPreviewSnapshot(form: HTMLFormElement | null, fallback: PreviewSnap
 export function EventForm({ action, event, submitLabel, onSaved }: EventFormProps) {
   const [state, formAction, pending] = useActionState(action, { status: "idle" });
   const [dirty, setDirty] = useState(false);
+  // Held only to feed the live card preview; EventPosterField owns the object URL's lifetime.
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -131,13 +132,6 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire only when the action result changes
   }, [state]);
-
-  useEffect(
-    () => () => {
-      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
-    },
-    [localPreviewUrl],
-  );
 
   useEffect(() => {
     if (!dirty) return;
@@ -364,37 +358,14 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
             </div>
           ) : null}
 
-          <div>
-            <p className="mb-2 text-sm font-medium">{event?.posterUrl ? "استبدال البوستر" : "إضافة بوستر"}</p>
-            <p className="mb-3 text-sm muted-copy">اختياري. يقبل PNG أو JPG أو WebP، ويظهر للزائرات مع تفاصيل الفعالية.</p>
-            {(localPreviewUrl ?? event?.posterUrl) ? (
-              <div className="mb-3 grid gap-2">
-                <p className="text-sm font-medium text-[var(--brand-forest)]">{localPreviewUrl ? "معاينة البوستر المختار" : "البوستر الحالي"}</p>
-                <PosterFrame
-                  src={localPreviewUrl ?? event?.posterUrl ?? ""}
-                  alt={event?.title ? `بوستر فعالية ${event.title}` : "معاينة بوستر الفعالية"}
-                  sizes="(min-width: 640px) 28rem, 100vw"
-                  className="aspect-[4/5] w-full max-w-md rounded-[var(--radius-surface)] border border-[var(--color-border)]"
-                />
-              </div>
-            ) : null}
-            <label className="sr-only" htmlFor="event-poster">
-              {event?.posterUrl ? "استبدال البوستر" : "إضافة بوستر"}
-            </label>
-            <input
-              id="event-poster"
-              name="poster"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="field-control block text-sm"
-              onChange={(eventTarget) => {
-                if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
-                const file = eventTarget.target.files?.[0];
-                setLocalPreviewUrl(file ? URL.createObjectURL(file) : null);
-                setDirty(true);
-              }}
-            />
-          </div>
+          <EventPosterField
+            inputId="event-poster"
+            label={event?.posterUrl ? "استبدال البوستر" : "إضافة بوستر"}
+            currentPosterUrl={event?.posterUrl ?? null}
+            previewAlt={event?.title ? `بوستر فعالية ${event.title}` : "معاينة بوستر الفعالية"}
+            onPreviewChange={setLocalPreviewUrl}
+            onPicked={() => setDirty(true)}
+          />
         </fieldset>
 
         <div className="flex flex-col items-stretch gap-3 border-t border-[var(--color-border)] pt-6 sm:flex-row sm:items-center">

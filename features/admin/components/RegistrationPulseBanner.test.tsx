@@ -1,10 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RegistrationPulseBanner } from "@/features/admin/components/RegistrationPulseBanner";
-import { ToastProvider } from "@/components/ui/ToastProvider";
-
-const refresh = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 
 const chime = vi.hoisted(() => vi.fn());
 vi.mock("@/features/admin/registration-pulse-sound", () => ({ playRegistrationChime: chime }));
@@ -25,64 +21,49 @@ async function tick() {
 describe("RegistrationPulseBanner", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    refresh.mockClear();
     chime.mockClear();
   });
 
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    // The hidden-tab test spies on document.hidden; without this it leaks into later tests.
+    vi.restoreAllMocks();
   });
 
-  it("announces a new registration with a badge, a toast, a chime and a refresh", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => pulseResponse(5, "نورة")));
-    render(
-      <ToastProvider>
-        <RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />
-      </ToastProvider>,
-    );
+  it("tracks this event's seat count and tallies arrivals since the roster was opened", async () => {
+    let count = 4;
+    vi.stubGlobal("fetch", vi.fn(async () => pulseResponse(++count, "نورة")));
+    render(<RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />);
 
     expect(screen.getByText("٤ / ٢٠ مقعدًا")).toBeInTheDocument();
-    await tick();
 
+    await tick();
     expect(screen.getByText("٥ / ٢٠ مقعدًا")).toBeInTheDocument();
     expect(screen.getByText("١ تسجيل جديد — آخرها نورة")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("تسجيل جديد: نورة");
-    expect(chime).toHaveBeenCalledTimes(1);
-    expect(refresh).toHaveBeenCalledTimes(1);
+
+    await tick();
+    expect(screen.getByText("٦ / ٢٠ مقعدًا")).toBeInTheDocument();
+    expect(screen.getByText("٢ تسجيل جديد — آخرها نورة")).toBeInTheDocument();
   });
 
-  it("stays quiet when the count has not moved", async () => {
+  it("stays a silent counter — announcing belongs to the dashboard-wide listener, so an arrival chimes once", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => pulseResponse(9, "نورة")));
+    render(<RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />);
+
+    await tick();
+
+    expect(screen.getByText("٩ / ٢٠ مقعدًا")).toBeInTheDocument();
+    expect(chime).not.toHaveBeenCalled();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("shows the idle label when the count has not moved", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => pulseResponse(4, "نورة")));
-    render(
-      <ToastProvider>
-        <RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />
-      </ToastProvider>,
-    );
+    render(<RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />);
 
     await tick();
     expect(screen.getByText("التحديث تلقائي")).toBeInTheDocument();
-    expect(chime).not.toHaveBeenCalled();
-    expect(refresh).not.toHaveBeenCalled();
-  });
-
-  it("keeps announcing but drops the chime once the admin mutes it", async () => {
-    let count = 4;
-    vi.stubGlobal("fetch", vi.fn(async () => pulseResponse(++count, "نورة")));
-    render(
-      <ToastProvider>
-        <RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />
-      </ToastProvider>,
-    );
-
-    await act(async () => {
-      screen.getByRole("button", { name: "كتم التنبيه الصوتي" }).click();
-    });
-    await tick();
-
-    expect(screen.getByRole("button", { name: "تشغيل التنبيه الصوتي" })).toHaveAttribute("aria-pressed", "true");
-    expect(refresh).toHaveBeenCalledTimes(1);
-    expect(chime).not.toHaveBeenCalled();
   });
 
   it("does not poll while the tab is hidden", async () => {
@@ -90,13 +71,9 @@ describe("RegistrationPulseBanner", () => {
     vi.stubGlobal("fetch", fetchMock);
     vi.spyOn(document, "hidden", "get").mockReturnValue(true);
 
-    render(
-      <ToastProvider>
-        <RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />
-      </ToastProvider>,
-    );
-
+    render(<RegistrationPulseBanner eventId={eventId} initialCount={4} capacity={20} />);
     await tick();
+
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
