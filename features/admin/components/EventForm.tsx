@@ -6,8 +6,8 @@ import type { Event, EventAudience } from "@/lib/domain/types";
 import { useToast } from "@/components/ui/ToastProvider";
 import { EventPosterField } from "@/features/admin/components/EventPosterField";
 import { EventCardView } from "@/features/events/components/EventCardView";
-import { eventAudienceLabels } from "@/features/events/event-presentation";
-import { isEventAudience, parsePriceSarToHalalas, riyadhDateAndTimeToIso } from "@/lib/domain/event-input";
+import { eventAudienceLabels, formatEventAudiences } from "@/features/events/event-presentation";
+import { allEventAudiences, maximumDescriptionLength, parsePriceSarToHalalas, riyadhDateAndTimeToIso } from "@/lib/domain/event-input";
 import { EventSchedulePicker } from "@/features/scheduling/components/EventSchedulePicker";
 import { formatRiyadhDateInput, formatRiyadhTimeInput } from "@/lib/format/date";
 import type { EventFormActionError, EventFormActionState } from "@/app/(dashboard)/admin/(protected)/events/actions";
@@ -21,9 +21,10 @@ interface EventFormProps {
 
 const errorMessages: Record<EventFormActionError, string> = {
   title: "أدخل عنوانًا للفعالية.",
-  audience: "اختر فئة صحيحة.",
+  audience: "اختاري فئة واحدة على الأقل.",
   kind: "اختر مسارًا صحيحًا للفعالية.",
   eventTypeLabel: "أدخل نوع الفعالية.",
+  description: "الوصف طويل جدًا. اختصره إلى 2000 حرف أو أقل.",
   startsAt: "أدخل تاريخ البداية ووقتها بتوقيت السعودية.",
   endsAt: "يجب أن تكون نهاية الفعالية بعد بدايتها.",
   capacity: "أدخل سعة صحيحة من ١ إلى ٥٠ مقعدًا.",
@@ -37,6 +38,7 @@ const fieldForError: Partial<Record<EventFormActionError, string>> = {
   audience: "event-audience",
   kind: "event-kind",
   eventTypeLabel: "event-type",
+  description: "event-description",
   startsAt: "event-start-date",
   endsAt: "event-start-date",
   capacity: "event-capacity",
@@ -50,7 +52,7 @@ interface FormSection {
 }
 
 const sections: readonly FormSection[] = [
-  { id: "basics", label: "الأساسيات", fields: ["title", "audience", "kind", "eventTypeLabel"] },
+  { id: "basics", label: "الأساسيات", fields: ["title", "audience", "kind", "eventTypeLabel", "description"] },
   { id: "schedule", label: "الموعد", fields: ["startsAt", "endsAt"] },
   { id: "capacity", label: "المقاعد والفئة", fields: ["capacity", "registrationStatus"] },
   { id: "pricing", label: "السعر والنشر", fields: ["priceHalalas", "save"] },
@@ -67,7 +69,7 @@ function formatPriceInput(priceHalalas: number | null | undefined): string {
 
 interface PreviewSnapshot {
   title: string;
-  audience: EventAudience;
+  audiences: readonly EventAudience[];
   eventTypeLabel: string;
   startsAt: Date | null;
   endsAt: Date | null;
@@ -78,14 +80,14 @@ interface PreviewSnapshot {
 function readPreviewSnapshot(form: HTMLFormElement | null, fallback: PreviewSnapshot): PreviewSnapshot {
   if (!form) return fallback;
   const formData = new FormData(form);
-  const audienceRaw = String(formData.get("audience") ?? "");
+  const selectedAudiences = formData.getAll("audience").map(String);
   const startsAtIso = riyadhDateAndTimeToIso(String(formData.get("startDate") ?? ""), String(formData.get("startTime") ?? ""));
   const endsAtIso = riyadhDateAndTimeToIso(String(formData.get("endDate") ?? ""), String(formData.get("endTime") ?? ""));
   const capacity = Number(String(formData.get("capacity") ?? ""));
 
   return {
     title: String(formData.get("title") ?? "").trim(),
-    audience: isEventAudience(audienceRaw) ? audienceRaw : fallback.audience,
+    audiences: allEventAudiences.filter((value) => selectedAudiences.includes(value)),
     eventTypeLabel: String(formData.get("eventTypeLabel") ?? "").trim(),
     startsAt: startsAtIso ? new Date(startsAtIso) : null,
     endsAt: endsAtIso ? new Date(endsAtIso) : null,
@@ -107,7 +109,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
 
   const initialPreview: PreviewSnapshot = {
     title: event?.title ?? "",
-    audience: event?.audience ?? "adults",
+    audiences: event?.audiences ?? ["adults"],
     eventTypeLabel: event?.eventTypeLabel ?? "",
     startsAt: event ? new Date(event.startsAt) : null,
     endsAt: event?.endsAt ? new Date(event.endsAt) : null,
@@ -218,17 +220,25 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
               <span className="text-xs font-normal muted-copy">رحلة بَيْن تظهر أيضًا في صفحة رحلات بَيْن وتستخدم التسجيل نفسه.</span>
               {fieldError("kind")}
             </label>
-            <label className="grid gap-2 font-medium" htmlFor="event-audience">
-              الفئة
-              <select id="event-audience" className={inputClassName} name="audience" defaultValue={event?.audience ?? "adults"}>
-                {Object.entries(eventAudienceLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
+            <fieldset className="grid gap-2 font-medium" id="event-audience">
+              <legend className="mb-2">الفئة</legend>
+              <div className="grid gap-2">
+                {allEventAudiences.map((value) => (
+                  <label key={value} className="flex items-center gap-2 font-normal">
+                    <input
+                      type="checkbox"
+                      name="audience"
+                      value={value}
+                      defaultChecked={(event?.audiences ?? ["adults"]).includes(value)}
+                      onChange={refreshPreview}
+                    />
+                    {eventAudienceLabels[value]}
+                  </label>
                 ))}
-              </select>
+              </div>
+              <span className="text-xs font-normal muted-copy">اختاري فئة واحدة أو أكثر.</span>
               {fieldError("audience")}
-            </label>
+            </fieldset>
             <label className="grid gap-2 font-medium" htmlFor="event-type">
               نوع الفعالية
               <input
@@ -243,6 +253,27 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
               {fieldError("eventTypeLabel")}
             </label>
           </div>
+          <label className="grid gap-2 font-medium" htmlFor="event-description">
+            وصف الفعالية (اختياري)
+            <textarea
+              id="event-description"
+              className={inputClassName}
+              name="description"
+              defaultValue={event?.description ?? ""}
+              rows={6}
+              maxLength={maximumDescriptionLength}
+              aria-describedby={`event-description-help${hasError("description") ? " event-description-error" : ""}`}
+              aria-invalid={hasError("description")}
+            />
+            <span id="event-description-help" className="text-xs font-normal muted-copy">
+              يظهر في صفحة تفاصيل الفعالية للزائرات. اتركيه فارغًا إن لم تحتاجيه.
+            </span>
+            {hasError("description") ? (
+              <span id="event-description-error" className="text-sm font-bold text-[var(--color-error-text)]">
+                {errorMessages.description}
+              </span>
+            ) : null}
+          </label>
         </fieldset>
 
         <fieldset id="form-section-schedule" className="grid gap-5 scroll-mt-24 border-t border-[var(--color-border)] pt-7">
@@ -383,7 +414,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
         <p className="mt-2 mb-4 text-sm leading-6 muted-copy">هذا ما ستراه الزائرة في صفحة الفعاليات.</p>
         <EventCardView
           title={preview.title}
-          audienceLabel={eventAudienceLabels[preview.audience]}
+          audienceLabel={formatEventAudiences(preview.audiences)}
           eventTypeLabel={preview.eventTypeLabel}
           startsAt={preview.startsAt}
           endsAt={preview.endsAt}

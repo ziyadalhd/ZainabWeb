@@ -7,8 +7,9 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     title: "نادي القراءة الصغير",
     kind: "club_event",
-    audience: "children",
+    audiences: ["children"],
     eventTypeLabel: "نادي قراءة",
+    description: null,
     startsAt: "2026-08-30T08:00:00.000Z",
     endsAt: "2026-08-30T09:30:00.000Z",
     capacity: 15,
@@ -107,7 +108,7 @@ describe("buildDayPulseItems", () => {
   it("carries the audience and Arabic-numeral capacity for a single event", () => {
     const [item] = buildDayPulseItems([makeEvent()], [], day);
     expect(item?.isEvent).toBe(true);
-    expect(item?.audience).toBe("children");
+    expect(item?.audiences).toEqual(["children"]);
     expect(item?.capacityLabel).toBe("١٢/١٥");
     expect(item?.timeLabel).toContain("١١");
   });
@@ -115,7 +116,7 @@ describe("buildDayPulseItems", () => {
   it("marks a scheduled booking request as non-event, with no audience chip", () => {
     const [item] = buildDayPulseItems([], [makeRequest()], day);
     expect(item?.isEvent).toBe(false);
-    expect(item?.audience).toBeNull();
+    expect(item?.audiences).toBeNull();
     expect(item?.capacityLabel).toBeNull();
   });
 

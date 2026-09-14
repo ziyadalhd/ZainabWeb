@@ -12,7 +12,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/data/action-result";
 
 export type EventFormActionError =
-  "title" | "audience" | "kind" | "eventTypeLabel" | "startsAt" | "endsAt" | "capacity" | "priceHalalas" | "registrationStatus" | "save";
+  "title" | "audience" | "kind" | "eventTypeLabel" | "description" | "startsAt" | "endsAt" | "capacity" | "priceHalalas" | "registrationStatus" | "save";
 
 export interface EventFormActionState {
   status: "idle" | "success" | "error";

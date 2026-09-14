@@ -6,8 +6,9 @@ const event: Event = {
   id: "event-1",
   title: "جلسة القراءة",
   kind: "club_event",
-  audience: "adults",
+  audiences: ["adults"],
   eventTypeLabel: "لقاء",
+  description: null,
   startsAt: "2026-09-10T16:00:00.000Z",
   endsAt: "2026-09-10T18:00:00.000Z",
   capacity: 20,
@@ -73,8 +74,8 @@ describe("buildCalendarItems", () => {
 
   it("carries an event's audience for the day pulse's audience chip, leaving requests without one", () => {
     const items = buildCalendarItems([event], [request({ status: "accepted" })]);
-    expect(items.find((item) => item.kind === "event")?.audience).toBe("adults");
-    expect(items.find((item) => item.kind === "booking")?.audience).toBeUndefined();
+    expect(items.find((item) => item.kind === "event")?.audiences).toEqual(["adults"]);
+    expect(items.find((item) => item.kind === "booking")?.audiences).toBeUndefined();
   });
 
   it("scopes event links to the given base path, so the same builder serves both the hub and the events list", () => {

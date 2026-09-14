@@ -1,8 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { EventAudience, EventAvailability } from "@/lib/domain/types";
+import {
+  allowsAdultRegistration,
+  allowsMinorRegistration,
+  minorAgeRange,
+} from "@/lib/domain/registration-input";
 import type {
   RegistrationActionError,
   RegistrationActionState,
@@ -13,7 +18,7 @@ interface EventRegistrationFormProps {
     state: RegistrationActionState,
     formData: FormData,
   ) => Promise<RegistrationActionState>;
-  audience: EventAudience;
+  audiences: readonly EventAudience[];
   availability: EventAvailability;
 }
 
@@ -41,10 +46,15 @@ const errorField: Partial<Record<RegistrationActionError, string>> = {
 const inputClassName =
   "field-control";
 
-export function EventRegistrationForm({ action, audience, availability }: EventRegistrationFormProps) {
+export function EventRegistrationForm({ action, audiences, availability }: EventRegistrationFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
   const formRef = useRef<HTMLFormElement>(null);
-  const minorRegistration = audience !== "adults";
+  const acceptsAdults = allowsAdultRegistration(audiences);
+  const acceptsMinors = allowsMinorRegistration(audiences);
+  // A mixed event cannot tell from the audiences alone who is registering, so the visitor says so.
+  const [registeringMinor, setRegisteringMinor] = useState(false);
+  const minorRegistration = acceptsMinors && (!acceptsAdults || registeringMinor);
+  const ageRange = minorAgeRange(audiences);
 
   useEffect(() => {
     if (!state.error) return;
@@ -115,6 +125,18 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
         {state.error === "phone" ? <span id="registration-phone-error" className="text-sm text-[var(--color-error-text)]">{errorMessages.phone}</span> : null}
       </div>
 
+      {acceptsMinors && acceptsAdults ? (
+        <label className="flex items-center gap-2 font-bold">
+          <input
+            type="checkbox"
+            name="minorRegistration"
+            checked={registeringMinor}
+            onChange={(changeEvent) => setRegisteringMinor(changeEvent.target.checked)}
+          />
+          أسجّل مشاركة أقل من 18 سنة
+        </label>
+      ) : null}
+
       {minorRegistration ? (
         <>
           <div className="grid gap-2">
@@ -125,14 +147,14 @@ export function EventRegistrationForm({ action, audience, availability }: EventR
               name="participantAge"
               type="number"
               inputMode="numeric"
-              min={audience === "children" ? 6 : 13}
-              max={audience === "children" ? 12 : 17}
+              min={ageRange?.min}
+              max={ageRange?.max}
               aria-describedby={`registration-age-description${state.error === "participantAge" ? " registration-age-error" : ""}`}
               aria-invalid={state.error === "participantAge"}
               required
             />
             <span id="registration-age-description" className="text-xs muted-copy">
-              {audience === "children" ? "الفئة العمرية من 6 إلى 12 سنة." : "الفئة العمرية من 13 إلى 17 سنة."}
+              {ageRange ? `الفئة العمرية من ${ageRange.min} إلى ${ageRange.max} سنة.` : null}
             </span>
             {state.error === "participantAge" ? <span id="registration-age-error" className="text-sm text-[var(--color-error-text)]">{errorMessages.participantAge}</span> : null}
           </div>

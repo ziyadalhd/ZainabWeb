@@ -15,7 +15,7 @@ export interface CalendarItem {
   capacity?: number;
   activeReservationCount?: number;
   /** Set for event-kind items only — service requests have no audience concept. */
-  audience?: EventAudience;
+  audiences?: readonly EventAudience[];
 }
 
 const scheduledRequestStatuses: readonly ServiceRequestStatus[] = ["new", "under_review", "accepted"];
@@ -50,7 +50,7 @@ export function buildCalendarItems(
         conflictCount: 0,
         capacity: event.capacity,
         activeReservationCount: event.activeReservationCount,
-        audience: event.audience,
+        audiences: event.audiences,
       })),
     ...requests
       .filter((request) => request.kind !== "workshop_application" && scheduledRequestStatuses.includes(request.status))

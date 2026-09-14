@@ -135,6 +135,9 @@ export function MfaVerifyForm() {
         />
       </label>
       <p className="text-sm leading-6 muted-copy">افتحي تطبيق المصادقة واكتبي الرمز الحالي المكوّن من 6 أرقام.</p>
+      <p className="text-sm leading-6 muted-copy">
+        تبين تضيفين جوالًا ثانيًا؟ ادخلي بالرمز من جهازك الحالي، ثم افتحي «الإعدادات ← الأمان» وأضيفي جهازًا احتياطيًا.
+      </p>
       <button type="submit" className="button-primary min-h-12 px-6 py-3" disabled={isLoading || isSubmitting || !selectedFactorId}>
         {isSubmitting ? "جارٍ التحقق…" : "التحقق والدخول"}
       </button>

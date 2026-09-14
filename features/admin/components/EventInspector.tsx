@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LoadErrorNotice } from "@/components/ui/LoadErrorNotice";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { AudienceChip } from "@/features/admin/components/AudienceChip";
+import { AudienceChips } from "@/features/admin/components/AudienceChip";
 import { EventCommunicationsWorkspace } from "@/features/admin/components/EventCommunicationsWorkspace";
 import { EventInspectorTabs, type InspectorTab } from "@/features/admin/components/EventInspectorTabs";
 import { EventReminderTemplateForm } from "@/features/admin/components/EventReminderTemplateForm";
@@ -92,7 +92,7 @@ function MetadataCard({ event }: { event: Event }) {
         <div className="event-inspector__meta-row">
           <dt>الفئة</dt>
           <dd>
-            <AudienceChip audience={event.audience} />
+            <AudienceChips audiences={event.audiences} />
           </dd>
         </div>
         <div className="event-inspector__meta-row">
@@ -108,6 +108,10 @@ function MetadataCard({ event }: { event: Event }) {
           <dd>
             <StatusBadge status={event.registrationStatus} />
           </dd>
+        </div>
+        <div className="event-inspector__meta-row">
+          <dt>الوصف</dt>
+          <dd className="whitespace-pre-line">{event.description || "—"}</dd>
         </div>
       </dl>
     </section>
@@ -245,7 +249,7 @@ export function EventInspector({
         <div className="event-inspector__badges">
           <LifecycleBadge lifecycle={lifecycle} />
           <StatusBadge status={event.publicationStatus} />
-          <AudienceChip audience={event.audience} />
+          <AudienceChips audiences={event.audiences} />
         </div>
       </header>
 

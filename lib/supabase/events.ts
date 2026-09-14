@@ -26,7 +26,8 @@ function isEventAvailability(value: string): value is EventAvailability {
 
 export function mapEventRow(row: EventRow, state: EventStateRow, posterUrl: string | null = null): Event {
   if (
-    !isEventAudience(row.audience)
+    row.audiences.length === 0
+    || !row.audiences.every(isEventAudience)
     || !isEventKind(row.event_kind)
     || !isEventPublicationStatus(row.publication_status)
     || !isEventRegistrationStatus(row.registration_status)
@@ -39,8 +40,9 @@ export function mapEventRow(row: EventRow, state: EventStateRow, posterUrl: stri
     id: row.id,
     title: row.title,
     kind: row.event_kind,
-    audience: row.audience,
+    audiences: row.audiences,
     eventTypeLabel: row.event_type_label,
+    description: row.description,
     startsAt: row.starts_at,
     endsAt: row.ends_at,
     capacity: row.capacity,
@@ -64,8 +66,9 @@ function toEventWrite(input: EventInput) {
   return {
     title: input.title,
     event_kind: input.kind,
-    audience: input.audience,
+    audiences: [...input.audiences],
     event_type_label: input.eventTypeLabel,
+    description: input.description,
     starts_at: input.startsAt,
     ends_at: input.endsAt,
     capacity: input.capacity,
@@ -230,8 +233,9 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
       .insert({
         title: `${source.title} (نسخة)`,
         event_kind: source.event_kind,
-        audience: source.audience,
+        audiences: source.audiences,
         event_type_label: source.event_type_label,
+        description: source.description,
         starts_at: new Date().toISOString(),
         ends_at: null,
         capacity: source.capacity,

@@ -46,8 +46,62 @@ describe("registration input", () => {
     expect(isRegistrationPaymentStatus("paid")).toBe(false);
   });
 
+  describe("multi-audience events", () => {
+    function minorFormData(age: string) {
+      const formData = validFormData();
+      formData.set("participantAge", age);
+      formData.set("guardianName", "أم المشاركة");
+      formData.set("guardianConsent", "on");
+      return formData;
+    }
+
+    it("lets an adult register on a mixed event by omitting the age", () => {
+      expect(validateRegistrationInput(validFormData(), ["adults", "youth"])).toMatchObject({
+        ok: true,
+        value: { participantAge: null, guardianName: null, guardianConsent: false },
+      });
+    });
+
+    it("lets a minor register on the same event with an age and a guardian", () => {
+      expect(validateRegistrationInput(minorFormData("15"), ["adults", "youth"])).toMatchObject({
+        ok: true,
+        value: { participantAge: 15, guardianName: "أم المشاركة", guardianConsent: true },
+      });
+    });
+
+    it("refuses an age that falls between the selected bands rather than inside one", () => {
+      // adults + children covers 6-12 and 18+, so 15 belongs to neither.
+      expect(validateRegistrationInput(minorFormData("15"), ["adults", "children"])).toEqual({
+        ok: false,
+        error: "participantAge",
+      });
+    });
+
+    it("accepts either band when both minor audiences are served", () => {
+      expect(validateRegistrationInput(minorFormData("8"), ["children", "youth"])).toMatchObject({ ok: true });
+      expect(validateRegistrationInput(minorFormData("16"), ["children", "youth"])).toMatchObject({ ok: true });
+      expect(validateRegistrationInput(minorFormData("13"), ["children", "youth"])).toMatchObject({ ok: true });
+    });
+
+    it("still requires a guardian when a minor registers on a mixed event", () => {
+      const formData = validFormData();
+      formData.set("participantAge", "15");
+      expect(validateRegistrationInput(formData, ["adults", "youth"])).toEqual({
+        ok: false,
+        error: "guardianName",
+      });
+    });
+
+    it("keeps a minors-only event demanding an age even when the field is blank", () => {
+      expect(validateRegistrationInput(validFormData(), ["youth"])).toEqual({
+        ok: false,
+        error: "guardianName",
+      });
+    });
+  });
+
   it("trims fields and keeps email optional", () => {
-    expect(validateRegistrationInput(validFormData(), "adults")).toEqual({
+    expect(validateRegistrationInput(validFormData(), ["adults"])).toEqual({
       ok: true,
       value: {
         attendeeName: "زائر النادي",
@@ -60,7 +114,7 @@ describe("registration input", () => {
     });
     const withoutEmail = validFormData();
     withoutEmail.set("email", "");
-    expect(validateRegistrationInput(withoutEmail, "adults")).toMatchObject({
+    expect(validateRegistrationInput(withoutEmail, ["adults"])).toMatchObject({
       ok: true,
       value: { email: null },
     });
@@ -69,14 +123,14 @@ describe("registration input", () => {
   it("matches the registration name boundary enforced by the database", () => {
     const tooShort = validFormData();
     tooShort.set("attendeeName", "ا");
-    expect(validateRegistrationInput(tooShort, "adults")).toEqual({
+    expect(validateRegistrationInput(tooShort, ["adults"])).toEqual({
       ok: false,
       error: "attendeeName",
     });
   });
 
   it("requires approved minor fields and age boundaries", () => {
-    expect(validateRegistrationInput(validFormData(), "children")).toEqual({
+    expect(validateRegistrationInput(validFormData(), ["children"])).toEqual({
       ok: false,
       error: "guardianName",
     });
@@ -84,7 +138,7 @@ describe("registration input", () => {
     approved.set("guardianName", "ولية الأمر");
     approved.set("participantAge", "١٢");
     approved.set("guardianConsent", "on");
-    expect(validateRegistrationInput(approved, "children")).toMatchObject({
+    expect(validateRegistrationInput(approved, ["children"])).toMatchObject({
       ok: true,
       value: {
         participantAge: 12,
@@ -93,11 +147,11 @@ describe("registration input", () => {
       },
     });
     approved.set("participantAge", "13");
-    expect(validateRegistrationInput(approved, "children")).toEqual({
+    expect(validateRegistrationInput(approved, ["children"])).toEqual({
       ok: false,
       error: "participantAge",
     });
-    expect(validateRegistrationInput(approved, "youth")).toMatchObject({
+    expect(validateRegistrationInput(approved, ["youth"])).toMatchObject({
       ok: true,
       value: { participantAge: 13 },
     });
@@ -106,7 +160,7 @@ describe("registration input", () => {
   it("does not reject submissions with a website field", () => {
     const automated = validFormData();
     automated.set("website", "https://spam.example");
-    expect(validateRegistrationInput(automated, "adults")).toMatchObject({
+    expect(validateRegistrationInput(automated, ["adults"])).toMatchObject({
       ok: true,
     });
   });

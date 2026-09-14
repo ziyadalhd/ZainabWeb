@@ -4,7 +4,7 @@ import { EventRegistrationForm } from "@/features/events/components/EventRegistr
 
 describe("EventRegistrationForm", () => {
   it("renders the approved adult fields and retention notice", () => {
-    render(<EventRegistrationForm action={vi.fn()} audience="adults" availability="available" />);
+    render(<EventRegistrationForm action={vi.fn()} audiences={["adults"]} availability="available" />);
     expect(screen.getByRole("textbox", { name: "الاسم كاملًا" })).toBeRequired();
     expect(screen.getByRole("textbox", { name: "رقم الجوال" })).toBeRequired();
     expect(screen.getByRole("textbox", { name: /البريد الإلكتروني/ })).not.toBeRequired();
@@ -13,7 +13,7 @@ describe("EventRegistrationForm", () => {
   });
 
   it("renders the approved guardian fields for children", () => {
-    render(<EventRegistrationForm action={vi.fn()} audience="children" availability="available" />);
+    render(<EventRegistrationForm action={vi.fn()} audiences={["children"]} availability="available" />);
     expect(screen.getByRole("textbox", { name: "اسم المشاركة كاملًا" })).toBeRequired();
     expect(screen.getByRole("textbox", { name: "جوال ولية الأمر" })).toBeRequired();
     expect(screen.getByLabelText("عمر المشاركة")).toHaveAttribute("min", "6");
@@ -22,7 +22,7 @@ describe("EventRegistrationForm", () => {
   });
 
   it("uses the youth age boundary and keeps the waitlist submit button ready", () => {
-    render(<EventRegistrationForm action={vi.fn()} audience="youth" availability="full" />);
+    render(<EventRegistrationForm action={vi.fn()} audiences={["youth"]} availability="full" />);
     expect(screen.getByLabelText("عمر المشاركة")).toHaveAttribute("min", "13");
     expect(screen.getByLabelText("عمر المشاركة")).toHaveAttribute("max", "17");
     expect(screen.getByRole("heading", { name: "قائمة الانتظار" })).toBeInTheDocument();

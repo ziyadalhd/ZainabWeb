@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AudienceChip } from "@/features/admin/components/AudienceChip";
+import { AudienceChips } from "@/features/admin/components/AudienceChip";
 import { WeekStrip } from "@/features/admin/components/WeekStrip";
 import type { PulseItem } from "@/features/admin/day-pulse";
 import { formatArabicNumber } from "@/lib/format/date";
@@ -27,7 +27,7 @@ export function DayPulse({ items, selectedDay, today, hrefFor }: DayPulseProps) 
               <Link href={item.href} className="pulse-timeline__content">
                 <span className={item.isEvent ? "pulse-timeline__title pulse-timeline__title--event" : "pulse-timeline__title"}>{item.title}</span>
                 <span className="pulse-timeline__meta">
-                  {item.audience ? <AudienceChip audience={item.audience} /> : null}
+                  {item.audiences ? <AudienceChips audiences={item.audiences} /> : null}
                   {item.capacityLabel ? <span className="pulse-timeline__capacity">السعة {item.capacityLabel}</span> : null}
                   {item.conflictCount > 0 ? (
                     <span className="pulse-timeline__conflict">تعارض {formatArabicNumber(item.conflictCount)}</span>

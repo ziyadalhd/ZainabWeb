@@ -4,7 +4,7 @@ import { HomeUpcomingEvents, selectHomeEvents } from "@/features/home/components
 import type { Event } from "@/lib/domain/types";
 
 const baseEvent: Event = {
-  id: "1", title: "فعالية أولى", kind: "club_event", audience: "adults", eventTypeLabel: "لقاء",
+  id: "1", title: "فعالية أولى", kind: "club_event", audiences: ["adults"], eventTypeLabel: "لقاء", description: null,
   startsAt: "2026-08-20T15:00:00.000Z", endsAt: "2026-08-20T17:00:00.000Z", capacity: 12,
   activeReservationCount: 0, priceHalalas: 0, posterUrl: null, registrationStatus: "open",
   availability: "available", publicationStatus: "published", createdAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z",

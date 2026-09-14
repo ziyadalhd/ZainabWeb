@@ -6,6 +6,11 @@ export const eventAudienceLabels: Record<EventAudience, string> = {
   children: "للأطفال",
 };
 
+/** Joins an event's audiences into one Arabic label, e.g. «للبالغات، للفتيات». */
+export function formatEventAudiences(audiences: readonly EventAudience[]): string {
+  return audiences.map((audience) => eventAudienceLabels[audience]).join("، ");
+}
+
 export const eventAvailabilityPresentation: Record<EventAvailability, {
   status: string;
   action: string;

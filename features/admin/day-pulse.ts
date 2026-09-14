@@ -8,7 +8,7 @@ export interface PulseItem {
   timeLabel: string;
   title: string;
   isEvent: boolean;
-  audience: EventAudience | null;
+  audiences: readonly EventAudience[] | null;
   capacityLabel: string | null;
   conflictCount: number;
 }
@@ -70,7 +70,7 @@ export function buildDayPulseItems(
       timeLabel: formatArabicTime(item.startsAt),
       title: item.title,
       isEvent: item.kind === "event",
-      audience: item.audience ?? null,
+      audiences: item.audiences ?? null,
       capacityLabel:
         item.kind === "event" && item.capacity !== undefined && item.activeReservationCount !== undefined
           ? `${formatArabicNumber(item.activeReservationCount)}/${formatArabicNumber(item.capacity)}`

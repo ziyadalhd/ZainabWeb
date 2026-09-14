@@ -85,9 +85,11 @@ export type Database = {
       }
       events: {
         Row: {
-          audience: string
+          audience: string | null
+          audiences: string[]
           capacity: number
           created_at: string
+          description: string | null
           ends_at: string | null
           event_kind: string
           event_type_label: string
@@ -101,9 +103,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          audience: string
+          audience?: string | null
+          audiences?: string[]
           capacity: number
           created_at?: string
+          description?: string | null
           ends_at?: string | null
           event_kind?: string
           event_type_label: string
@@ -117,9 +121,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          audience?: string
+          audience?: string | null
+          audiences?: string[]
           capacity?: number
           created_at?: string
+          description?: string | null
           ends_at?: string | null
           event_kind?: string
           event_type_label?: string

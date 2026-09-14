@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Event } from "@/lib/domain/types";
-import { AudienceChip } from "@/features/admin/components/AudienceChip";
+import { AudienceChips } from "@/features/admin/components/AudienceChip";
 import { CapacityMeter } from "@/features/admin/components/CapacityMeter";
 import { DeleteEventButton, type DeleteEventAction } from "@/features/admin/components/DeleteEventButton";
 import { DuplicateEventButton, type DuplicateEventAction } from "@/features/admin/components/DuplicateEventButton";
@@ -24,7 +24,7 @@ export function EventListCard({ event, now, statusAction, duplicateAction, delet
     <article className="event-card">
       <div className="event-card__head">
         <div className="flex flex-wrap items-center gap-2">
-          <AudienceChip audience={event.audience} />
+          <AudienceChips audiences={event.audiences} />
           <LifecycleBadge lifecycle={lifecycle} />
         </div>
         <span className="event-card__when numeral">

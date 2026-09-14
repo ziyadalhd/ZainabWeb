@@ -10,7 +10,7 @@ const itemLabels = { event: "فعالية", request: "طلب قيد المراج
 
 function itemClassName(item: CalendarItem): string {
   if (item.conflictCount > 0) return "calendar-item calendar-item--conflict";
-  if (item.kind === "event") return `calendar-item calendar-item--${item.audience ?? "adults"}`;
+  if (item.kind === "event") return `calendar-item calendar-item--${item.audiences?.[0] ?? "adults"}`;
   if (item.kind === "booking") return "calendar-item calendar-item--booking";
   return "calendar-item calendar-item--request";
 }

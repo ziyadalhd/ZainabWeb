@@ -48,6 +48,11 @@ describe("MfaVerifyForm", () => {
     expect(screen.getByRole("button", { name: "التحقق والدخول" })).toBeInTheDocument();
   });
 
+  it("points to the security settings for adding a second device", () => {
+    render(<MfaVerifyForm />);
+    expect(screen.getByText(/الإعدادات ← الأمان/)).toBeInTheDocument();
+  });
+
   it("validates 6-digit length before creating a challenge", async () => {
     render(<MfaVerifyForm />);
     await waitFor(() => expect(screen.getByRole("button", { name: "التحقق والدخول" })).toBeEnabled());

@@ -14,8 +14,9 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     title: "ليلة أدبية",
     kind: "club_event",
-    audience: "adults",
+    audiences: ["adults"],
     eventTypeLabel: "أمسية حوارية",
+    description: null,
     startsAt: "2026-09-01T16:00:00.000Z",
     endsAt: "2026-09-01T18:00:00.000Z",
     capacity: 30,
@@ -57,11 +58,11 @@ describe("parseEventAudienceFilter", () => {
 });
 
 describe("filterEvents", () => {
-  const upcoming = makeEvent({ id: "1", audience: "adults", title: "ليلة أدبية" });
-  const draft = makeEvent({ id: "2", audience: "youth", title: "ورشة الخط", publicationStatus: "draft" });
-  const past = makeEvent({ id: "3", audience: "children", title: "يوم الفنون", startsAt: "2026-01-01T10:00:00.000Z", endsAt: "2026-01-01T12:00:00.000Z" });
-  const cancelled = makeEvent({ id: "4", audience: "adults", title: "أمسية ملغاة", publicationStatus: "cancelled" });
-  const archived = makeEvent({ id: "5", audience: "adults", title: "فعالية مؤرشفة", publicationStatus: "archived" });
+  const upcoming = makeEvent({ id: "1", audiences: ["adults"], title: "ليلة أدبية" });
+  const draft = makeEvent({ id: "2", audiences: ["youth"], title: "ورشة الخط", publicationStatus: "draft" });
+  const past = makeEvent({ id: "3", audiences: ["children"], title: "يوم الفنون", startsAt: "2026-01-01T10:00:00.000Z", endsAt: "2026-01-01T12:00:00.000Z" });
+  const cancelled = makeEvent({ id: "4", audiences: ["adults"], title: "أمسية ملغاة", publicationStatus: "cancelled" });
+  const archived = makeEvent({ id: "5", audiences: ["adults"], title: "فعالية مؤرشفة", publicationStatus: "archived" });
   const all = [upcoming, draft, past, cancelled, archived];
 
   it("filters by status bucket", () => {

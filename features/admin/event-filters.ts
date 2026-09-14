@@ -26,7 +26,7 @@ function matchesStatusFilter(lifecycle: EventLifecycle, filter: EventStatusFilte
 }
 
 function matchesAudienceFilter(event: Event, filter: EventAudienceFilter): boolean {
-  return filter === "all" || event.audience === filter;
+  return filter === "all" || event.audiences.includes(filter);
 }
 
 function matchesQuery(event: Event, query: string): boolean {

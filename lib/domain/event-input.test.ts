@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canChangeEventStatus,
+  maximumDescriptionLength,
   parsePriceSarToHalalas,
   riyadhDateTimeLocalToIso,
   validateEventInput,
@@ -28,14 +29,51 @@ describe("event input", () => {
     expect(riyadhDateTimeLocalToIso("2026-02-30T18:00")).toBeNull();
   });
 
+  it("accepts several audiences and stores them in canonical order", () => {
+    const formData = validFormData();
+    formData.delete("audience");
+    formData.append("audience", "youth");
+    formData.append("audience", "adults");
+    expect(validateEventInput(formData)).toMatchObject({ ok: true, value: { audiences: ["adults", "youth"] } });
+  });
+
+  it("rejects an event with no audience selected", () => {
+    const formData = validFormData();
+    formData.delete("audience");
+    expect(validateEventInput(formData)).toEqual({ ok: false, errors: ["audience"] });
+  });
+
+  it("rejects an unknown audience even alongside a valid one", () => {
+    const formData = validFormData();
+    formData.append("audience", "teachers");
+    expect(validateEventInput(formData)).toEqual({ ok: false, errors: ["audience"] });
+  });
+
+  it("trims the optional description and keeps a blank one null", () => {
+    const withText = validFormData();
+    withText.set("description", "  أمسية قراءة مفتوحة.  ");
+    expect(validateEventInput(withText)).toMatchObject({ ok: true, value: { description: "أمسية قراءة مفتوحة." } });
+
+    const blank = validFormData();
+    blank.set("description", "   ");
+    expect(validateEventInput(blank)).toMatchObject({ ok: true, value: { description: null } });
+  });
+
+  it("rejects a description longer than the allowed length", () => {
+    const formData = validFormData();
+    formData.set("description", "ا".repeat(maximumDescriptionLength + 1));
+    expect(validateEventInput(formData)).toEqual({ ok: false, errors: ["description"] });
+  });
+
   it("trims text and validates all allowlists", () => {
     expect(validateEventInput(validFormData())).toEqual({
       ok: true,
       value: {
         title: "لقاء القراءة",
         kind: "club_event",
-        audience: "adults",
+        audiences: ["adults"],
         eventTypeLabel: "لقاء",
+        description: null,
         startsAt: "2026-08-10T15:00:00.000Z",
         endsAt: "2026-08-10T17:00:00.000Z",
         capacity: 20,

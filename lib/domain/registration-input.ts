@@ -51,9 +51,41 @@ export function isRegistrationPaymentStatus(value: string): value is "unpaid" | 
   return value === "unpaid" || value === "deposit_paid" || value === "paid_in_full";
 }
 
+/** The age band each minor audience covers. Adults never carry an age, so they are absent here. */
+const minorAgeBands: Partial<Record<EventAudience, { min: number; max: number }>> = {
+  children: { min: 6, max: 12 },
+  youth: { min: 13, max: 17 },
+};
+
+export function allowsAdultRegistration(audiences: readonly EventAudience[]): boolean {
+  return audiences.includes("adults");
+}
+
+export function allowsMinorRegistration(audiences: readonly EventAudience[]): boolean {
+  return audiences.some((audience) => minorAgeBands[audience] !== undefined);
+}
+
+/** True when the age falls inside one of the event's own minor bands, not a span between them. */
+export function isAgeWithinAudiences(age: number, audiences: readonly EventAudience[]): boolean {
+  return audiences.some((audience) => {
+    const band = minorAgeBands[audience];
+    return band !== undefined && age >= band.min && age <= band.max;
+  });
+}
+
+/** The widest age the form should offer, across whichever minor audiences the event serves. */
+export function minorAgeRange(audiences: readonly EventAudience[]): { min: number; max: number } | null {
+  const bands = audiences.map((audience) => minorAgeBands[audience]).filter((band) => band !== undefined);
+  if (bands.length === 0) return null;
+  return {
+    min: Math.min(...bands.map((band) => band.min)),
+    max: Math.max(...bands.map((band) => band.max)),
+  };
+}
+
 export function validateRegistrationInput(
   formData: FormData,
-  audience: EventAudience,
+  audiences: readonly EventAudience[],
 ): RegistrationInputResult {
   const attendeeName = String(formData.get("attendeeName") ?? "").trim();
   if (attendeeName.length < 2 || attendeeName.length > 120) {
@@ -69,25 +101,39 @@ export function validateRegistrationInput(
   }
 
   const guardianConsent = formData.get("guardianConsent") === "on";
-  let participantAge: number | null = null;
-  let guardianName: string | null = null;
+  const ageText = normalizeDigits(String(formData.get("participantAge") ?? "").trim());
 
-  if (audience !== "adults") {
-    guardianName = String(formData.get("guardianName") ?? "").trim();
-    if (guardianName.length < 2 || guardianName.length > 120) {
-      return { ok: false, error: "guardianName" };
-    }
+  // The shape of the submission says which kind of registration this is, matching the database
+  // rule: an age is a minor's age, and an adult never carries one. An event that serves only
+  // minors always takes the minor path, even when the age field came back empty.
+  const isMinorRegistration = allowsMinorRegistration(audiences)
+    && (!allowsAdultRegistration(audiences) || ageText !== "");
 
-    const ageText = normalizeDigits(String(formData.get("participantAge") ?? "").trim());
-    participantAge = Number(ageText);
-    const validAge = /^\d+$/.test(ageText)
-      && Number.isSafeInteger(participantAge)
-      && (audience === "children"
-        ? participantAge >= 6 && participantAge <= 12
-        : participantAge >= 13 && participantAge <= 17);
-    if (!validAge) return { ok: false, error: "participantAge" };
-    if (!guardianConsent) return { ok: false, error: "guardianConsent" };
+  if (!isMinorRegistration) {
+    return {
+      ok: true,
+      value: {
+        attendeeName,
+        phoneE164,
+        email: emailValue || null,
+        participantAge: null,
+        guardianName: null,
+        guardianConsent: false,
+      },
+    };
   }
+
+  const guardianName = String(formData.get("guardianName") ?? "").trim();
+  if (guardianName.length < 2 || guardianName.length > 120) {
+    return { ok: false, error: "guardianName" };
+  }
+
+  const participantAge = Number(ageText);
+  const validAge = /^\d+$/.test(ageText)
+    && Number.isSafeInteger(participantAge)
+    && isAgeWithinAudiences(participantAge, audiences);
+  if (!validAge) return { ok: false, error: "participantAge" };
+  if (!guardianConsent) return { ok: false, error: "guardianConsent" };
 
   return {
     ok: true,
@@ -97,7 +143,7 @@ export function validateRegistrationInput(
       email: emailValue || null,
       participantAge,
       guardianName,
-      guardianConsent: audience !== "adults" && guardianConsent,
+      guardianConsent,
     },
   };
 }

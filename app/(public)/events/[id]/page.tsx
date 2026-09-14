@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PosterFrame } from "@/components/ui/PosterFrame";
 import { EventRegistrationForm } from "@/features/events/components/EventRegistrationForm";
-import { eventAudienceLabels, eventAvailabilityPresentation } from "@/features/events/event-presentation";
+import { formatEventAudiences, eventAvailabilityPresentation } from "@/features/events/event-presentation";
 import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
@@ -35,7 +35,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   }
 
-  const description = `${event.eventTypeLabel} لفئة ${eventAudienceLabels[event.audience]} في نادي بَيْن الثقافي.`;
+  const description = event.description
+    ? event.description.replace(/\s+/g, " ").slice(0, 160)
+    : `${event.eventTypeLabel} لفئة ${formatEventAudiences(event.audiences)} في نادي بَيْن الثقافي.`;
   return {
     title: event.title,
     description,
@@ -83,12 +85,15 @@ export default async function EventDetailsPage({
           ) : null}
           <div className="p-5 sm:p-9">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="border-r-4 border-[var(--brand-amber)] pr-3 text-sm font-extrabold text-[var(--brand-forest)]">{eventAudienceLabels[event.audience]}</span>
+              <span className="border-r-4 border-[var(--brand-amber)] pr-3 text-sm font-extrabold text-[var(--brand-forest)]">{formatEventAudiences(event.audiences)}</span>
               <span className="text-sm font-extrabold text-[var(--brand-olive)]">{availability.status}</span>
             </div>
             <p className="eyebrow mt-8">{event.eventTypeLabel}</p>
             <h1 className="page-title mt-3">{event.title}</h1>
             <p className="mt-4 font-bold text-[var(--brand-forest)]">هذه الفعالية مخصصة للنساء.</p>
+            {event.description ? (
+              <p className="mt-6 whitespace-pre-line leading-8 muted-copy">{event.description}</p>
+            ) : null}
             <dl className="mt-9 grid border-y border-[var(--brand-olive)] sm:grid-cols-2">
               <div className="py-5 sm:col-span-2"><dt className="text-sm muted-copy">الموعد</dt><dd className="mt-1 text-xl font-black text-[var(--brand-forest)]">{formatArabicEventDate(event.startsAt)}</dd><dd className="mt-1 font-bold muted-copy">{formatArabicEventTimeRange(event.startsAt, event.endsAt)}</dd></div>
               <div className="border-t border-[var(--color-border)] py-5 sm:border-l sm:pl-5"><dt className="text-sm muted-copy">المقاعد</dt><dd className="data-value mt-1 font-extrabold">{formatSeatCapacity(event.capacity)}</dd></div>
@@ -100,8 +105,8 @@ export default async function EventDetailsPage({
         <aside className="form-surface p-5 sm:p-6 lg:sticky lg:top-32">
           {event.endsAt !== null && event.priceHalalas !== null && event.availability !== "closed" ? (
             <EventRegistrationForm
-              action={registerForEventAction.bind(null, event.id, event.audience)}
-              audience={event.audience}
+              action={registerForEventAction.bind(null, event.id, event.audiences)}
+              audiences={event.audiences}
               availability={event.availability}
             />
           ) : (

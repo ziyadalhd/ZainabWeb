@@ -16,7 +16,7 @@ function makeItem(overrides: Partial<PulseItem> = {}): PulseItem {
     timeLabel: "١١:٠٠ ص",
     title: "نادي القراءة الصغير: حكايات من التراث",
     isEvent: true,
-    audience: "children",
+    audiences: ["children"],
     capacityLabel: "١٢/١٥",
     conflictCount: 0,
     ...overrides,
@@ -39,7 +39,7 @@ describe("DayPulse", () => {
   });
 
   it("renders a scheduled booking request without an audience chip or capacity", () => {
-    const booking = makeItem({ id: "booking-1", isEvent: false, audience: null, capacityLabel: null, title: "أمسية خاصة" });
+    const booking = makeItem({ id: "booking-1", isEvent: false, audiences: null, capacityLabel: null, title: "أمسية خاصة" });
     render(<DayPulse items={[booking]} selectedDay={selectedDay} today={selectedDay} hrefFor={hrefFor} />);
 
     expect(screen.getByText("أمسية خاصة")).toBeInTheDocument();

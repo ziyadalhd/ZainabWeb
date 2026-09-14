@@ -30,7 +30,7 @@ export interface RegistrationActionState {
 
 export async function registerForEventAction(
   eventId: string,
-  audience: EventAudience,
+  audiences: readonly EventAudience[],
   _previousState: RegistrationActionState,
   formData: FormData,
 ): Promise<RegistrationActionState> {
@@ -38,7 +38,7 @@ export async function registerForEventAction(
   const event = await catalog.getUpcomingEvent(eventId);
   if (
     !event
-    || event.audience !== audience
+    || event.audiences.join() !== audiences.join()
     || event.endsAt === null
     || event.priceHalalas === null
     || event.availability === "closed"
@@ -46,7 +46,7 @@ export async function registerForEventAction(
     return { error: "unavailable" };
   }
 
-  const input = validateRegistrationInput(formData, audience);
+  const input = validateRegistrationInput(formData, audiences);
   if (!input.ok) {
     return { error: input.error === "invalid" ? "save" : input.error };
   }

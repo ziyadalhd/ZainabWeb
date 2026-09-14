@@ -20,8 +20,9 @@ export interface Event {
   id: EntityId;
   title: string;
   kind: EventKind;
-  audience: EventAudience;
+  audiences: readonly EventAudience[];
   eventTypeLabel: string;
+  description: string | null;
   startsAt: IsoDateTime;
   endsAt: IsoDateTime | null;
   capacity: number;
@@ -38,8 +39,9 @@ export interface Event {
 export interface EventInput {
   title: string;
   kind: EventKind;
-  audience: EventAudience;
+  audiences: readonly EventAudience[];
   eventTypeLabel: string;
+  description: string | null;
   startsAt: IsoDateTime;
   endsAt: IsoDateTime;
   capacity: number;

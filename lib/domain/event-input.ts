@@ -6,16 +6,20 @@ import type {
   EventRegistrationStatus,
 } from "@/lib/domain/types";
 
-const audiences: readonly EventAudience[] = ["adults", "youth", "children"];
+/** Canonical order, so a selection always renders and stores in the same sequence. */
+export const allEventAudiences: readonly EventAudience[] = ["adults", "youth", "children"];
 const eventKinds: readonly EventKind[] = ["club_event", "bayn_trip"];
 const registrationStatuses: readonly EventRegistrationStatus[] = ["open", "closed"];
 const publicationStatuses: readonly EventPublicationStatus[] = ["draft", "published", "archived", "cancelled"];
+
+export const maximumDescriptionLength = 2000;
 
 export type EventInputErrorCode =
   | "title"
   | "audience"
   | "kind"
   | "eventTypeLabel"
+  | "description"
   | "startsAt"
   | "endsAt"
   | "capacity"
@@ -27,7 +31,7 @@ export type EventInputResult =
   | { ok: false; errors: readonly EventInputErrorCode[] };
 
 export function isEventAudience(value: string): value is EventAudience {
-  return audiences.includes(value as EventAudience);
+  return allEventAudiences.includes(value as EventAudience);
 }
 
 export function isEventKind(value: string): value is EventKind {
@@ -98,9 +102,11 @@ export function validateEventInput(formData: FormData): EventInputResult {
   const title = String(formData.get("title") ?? "").trim();
   if (!title) errors.push("title");
 
-  const audienceRaw = String(formData.get("audience") ?? "");
-  const audience = isEventAudience(audienceRaw) ? audienceRaw : null;
-  if (!audience) errors.push("audience");
+  const selectedAudiences = formData.getAll("audience").map(String);
+  const audiences = allEventAudiences.filter((value) => selectedAudiences.includes(value));
+  if (audiences.length === 0 || selectedAudiences.some((value) => !isEventAudience(value))) {
+    errors.push("audience");
+  }
 
   const kindRaw = String(formData.get("kind") ?? "");
   const kind = isEventKind(kindRaw) ? kindRaw : null;
@@ -108,6 +114,9 @@ export function validateEventInput(formData: FormData): EventInputResult {
 
   const eventTypeLabel = String(formData.get("eventTypeLabel") ?? "").trim();
   if (!eventTypeLabel) errors.push("eventTypeLabel");
+
+  const description = String(formData.get("description") ?? "").trim() || null;
+  if (description && description.length > maximumDescriptionLength) errors.push("description");
 
   const startsAt = riyadhDateAndTimeToIso(
     String(formData.get("startDate") ?? ""),
@@ -142,8 +151,9 @@ export function validateEventInput(formData: FormData): EventInputResult {
     value: {
       title,
       kind: kind!,
-      audience: audience!,
+      audiences,
       eventTypeLabel,
+      description,
       startsAt: startsAt!,
       endsAt: endsAt!,
       capacity,
