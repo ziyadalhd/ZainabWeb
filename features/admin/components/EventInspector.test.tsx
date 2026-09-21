@@ -101,10 +101,10 @@ describe("EventInspector", () => {
   it("summarises capacity in the rail with a warn-toned meter near the cap", () => {
     renderInspector();
     const rail = screen.getByRole("complementary", { name: "ملخص الفعالية" });
-    const meter = screen.getByRole("img", { name: "١٦ من ٢٠ مقعدًا محجوزة" });
+    const meter = screen.getByRole("img", { name: "١٦ من ٢٠ مقعدًا محجوز" });
     expect(rail).toContainElement(meter);
     expect(meter.firstElementChild).toHaveClass("event-inspector__meter-fill--warn");
-    expect(screen.getByText("٤ مقعدًا متاحًا")).toBeInTheDocument();
+    expect(screen.getByText("٤ مقاعد متاح")).toBeInTheDocument();
   });
 
   it("reports expected revenue and settlement counts rather than an invented collected amount", () => {
@@ -126,7 +126,7 @@ describe("EventInspector", () => {
   it("surfaces the remaining-seat count beside the waitlist, inside the roster panel", () => {
     renderInspector();
     expect(screen.getByRole("region", { name: "قائمة الانتظار" })).toBeInTheDocument();
-    expect(screen.getByText(/٤ مقعدًا متاحًا — ادعي من هنا/)).toBeInTheDocument();
+    expect(screen.getByText(/٤ مقاعد متاح — ادعي مسجّلة/)).toBeInTheDocument();
   });
 
   it("tells the admin the waitlist is blocked when the event is full", () => {
@@ -147,6 +147,6 @@ describe("EventInspector", () => {
 
   it("warns about affected registrations when the event is cancelled", () => {
     renderInspector({ event: { ...event, publicationStatus: "cancelled" } });
-    expect(screen.getByRole("region", { name: "إشعار إلغاء الفعالية" })).toHaveTextContent("٢ مسجّلات متأثرات");
+    expect(screen.getByRole("region", { name: "إشعار إلغاء الفعالية" })).toHaveTextContent("تأثّرت مسجلتان");
   });
 });

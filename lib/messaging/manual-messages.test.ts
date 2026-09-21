@@ -44,7 +44,7 @@ describe("manual event messages", () => {
       secureUrl: null,
     });
 
-    expect(message).toContain("تم إلغاء فعالية أمسية ثقافية");
+    expect(message).toContain("أُلغيت فعالية أمسية ثقافية");
     expect(message).not.toContain("السبب");
     expect(message).not.toContain("undefined");
   });

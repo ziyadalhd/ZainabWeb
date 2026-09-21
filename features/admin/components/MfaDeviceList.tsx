@@ -92,7 +92,7 @@ export function MfaDeviceList({
 
       {factors.length === 1 ? (
         <p id="last-factor-help" className="notice-info mt-5">
-          هذا هو جهاز التحقق الوحيد. أضيفي جهازًا جديدًا وفعّليه قبل إزالة هذا الجهاز.
+          هذا جهاز التحقق الوحيد. أضيفي جهازًا جديدًا وفعّليه قبل إزالته.
         </p>
       ) : null}
     </section>

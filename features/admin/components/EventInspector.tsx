@@ -19,6 +19,8 @@ import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
   formatArabicNumber,
+  formatRegistrationCount,
+  formatSeatCapacity,
   formatEventPrice,
   isSameRiyadhDate,
 } from "@/lib/format/date";
@@ -47,7 +49,7 @@ function CapacityCard({ event }: { event: Event }) {
   const ratio = capacityRatio(event.activeReservationCount, event.capacity);
   const tone = capacityTone(ratio);
   const remaining = seatsRemaining(event);
-  const label = `${formatArabicNumber(event.activeReservationCount)} من ${formatArabicNumber(event.capacity)} مقعدًا محجوزة`;
+  const label = `${formatArabicNumber(event.activeReservationCount)} من ${formatSeatCapacity(event.capacity)} محجوز`;
 
   return (
     <section className="event-inspector__card" aria-label="السعة">
@@ -64,7 +66,7 @@ function CapacityCard({ event }: { event: Event }) {
         />
       </div>
       <p className="event-inspector__card-note">
-        {remaining === 0 ? "اكتمل العدد" : `${formatArabicNumber(remaining)} مقعدًا متاحًا`}
+        {remaining === 0 ? "اكتمل العدد" : formatSeatCapacity(remaining) + " متاح"}
       </p>
     </section>
   );
@@ -166,7 +168,7 @@ export function EventInspector({
               <p className="mt-1 text-sm muted-copy">
                 {remaining === 0
                   ? "اكتمل العدد. ستتاح الدعوات فور إلغاء أحد المقاعد."
-                  : `${formatArabicNumber(remaining)} مقعدًا متاحًا — ادعي من هنا ثم أرسلي الدعوة من قسم التواصل.`}
+                  : `${formatSeatCapacity(remaining)} متاح — ادعي مسجّلة ثم أرسلي الدعوة من قسم التواصل.`}
               </p>
               <div className="mt-4">
                 <RegistrationTable
@@ -257,7 +259,7 @@ export function EventInspector({
         <section className="notice-error p-5" aria-label="إشعار إلغاء الفعالية">
           <h3 className="font-bold">الفعالية ملغاة</h3>
           <p className="mt-2">
-            {formatArabicNumber(registered.length)} مسجّلات متأثرات. أرسلي الإشعار الموحد من قسم التواصل والتذكير.
+            تأثّرت {formatRegistrationCount(registered.length)}. أرسلي الإشعار الموحد من قسم التواصل والتذكير.
           </p>
         </section>
       ) : null}

@@ -72,7 +72,7 @@ export function ServiceRequestForm({ kind, action }: ServiceRequestFormProps) {
   if (state.reference) {
     return (
       <div role="status" className="notice-success p-5">
-        <h2 className="text-xl font-extrabold">تم استلام طلبك</h2>
+        <h2 className="text-xl font-extrabold">وصل طلبك</h2>
         <p className="mt-3 text-sm">سيصلك تواصل مباشر من إدارة النادي عبر واتساب بخصوص التفاصيل التالية.</p>
         <p className="data-value mt-4 break-all border border-current/20 bg-white/75 px-3 py-2 text-sm font-extrabold" dir="ltr">{state.reference}</p>
       </div>

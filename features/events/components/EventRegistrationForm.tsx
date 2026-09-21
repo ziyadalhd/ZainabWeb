@@ -67,11 +67,11 @@ export function EventRegistrationForm({ action, audiences, availability }: Event
     return (
       <div role="status" className={registered ? "notice-success p-5" : "notice-warning p-5"}>
         <h2 className="text-xl font-extrabold">
-          {registered ? "تم تسجيلك في الفعالية" : "تمت إضافتك إلى قائمة الانتظار"}
+          {registered ? "سجّلناك في الفعالية" : "أضفناك إلى قائمة الانتظار"}
         </h2>
         {registered ? (
           <p className="mt-3 text-sm leading-7">
-            سنرسل لكِ عبر واتساب قبل الفعالية رابط تأكيد الحضور أو الاعتذار. لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن هناك مشاركات في قائمة الانتظار.
+            سنرسل لكِ عبر واتساب قبل الفعالية رابط تأكيد الحضور أو الاعتذار. لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن في قائمة الانتظار مشاركات.
           </p>
         ) : (
           <p className="mt-3 text-sm leading-7">
@@ -81,7 +81,7 @@ export function EventRegistrationForm({ action, audiences, availability }: Event
         <p className="data-value mt-4 break-all border border-current/20 bg-white/70 px-3 py-2 text-sm font-extrabold" dir="ltr">
           {state.reference}
         </p>
-        <p className="mt-3 text-xs">لا يتم تحصيل أي مبلغ عبر الموقع؛ الدفع في مقر الفعالية.</p>
+        <p className="mt-3 text-xs">لا نحصّل أي مبلغ عبر الموقع؛ الدفع في مقر الفعالية.</p>
         {state.managementPath ? (
           <Link
             className="button-secondary mt-4 bg-white"

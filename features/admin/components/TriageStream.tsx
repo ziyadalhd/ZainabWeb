@@ -40,9 +40,9 @@ export function TriageStream({ items, registrationActions }: TriageStreamProps) 
 
   const runners = {
     confirmInvitation: (itemId: string, registrationId: string, state: ActionResult, formData: FormData) =>
-      runAndRemove(itemId, "تم تأكيد الدعوة وتحويل المقعد إلى مسجَّل.", () => registrationActions.confirmInvitation(registrationId, state, formData)),
+      runAndRemove(itemId, "الدعوة مؤكدة، والمقعد صار مسجَّلًا.", () => registrationActions.confirmInvitation(registrationId, state, formData)),
     revokeInvitation: (itemId: string, registrationId: string, state: ActionResult, formData: FormData) =>
-      runAndRemove(itemId, "تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار.", () => registrationActions.revokeInvitation(registrationId, state, formData)),
+      runAndRemove(itemId, "سُحبت الدعوة وعاد السجل إلى قائمة الانتظار.", () => registrationActions.revokeInvitation(registrationId, state, formData)),
   };
 
   if (optimisticItems.length === 0) {

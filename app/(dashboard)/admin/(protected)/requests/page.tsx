@@ -63,13 +63,13 @@ function RequestCard({ request, conflicts }: { request: AdminServiceRequest; con
           {!request.contactedAt ? (
             <ActionButton
               action={markServiceRequestContactedAction.bind(null, request.id)}
-              label="تم التواصل"
+              label="تسجيل التواصل"
               pendingLabel="جارٍ الحفظ…"
               className="button-secondary"
-              successMessage="تم تسجيل التواصل."
+              successMessage="سُجّل التواصل."
             />
           ) : (
-            <span className="text-sm font-medium text-[var(--color-success-text)]">تم التواصل</span>
+            <span className="text-sm font-medium text-[var(--color-success-text)]">تواصلنا</span>
           )}
         </div>
       </div>

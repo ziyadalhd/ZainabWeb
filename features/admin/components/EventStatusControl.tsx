@@ -25,12 +25,12 @@ interface StatusTransition {
 
 const transitionsByStatus: Record<EventPublicationStatus, readonly StatusTransition[]> = {
   draft: [
-    { status: "published", label: "نشر", tone: "primary", successMessage: "تم نشر الفعالية." },
+    { status: "published", label: "نشر", tone: "primary", successMessage: "نُشرت الفعالية." },
     {
       status: "archived",
       label: "أرشفة",
       tone: "quiet",
-      successMessage: "تم أرشفة الفعالية.",
+      successMessage: "أُرشفت الفعالية.",
       confirmation: (event) => `أرشفة «${event.title}»؟ ستختفي من الموقع العام.`,
     },
   ],
@@ -39,18 +39,18 @@ const transitionsByStatus: Record<EventPublicationStatus, readonly StatusTransit
       status: "cancelled",
       label: "إلغاء",
       tone: "danger",
-      successMessage: "تم إلغاء الفعالية.",
+      successMessage: "أُلغيت الفعالية.",
       confirmation: (event) => `إلغاء «${event.title}»؟ ستتوقف التسجيلات وتبقى الفعالية في السجل.`,
     },
     {
       status: "archived",
       label: "أرشفة",
       tone: "quiet",
-      successMessage: "تم أرشفة الفعالية.",
+      successMessage: "أُرشفت الفعالية.",
       confirmation: (event) => `أرشفة «${event.title}»؟ ستختفي من الموقع العام.`,
     },
   ],
-  archived: [{ status: "draft", label: "إعادة إلى مسودة", tone: "secondary", successMessage: "تمت إعادة الفعالية إلى مسودة." }],
+  archived: [{ status: "draft", label: "إعادة إلى مسودة", tone: "secondary", successMessage: "عادت الفعالية مسودة." }],
   cancelled: [],
 };
 

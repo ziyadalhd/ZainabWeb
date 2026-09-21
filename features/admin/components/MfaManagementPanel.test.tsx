@@ -70,7 +70,7 @@ describe("MfaManagementPanel", () => {
 
     expect(await screen.findByText("الجوال الأساسي")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "إزالة الجهاز" })).toBeDisabled();
-    expect(screen.getByText("هذا هو جهاز التحقق الوحيد. أضيفي جهازًا جديدًا وفعّليه قبل إزالة هذا الجهاز.")).toBeInTheDocument();
+    expect(screen.getByText("هذا جهاز التحقق الوحيد. أضيفي جهازًا جديدًا وفعّليه قبل إزالته.")).toBeInTheDocument();
     expect(unenroll).not.toHaveBeenCalled();
   });
 
@@ -111,7 +111,7 @@ describe("MfaManagementPanel", () => {
         code: "123456",
       });
     });
-    expect(await screen.findByText("تمت إضافة «الجهاز الاحتياطي» بنجاح. يمكنك الآن إزالة الجهاز القديم عند الحاجة.")).toBeInTheDocument();
+    expect(await screen.findByText("أضفنا «الجهاز الاحتياطي». يمكنك إزالة الجهاز القديم عند الحاجة.")).toBeInTheDocument();
   });
 
   it("removes a selected device only when another verified device remains", async () => {
@@ -128,7 +128,7 @@ describe("MfaManagementPanel", () => {
       expect(refreshSession).toHaveBeenCalled();
       expect(getAuthenticatorAssuranceLevel).toHaveBeenCalled();
     });
-    expect(await screen.findByText("تمت إزالة «الجوال الأساسي».")).toBeInTheDocument();
+    expect(await screen.findByText("أزلنا «الجوال الأساسي».")).toBeInTheDocument();
   });
 
   it("requires another MFA challenge if removing a factor downgrades the session", async () => {

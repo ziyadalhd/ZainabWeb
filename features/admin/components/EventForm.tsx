@@ -127,7 +127,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
   useEffect(() => {
     if (state.status !== "success") return;
     if (event) {
-      pushToast("تم حفظ تعديلات الفعالية.", "success");
+      pushToast("حُفظت تعديلات الفعالية.", "success");
       onSaved?.();
     } else if (state.eventId) {
       router.push(`/admin/events?event=${state.eventId}`);
@@ -404,7 +404,7 @@ export function EventForm({ action, event, submitLabel, onSaved }: EventFormProp
             {pending ? "جارٍ الحفظ…" : submitLabel}
           </button>
           <span className="text-sm muted-copy" aria-live="polite">
-            {pending ? "يرجى الانتظار حتى يكتمل الحفظ." : "الحفظ لا ينشر الفعالية تلقائيًا."}
+            {pending ? "انتظري حتى يكتمل الحفظ." : "الحفظ لا ينشر الفعالية تلقائيًا."}
           </span>
         </div>
       </form>

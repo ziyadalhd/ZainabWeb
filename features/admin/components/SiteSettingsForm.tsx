@@ -30,7 +30,7 @@ export function SiteSettingsForm({
       ) : null}
       {state.saved ? (
         <p role="status" className="notice-success">
-          تم حفظ محتوى الموقع.
+          حُفظ محتوى الموقع.
         </p>
       ) : null}
       <fieldset className="grid gap-5">

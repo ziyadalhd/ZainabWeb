@@ -24,7 +24,7 @@ export function BookingActions({
   if (cancelState.success === "cancelled") {
     return (
       <div role="status" className="notice-success">
-        تم إلغاء الحجز وتحرير المقعد. أصبح هذا الرابط غير صالح.
+        أُلغي حجزك وتحرّر المقعد. لم يعد هذا الرابط صالحًا.
       </div>
     );
   }
@@ -36,7 +36,7 @@ export function BookingActions({
       {status === "registered" && !attendanceConfirmed ? (
         <div className="grid gap-4">
           <p className="notice-warning text-sm leading-7">
-            لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن هناك مشاركات في قائمة الانتظار.
+            لا تؤكدي حضورك إلا إذا كنتِ متأكدة من الحضور، لأن في قائمة الانتظار مشاركات.
           </p>
           <form action={confirmFormAction}>
             <button
@@ -52,7 +52,7 @@ export function BookingActions({
 
       {attendanceConfirmed ? (
         <p role="status" className="notice-success">
-          تم تأكيد الحضور.
+          حضورك مؤكد.
         </p>
       ) : null}
 
@@ -74,7 +74,7 @@ export function BookingActions({
         </button>
       ) : (
         <div className="border border-[var(--color-error-text)] bg-[var(--color-error-bg)] p-4">
-          <p className="font-bold">هل أنت متأكدة من إلغاء الحجز وتحرير المقعد؟</p>
+          <p className="font-bold">إلغاء الحجز؟ سيُحرَّر مقعدك لغيرك، ولا يمكن التراجع.</p>
           <div className="mt-4 flex flex-wrap gap-3">
             <form action={cancelFormAction}>
               <button
@@ -82,7 +82,7 @@ export function BookingActions({
                 disabled={cancelling}
                 className="button-danger min-h-11 bg-[var(--color-error-text)] px-4 py-2 text-[var(--color-on-primary)]"
               >
-                {cancelling ? "جارٍ الإلغاء…" : "نعم، إلغاء الحجز"}
+                {cancelling ? "جارٍ الإلغاء…" : "إلغاء الحجز"}
               </button>
             </form>
             <button

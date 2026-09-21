@@ -13,7 +13,7 @@ export function WaitlistInvitationAction({
   if (state.success) {
     return (
       <div role="status" className="notice-success p-5">
-        تم قبول الدعوة وتأكيد المقعد. يمكنك إدارة الحجز من الرابط الذي ظهر عند تسجيلك الأول.
+        قبلنا الدعوة ومقعدك مؤكد. أديري الحجز من الرابط الذي ظهر عند تسجيلك الأول.
       </div>
     );
   }

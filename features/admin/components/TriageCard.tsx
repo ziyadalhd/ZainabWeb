@@ -90,7 +90,7 @@ function renderAction(action: TriageAction, itemId: string, runners: TriageRunne
         label={action.label}
         pendingLabel="جارٍ التأكيد…"
         className={className}
-        successMessage="تم تأكيد الدعوة وتحويل المقعد إلى مسجَّل."
+        successMessage="الدعوة مؤكدة، والمقعد صار مسجَّلًا."
       />
     );
   }
@@ -104,7 +104,7 @@ function renderAction(action: TriageAction, itemId: string, runners: TriageRunne
       description="هل تريدين سحب هذه الدعوة وإعادة صاحبتها لقائمة الانتظار؟"
       confirmLabel="سحب الدعوة"
       action={runners.revokeInvitation.bind(null, itemId, action.registrationId)}
-      successMessage="تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار."
+      successMessage="سُحبت الدعوة وعاد السجل إلى قائمة الانتظار."
     />
   );
 }

@@ -48,7 +48,7 @@ export function DeleteEventButton({
   useEffect(() => {
     if (state.status === "success") {
       dialogRef.current?.close();
-      pushToast(`تم حذف «${eventTitle}» نهائيًا.`, "success");
+      pushToast(`حُذفت «${eventTitle}» نهائيًا.`, "success");
       router.push(redirectTo);
       router.refresh();
     } else if (state.status === "error") {

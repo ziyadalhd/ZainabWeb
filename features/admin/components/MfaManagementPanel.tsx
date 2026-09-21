@@ -139,10 +139,10 @@ export function MfaManagementPanel() {
       setEnrollment(undefined);
       setDeviceName("");
       setCode("");
-      setSuccessMessage(`تمت إضافة «${enrollment.name}» بنجاح. يمكنك الآن إزالة الجهاز القديم عند الحاجة.`);
+      setSuccessMessage(`أضفنا «${enrollment.name}». يمكنك إزالة الجهاز القديم عند الحاجة.`);
     } catch {
       setEnrollment(undefined);
-      setErrorMessage("تمت إضافة الجهاز، لكن تعذر تحديث القائمة. حدّثي الصفحة لإظهاره.");
+      setErrorMessage("أضفنا الجهاز، لكن تعذر تحديث القائمة. حدّثي الصفحة لإظهاره.");
     } finally {
       setBusyAction(undefined);
     }
@@ -203,7 +203,7 @@ export function MfaManagementPanel() {
 
     try {
       setFactors(await listVerifiedFactors());
-      setSuccessMessage(`تمت إزالة «${factor.name}».`);
+      setSuccessMessage(`أزلنا «${factor.name}».`);
       setBusyAction(undefined);
     } catch {
       window.location.replace("/admin/settings?tab=security");

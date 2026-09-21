@@ -18,7 +18,7 @@ export function DuplicateEventButton({ eventId, action }: { eventId: string; act
 
   useEffect(() => {
     if (state.status === "success" && state.eventId) {
-      pushToast("تم إنشاء نسخة كمسودة جديدة. أكملي التاريخ قبل النشر.", "success");
+      pushToast("أنشأنا نسخة كمسودة جديدة. أكملي التاريخ قبل النشر.", "success");
       router.push(`/admin/events/${state.eventId}/edit`);
     } else if (state.status === "error") {
       pushToast("تعذر نسخ الفعالية. حاولي مرة أخرى.", "error");

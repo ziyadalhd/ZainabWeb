@@ -51,7 +51,7 @@ describe("EventStatusControl", () => {
     expect(action).toHaveBeenCalledWith(event.id, "published", { status: "idle" }, expect.any(FormData));
 
     await act(async () => resolveAction({ status: "success" }));
-    expect(await screen.findByText("تم نشر الفعالية.")).toBeInTheDocument();
+    expect(await screen.findByText("نُشرت الفعالية.")).toBeInTheDocument();
   });
 
   it("rolls the status back and reports the server's reason when the action fails", async () => {

@@ -13,7 +13,7 @@ const errorMessages: Record<string, string> = {
 };
 
 const successMessages: Record<string, string> = {
-  "password-reset": "تم تعيين كلمة المرور. سجلي الدخول بكلمة المرور الجديدة.",
+  "password-reset": "عُيّنت كلمة المرور. سجلي الدخول بكلمة المرور الجديدة.",
 };
 
 export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {

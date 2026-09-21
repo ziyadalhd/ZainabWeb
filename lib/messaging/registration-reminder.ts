@@ -18,7 +18,7 @@ export function buildRegistrationReminderMessage({
   eventTitle,
   managementUrl,
 }: RegistrationReminderMessageInput): string {
-  return `يا هلا ${attendeeName} 🤍\nمتحمسين نشوفك في فعالية «${eventTitle}»!\n\nبما أن هناك مشاركات بانتظار مقعد في قائمة الانتظار، نتمنى تأكيد حضورك فقط إذا كنتِ متأكدة، حتى نقدر نرتب الأمور بعدل للجميع.\n\nأكدي حضورك أو اعتذري من هنا متى ما ناسبك:\n${managementUrl}\n\nننتظرك بكل حب! ✨`;
+  return `يا هلا ${attendeeName} 🤍\nمتحمسين نشوفك في فعالية «${eventTitle}»!\n\nبما أن في قائمة الانتظار مشاركات بانتظار مقعد، نتمنى تأكيد حضورك فقط إذا كنتِ متأكدة، حتى نقدر نرتب الأمور بعدل للجميع.\n\nأكدي حضورك أو اعتذري من هنا متى ما ناسبك:\n${managementUrl}\n\nننتظرك بكل حب! ✨`;
 }
 
 export function buildWhatsAppMessageUrl(phoneE164: string, message: string): string {
@@ -26,5 +26,5 @@ export function buildWhatsAppMessageUrl(phoneE164: string, message: string): str
 }
 
 export function buildEventCancellationMessage(attendeeName: string, eventTitle: string, eventStartsAt: string): string {
-  return `يا هلا ${attendeeName} 🤍\nنعتذر منك، تم إلغاء فعالية ${eventTitle} المقرر إقامتها في ${eventStartsAt}.\n\nنتمنى نشوفك في فعالياتنا القادمة، وراح نشاركك المواعيد الجديدة أول بأول عبر القنوات المعتمدة.\n\nشكراً لتفهمك 🤍`;
+  return `يا هلا ${attendeeName} 🤍\nنعتذر منك، أُلغيت فعالية ${eventTitle} المقرر إقامتها في ${eventStartsAt}.\n\nنتمنى نشوفك في فعالياتنا القادمة، وراح نشاركك المواعيد الجديدة أول بأول عبر القنوات المعتمدة.\n\nشكراً لتفهمك 🤍`;
 }

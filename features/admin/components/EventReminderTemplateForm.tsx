@@ -20,7 +20,7 @@ export function EventReminderTemplateForm({
 
   useEffect(() => {
     if (state.status === "success") {
-      pushToast("تم حفظ تخصيص الفعالية.", "success");
+      pushToast("حُفظ تخصيص الفعالية.", "success");
     } else if (state.status === "error") {
       pushToast(state.message ?? "تعذر حفظ التخصيص. حاولي مرة أخرى.", "error");
     }

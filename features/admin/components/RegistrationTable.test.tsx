@@ -70,7 +70,7 @@ describe("RegistrationTable", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "إلغاء التسجيل" })[1]!);
 
     await waitFor(() => expect(actions.cancelRegistration).toHaveBeenCalledWith(registration.id, expect.anything(), expect.anything()));
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("تم إلغاء التسجيل"));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("أُلغي التسجيل"));
     expect(refresh).toHaveBeenCalled();
   });
 
@@ -131,7 +131,7 @@ describe("RegistrationTable", () => {
     fireEvent.click(confirm);
 
     await waitFor(() => expect(actions.confirmInvitation).toHaveBeenCalledWith(invited.id, expect.anything(), expect.anything()));
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("تم تأكيد الدعوة"));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("الدعوة مؤكدة"));
     expect(refresh).toHaveBeenCalled();
   });
 

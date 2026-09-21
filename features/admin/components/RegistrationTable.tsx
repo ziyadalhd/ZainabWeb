@@ -62,7 +62,7 @@ function RegistrationActions({
           label="تأكيد الدعوة"
           pendingLabel="جارٍ التأكيد…"
           className="button-primary min-h-10 px-3 py-2 text-sm"
-          successMessage={`تم تأكيد دعوة ${registration.attendeeName} وتحويل المقعد إلى مسجَّل.`}
+          successMessage={`دعوة ${registration.attendeeName} مؤكدة، والمقعد صار مسجَّلًا.`}
           onSuccess={onChanged}
         />
       ) : null}
@@ -75,7 +75,7 @@ function RegistrationActions({
           description={`هل تريدين سحب دعوة ${registration.attendeeName} وإعادتها لقائمة الانتظار؟`}
           confirmLabel="سحب الدعوة"
           action={actions.revokeInvitation.bind(null, registration.id)}
-          successMessage="تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار."
+          successMessage="سُحبت الدعوة وعاد السجل إلى قائمة الانتظار."
           onSuccess={onChanged}
         />
       ) : null}
@@ -89,7 +89,7 @@ function RegistrationActions({
               description={`هل تريدين إلغاء تسجيل ${registration.attendeeName}؟ لا يمكن التراجع عن هذا الإجراء.`}
               confirmLabel="إلغاء التسجيل"
               action={actions.cancelRegistration.bind(null, registration.id)}
-              successMessage="تم إلغاء التسجيل، ويمكن الآن اختيار بديلة من قائمة الانتظار."
+              successMessage="أُلغي التسجيل، ويمكنك اختيار بديلة من قائمة الانتظار."
               onSuccess={onChanged}
             />
           </div>
@@ -219,21 +219,21 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
 
   const optimisticActions: RegistrationTableActions = {
     cancelRegistration: (id, state, formData) =>
-      runGatingAction({ id, changes: { status: "cancelled" } }, "تم إلغاء التسجيل، ويمكن الآن اختيار بديلة من قائمة الانتظار.", () =>
+      runGatingAction({ id, changes: { status: "cancelled" } }, "أُلغي التسجيل، ويمكنك اختيار بديلة من قائمة الانتظار.", () =>
         actions.cancelRegistration(id, state, formData),
       ),
     recordCheckIn: (id, outcome, state, formData) =>
-      runGatingAction({ id, changes: { checkInStatus: outcome as Registration["checkInStatus"] } }, "تم حفظ حالة الحضور.", () =>
+      runGatingAction({ id, changes: { checkInStatus: outcome as Registration["checkInStatus"] } }, "حُفظت حالة الحضور.", () =>
         actions.recordCheckIn(id, outcome, state, formData),
       ),
     revokeInvitation: (id, state, formData) =>
-      runGatingAction({ id, changes: { status: "waitlisted" } }, "تم سحب الدعوة وإعادة السجل إلى قائمة الانتظار.", () =>
+      runGatingAction({ id, changes: { status: "waitlisted" } }, "سُحبت الدعوة وعاد السجل إلى قائمة الانتظار.", () =>
         actions.revokeInvitation(id, state, formData),
       ),
     confirmInvitation: (id, state, formData) =>
       runGatingAction(
         { id, changes: { status: "registered" } },
-        "تم تأكيد الدعوة وتحويل المقعد إلى مسجَّل.",
+        "الدعوة مؤكدة، والمقعد صار مسجَّلًا.",
         () => actions.confirmInvitation(id, state, formData),
       ),
     setPaymentStatus: async (id, state, formData) => {

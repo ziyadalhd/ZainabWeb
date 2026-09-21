@@ -48,7 +48,7 @@ export function EventPosterForm({
         ) : null}
         {state.saved ? (
           <p role="status" className="font-bold text-[var(--color-success-text)]">
-            تم رفع البوستر وتحديث الصفحة.
+            رفعنا البوستر وحدّثنا الصفحة.
           </p>
         ) : null}
         <button type="submit" disabled={pending} className="button-primary w-fit px-5 py-3">

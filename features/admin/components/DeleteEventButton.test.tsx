@@ -62,7 +62,7 @@ describe("DeleteEventButton", () => {
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/events"));
     expect(push.mock.calls[0]![0]).not.toContain("event=");
-    expect(await screen.findByText("تم حذف «لقاء القراءة» نهائيًا.")).toBeInTheDocument();
+    expect(await screen.findByText("حُذفت «لقاء القراءة» نهائيًا.")).toBeInTheDocument();
   });
 
   it("surfaces the server's error message as a toast", async () => {

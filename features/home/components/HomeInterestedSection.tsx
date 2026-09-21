@@ -46,7 +46,7 @@ export function HomeInterestedSection() {
           <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-muted)]/55 p-4 sm:p-6">
             {state.saved ? (
               <div role="status" className="notice-success">
-                <h3 className="text-lg font-black">تم تسجيل اهتمامكِ</h3>
+                <h3 className="text-lg font-black">سجّلنا اهتمامكِ</h3>
                 <p className="mt-2 text-sm leading-7">سنشارككِ أخبار الفعاليات القادمة عبر البريد الإلكتروني.</p>
                 {state.unsubscribePath ? <Link href={state.unsubscribePath} className="mt-4 inline-block text-sm font-bold underline underline-offset-4">إلغاء الاشتراك</Link> : null}
               </div>

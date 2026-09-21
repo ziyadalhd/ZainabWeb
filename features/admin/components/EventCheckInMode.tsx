@@ -48,7 +48,7 @@ export function EventCheckInMode({ registrations, recordCheckIn }: EventCheckInM
   async function checkIn(id: string, name: string, state: ActionResult, formData: FormData): Promise<ActionResult> {
     markArrived(id);
     const result = await recordCheckIn(id, "checked_in", state, formData);
-    if (result.status === "success") pushToast(`تم تسجيل حضور ${name}.`, "success");
+    if (result.status === "success") pushToast(`سجّلنا حضور ${name}.`, "success");
     else if (result.status === "error") pushToast(result.message ?? "تعذر تنفيذ الإجراء. حاولي مرة أخرى.", "error");
     router.refresh();
     return result;
@@ -96,7 +96,7 @@ export function EventCheckInMode({ registrations, recordCheckIn }: EventCheckInM
                     label="تسجيل الحضور"
                     pendingLabel="…"
                     className="button-primary min-h-12 px-5 text-base"
-                    successMessage={`تم تسجيل حضور ${registration.attendeeName}.`}
+                    successMessage={`سجّلنا حضور ${registration.attendeeName}.`}
                   />
                 )}
               </li>
