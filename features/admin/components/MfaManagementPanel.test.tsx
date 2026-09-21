@@ -97,7 +97,7 @@ describe("MfaManagementPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "متابعة إضافة الجهاز" }));
 
     expect(await screen.findByText("BACKUPSECRET")).toBeInTheDocument();
-    expect(enroll).toHaveBeenCalledWith({ factorType: "totp", friendlyName: "الجهاز الاحتياطي" });
+    expect(enroll).toHaveBeenCalledWith({ factorType: "totp", friendlyName: "الجهاز الاحتياطي", issuer: "Bayn Cultural Club" });
 
     fireEvent.change(screen.getByRole("textbox", { name: "رمز الجهاز الجديد" }), {
       target: { value: "١٢٣٤٥٦" },

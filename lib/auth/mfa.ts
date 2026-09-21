@@ -30,3 +30,10 @@ export function normalizeMfaCode(value: string) {
  * challenge redirects are skipped. Set to true to re-enable.
  */
 export const ADMIN_MFA_ENABLED = false;
+
+/**
+ * Shown as the account issuer inside the authenticator app. Without it
+ * Supabase falls back to the project's Site URL, which renders enrolled
+ * devices as "localhost:3000".
+ */
+export const ADMIN_MFA_ISSUER = "Bayn Cultural Club";

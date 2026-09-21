@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { normalizeMfaCode } from "@/lib/auth/mfa";
+import { ADMIN_MFA_ISSUER, normalizeMfaCode } from "@/lib/auth/mfa";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { MfaDeviceList, type ManagedFactor } from "@/features/admin/components/MfaDeviceList";
 import { MfaEnrollmentForm, type Enrollment } from "@/features/admin/components/MfaEnrollmentForm";
@@ -93,6 +93,7 @@ export function MfaManagementPanel() {
     const result = await supabase.auth.mfa.enroll({
       factorType: "totp",
       friendlyName,
+      issuer: ADMIN_MFA_ISSUER,
     });
 
     if (result.error) {

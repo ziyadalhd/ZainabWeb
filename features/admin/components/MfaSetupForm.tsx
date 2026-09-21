@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { normalizeMfaCode } from "@/lib/auth/mfa";
+import { ADMIN_MFA_ISSUER, normalizeMfaCode } from "@/lib/auth/mfa";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 interface Enrollment {
@@ -53,6 +53,7 @@ export function MfaSetupForm() {
       const result = await supabase.auth.mfa.enroll({
         factorType: "totp",
         friendlyName: "لوحة إدارة نادي بَيْن الثقافي",
+        issuer: ADMIN_MFA_ISSUER,
       });
 
       if (!active) return;
