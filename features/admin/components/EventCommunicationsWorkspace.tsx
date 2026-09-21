@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import type { Event, ManualMessageKind, ManualMessageRecord, Registration } from "@/lib/domain/types";
 import { formatArabicDateTime, formatArabicEventDate, formatArabicNumber } from "@/lib/format/date";
 import { buildManualMessageContent, manualMessageLabels } from "@/lib/messaging/manual-messages";
+import type { MessageTemplateBodiesInput } from "@/lib/messaging/message-templates";
 import { buildWhatsAppMessageUrl } from "@/lib/messaging/registration-reminder";
 import { sendManualWhatsAppMessageAction } from "@/app/(dashboard)/admin/(protected)/events/[id]/message-actions";
 import { MessageKindTabs } from "@/features/admin/components/MessageKindTabs";
@@ -14,7 +15,7 @@ interface EventCommunicationsWorkspaceProps {
   event: Event;
   registrations: readonly Registration[];
   messages: readonly ManualMessageRecord[];
-  reminderTemplate: string | null;
+  templates: MessageTemplateBodiesInput;
   now: string;
 }
 
@@ -49,7 +50,7 @@ function unavailableMessage(kind: ManualMessageKind): string {
   return "هذه الرسالة غير متاحة في حالة الفعالية الحالية.";
 }
 
-export function EventCommunicationsWorkspace({ event, registrations, messages, reminderTemplate, now: nowIso }: EventCommunicationsWorkspaceProps) {
+export function EventCommunicationsWorkspace({ event, registrations, messages, templates, now: nowIso }: EventCommunicationsWorkspaceProps) {
   const now = useMemo(() => new Date(nowIso), [nowIso]);
   const defaultKind =
     event.publicationStatus === "cancelled" ? "cancellation" : new Date(event.endsAt ?? event.startsAt) <= now ? "feedback_request" : "confirmation";
@@ -113,7 +114,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
       eventTitle: event.title,
       eventDate: formatArabicEventDate(event.startsAt),
       secureUrl,
-      reminderTemplate,
+      templates,
     });
   }
 
@@ -188,7 +189,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, r
         eventTitle: event.title,
         eventDate: formatArabicEventDate(event.startsAt),
         secureUrl: kind === "cancellation" ? null : selectedSecurePath ? "الرابط الآمن المجهز" : "سيُجهز الرابط الآمن عند الفتح",
-        reminderTemplate,
+        templates,
       })
     : null;
 

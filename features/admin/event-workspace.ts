@@ -3,7 +3,8 @@ import { isEntityId } from "@/lib/domain/entity-id";
 import { createAdminEventFeedbackRepository } from "@/lib/supabase/event-feedback";
 import { createAdminEventRepository } from "@/lib/supabase/events";
 import { createAdminRegistrationRepository } from "@/lib/supabase/registrations";
-import { getEventRegistrationReminderTemplate, getRegistrationReminderTemplate } from "@/lib/supabase/message-templates";
+import type { MessageTemplateBodiesInput } from "@/lib/messaging/message-templates";
+import { listMessageTemplates } from "@/lib/supabase/message-templates";
 
 export interface EventWorkspaceData {
   status: "ok";
@@ -13,8 +14,10 @@ export interface EventWorkspaceData {
   allRegistrations: readonly Registration[];
   feedback: readonly AdminEventFeedbackResponse[] | null;
   manualMessages: readonly ManualMessageRecord[] | null;
-  eventTemplate: string | null;
-  globalTemplate: string | null;
+  globalTemplates: MessageTemplateBodiesInput;
+  eventTemplates: MessageTemplateBodiesInput;
+  /** Global defaults with this event's overrides applied on top. */
+  templates: MessageTemplateBodiesInput;
 }
 
 export type EventWorkspaceOutcome = EventWorkspaceData | { status: "not-found" } | { status: "error" };
@@ -37,13 +40,20 @@ export async function loadEventWorkspace(eventId: string): Promise<EventWorkspac
     createAdminEventFeedbackRepository(),
   ]);
 
-  const [event, registrationsOutcome, feedbackOutcome, eventTemplate, globalTemplate, manualMessagesOutcome] = await Promise.all([
+  const [
+    event,
+    registrationsOutcome,
+    feedbackOutcome,
+    manualMessagesOutcome,
+    globalTemplates,
+    eventTemplates,
+  ] = await Promise.all([
     eventRepository.get(eventId),
     registrationRepository.listForEvent(eventId),
     feedbackRepository.listSubmittedForEvent(eventId),
-    getEventRegistrationReminderTemplate(eventId),
-    getRegistrationReminderTemplate(),
     registrationRepository.listManualMessagesForEvent(eventId),
+    listMessageTemplates(),
+    listMessageTemplates(eventId),
   ]);
 
   if (!event) return { status: "not-found" };
@@ -58,7 +68,8 @@ export async function loadEventWorkspace(eventId: string): Promise<EventWorkspac
     allRegistrations: registrations,
     feedback: feedbackOutcome.ok ? feedbackOutcome.data : null,
     manualMessages: manualMessagesOutcome.ok ? manualMessagesOutcome.data : null,
-    eventTemplate,
-    globalTemplate,
+    globalTemplates,
+    eventTemplates,
+    templates: { ...globalTemplates, ...eventTemplates },
   };
 }

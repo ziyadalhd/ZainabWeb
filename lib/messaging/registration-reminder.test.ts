@@ -1,26 +1,7 @@
 import { describe, expect, it } from "vitest";
-import {
-  buildRegistrationReminderMessage,
-  buildWhatsAppMessageUrl,
-} from "@/lib/messaging/registration-reminder";
+import { buildWhatsAppMessageUrl } from "@/lib/messaging/registration-reminder";
 
-describe("registration reminder message", () => {
-  it("uses natural guest-facing copy with the actual attendee, event, and link", () => {
-    const message = buildRegistrationReminderMessage({
-      attendeeName: "سارة",
-      eventTitle: "أمسية الشعر",
-      managementUrl: "https://example.test/bookings/person-specific-token",
-    });
-
-    expect(message).toContain("يا هلا سارة");
-    expect(message).toContain("فعالية «أمسية الشعر»");
-    expect(message).toContain("نتمنى تأكيد حضورك فقط إذا كنتِ متأكدة");
-    expect(message).toContain("قائمة الانتظار");
-    expect(message).toContain("https://example.test/bookings/person-specific-token");
-    expect(message).not.toContain("الرابط الآمن");
-    expect(message).not.toContain("الخاص بك");
-  });
-
+describe("whatsapp message url", () => {
   it("targets the registered Saudi mobile without exposing it in the message link", () => {
     const url = buildWhatsAppMessageUrl("+966500000001", "رسالة آمنة");
 

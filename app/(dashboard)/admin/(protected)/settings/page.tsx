@@ -7,13 +7,13 @@ import { MfaManagementPanel } from "@/features/admin/components/MfaManagementPan
 import { InterestedContactsTable } from "@/features/admin/components/InterestedContactsTable";
 import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEventFeedbackTable";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { registrationReminderTemplateTokens } from "@/lib/messaging/registration-reminder";
+import { messageTemplateKinds } from "@/lib/messaging/message-templates";
+import { MessageTemplateEditor } from "@/features/admin/components/MessageTemplateEditor";
 import { createAdminEventFeedbackRepository } from "@/lib/supabase/event-feedback";
 import { createAdminInterestedContactRepository } from "@/lib/supabase/interested-contacts";
-import { getRegistrationReminderTemplate } from "@/lib/supabase/message-templates";
+import { listMessageTemplates } from "@/lib/supabase/message-templates";
 import { createAdminSiteSettingsRepository } from "@/lib/supabase/site-settings";
 import { updateSiteSettingsAction } from "@/app/(dashboard)/admin/(protected)/content/actions";
-import { saveGlobalReminderTemplateAction } from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
 
 export const metadata: Metadata = { title: "الإعدادات" };
 export const dynamic = "force-dynamic";
@@ -38,34 +38,19 @@ async function ContentTab() {
   return <SiteSettingsForm settings={settings} action={updateSiteSettingsAction} />;
 }
 
-async function TemplatesTab({ success, error }: { success?: string; error?: string }) {
-  const template = await getRegistrationReminderTemplate();
+async function TemplatesTab() {
+  const bodies = await listMessageTemplates();
   return (
     <div className="max-w-3xl">
       <p className="muted-copy">
-        النص الافتراضي لتذكير التسجيلات. تُستبدل المتغيرات تلقائيًا عند تجهيز كل رسالة. لتخصيص القالب لفعالية معينة، افتحي تبويب «التواصل» داخل مساحة تلك
-        الفعالية.
+        نصوص رسائل واتساب التي ترسلينها للمشاركات. عدّلي أي نص كما تحبين؛ المتغيرات تُستبدل تلقائيًا بالقيم الحقيقية عند تجهيز كل رسالة. لتخصيص نص لفعالية
+        واحدة فقط، افتحي تبويب «التواصل» داخل مساحة تلك الفعالية.
       </p>
-      {success === "saved" ? (
-        <p role="status" className="notice-success mt-4">
-          حُفظ القالب الافتراضي.
-        </p>
-      ) : null}
-      {error ? (
-        <p role="alert" className="notice-error mt-4">
-          تحققي من النص ومن وجود جميع المتغيرات المطلوبة.
-        </p>
-      ) : null}
-      <form action={saveGlobalReminderTemplateAction} className="form-surface mt-5 p-5 sm:p-7">
-        <label htmlFor="template-body" className="font-medium">
-          قالب تذكير التسجيل
-        </label>
-        <textarea id="template-body" name="body" defaultValue={template ?? ""} rows={10} className="field-control mt-3 w-full" required />
-        <p className="mt-3 text-sm muted-copy">المتغيرات المطلوبة: {registrationReminderTemplateTokens.join("، ")}</p>
-        <button type="submit" className="button-primary mt-5">
-          حفظ القالب
-        </button>
-      </form>
+      <div className="mt-6 grid gap-6">
+        {messageTemplateKinds.map((kind) => (
+          <MessageTemplateEditor key={kind} kind={kind} body={bodies[kind] ?? null} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -82,9 +67,9 @@ async function SurveysTab() {
   return responses.ok ? <AdminEventFeedbackTable responses={responses.data} /> : <LoadErrorNotice />;
 }
 
-export default async function AdminSettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string; success?: string; error?: string }> }) {
+export default async function AdminSettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireAdmin();
-  const { tab: requestedTab, success, error } = await searchParams;
+  const { tab: requestedTab } = await searchParams;
   const tab = getTab(requestedTab);
   const activeTab = tabs.find((item) => item.id === tab) ?? tabs[0];
 
@@ -108,7 +93,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
           {activeTab.label}
         </h2>
         {tab === "content" ? <ContentTab /> : null}
-        {tab === "templates" ? <TemplatesTab success={success} error={error} /> : null}
+        {tab === "templates" ? <TemplatesTab /> : null}
         {tab === "security" ? <MfaManagementPanel /> : null}
         {tab === "interested" ? <InterestedTab /> : null}
         {tab === "surveys" ? <SurveysTab /> : null}

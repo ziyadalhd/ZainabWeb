@@ -4,7 +4,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AudienceChips } from "@/features/admin/components/AudienceChip";
 import { EventCommunicationsWorkspace } from "@/features/admin/components/EventCommunicationsWorkspace";
 import { EventInspectorTabs, type InspectorTab } from "@/features/admin/components/EventInspectorTabs";
-import { EventReminderTemplateForm } from "@/features/admin/components/EventReminderTemplateForm";
+import { EventMessageTemplates } from "@/features/admin/components/EventMessageTemplates";
 import { EventSettingsSection } from "@/features/admin/components/EventSettingsSection";
 import { LifecycleBadge } from "@/features/admin/components/LifecycleBadge";
 import { RegistrationPulseBanner } from "@/features/admin/components/RegistrationPulseBanner";
@@ -15,6 +15,7 @@ import { capacityRatio, capacityTone } from "@/features/admin/capacity";
 import { eventLifecycle } from "@/features/admin/event-lifecycle";
 import { summariseEventRevenue } from "@/features/admin/event-revenue";
 import type { AdminEventFeedbackResponse, Event, ManualMessageRecord, Registration } from "@/lib/domain/types";
+import type { MessageTemplateBodiesInput } from "@/lib/messaging/message-templates";
 import {
   formatArabicEventDate,
   formatArabicEventTimeRange,
@@ -32,8 +33,9 @@ interface EventInspectorProps {
   allRegistrations: readonly Registration[];
   feedback: readonly AdminEventFeedbackResponse[] | null;
   manualMessages: readonly ManualMessageRecord[] | null;
-  eventTemplate: string | null;
-  globalTemplate: string | null;
+  templates: MessageTemplateBodiesInput;
+  globalTemplates: MessageTemplateBodiesInput;
+  eventTemplates: MessageTemplateBodiesInput;
   now: string;
   selectedRegistrationId?: string;
   registrationActions: RegistrationTableActions;
@@ -127,8 +129,9 @@ export function EventInspector({
   allRegistrations,
   feedback,
   manualMessages,
-  eventTemplate,
-  globalTemplate,
+  templates,
+  globalTemplates,
+  eventTemplates,
   now,
   selectedRegistrationId,
   registrationActions,
@@ -194,10 +197,10 @@ export function EventInspector({
             event={event}
             registrations={allRegistrations}
             messages={manualMessages}
-            reminderTemplate={eventTemplate ?? globalTemplate}
+            templates={templates}
             now={now}
           />
-          <EventReminderTemplateForm eventId={event.id} eventTemplate={eventTemplate} globalTemplate={globalTemplate} />
+          <EventMessageTemplates eventId={event.id} eventTemplates={eventTemplates} globalTemplates={globalTemplates} />
         </>
       ) : (
         <LoadErrorNotice description="تعذر تحميل سجلّ الرسائل لهذه الفعالية." />

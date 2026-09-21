@@ -2,75 +2,123 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
-  redirect: vi.fn((url: string) => {
-    throw new Error(`REDIRECT:${url}`);
-  }),
   revalidatePath: vi.fn(),
-  saveRegistrationReminderTemplate: vi.fn(),
+  saveMessageTemplate: vi.fn(),
+  deleteEventMessageTemplate: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/require-admin", () => ({ requireAdmin: mocks.requireAdmin }));
-vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/supabase/message-templates", () => ({
-  saveRegistrationReminderTemplate: mocks.saveRegistrationReminderTemplate,
+  saveMessageTemplate: mocks.saveMessageTemplate,
+  deleteEventMessageTemplate: mocks.deleteEventMessageTemplate,
 }));
 
-import { saveEventReminderTemplateAction, saveGlobalReminderTemplateAction } from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
+import {
+  resetEventMessageTemplateAction,
+  saveMessageTemplateAction,
+} from "@/app/(dashboard)/admin/(protected)/messages/templates/actions";
 import { idleActionResult } from "@/lib/data/action-result";
 
 const validEventId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
-const validBody = "مرحبًا {{attendee_name}}، فعالية {{event_title}} — {{management_url}}";
+
+function formData(entries: Record<string, string>): FormData {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(entries)) data.set(key, value);
+  return data;
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.requireAdmin.mockResolvedValue({ id: "admin" });
 });
 
-describe("saveGlobalReminderTemplateAction", () => {
-  it("rejects a body missing a required token", async () => {
-    const formData = new FormData();
-    formData.set("body", "بلا متغيرات");
+describe("saveMessageTemplateAction", () => {
+  it("saves a global body when the required variables are present", async () => {
+    const result = await saveMessageTemplateAction(
+      idleActionResult,
+      formData({ kind: "confirmation", body: "أهلًا {{attendee_name}} — {{management_url}}" }),
+    );
 
-    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/settings?tab=templates&error=validation");
-    expect(mocks.saveRegistrationReminderTemplate).not.toHaveBeenCalled();
+    expect(result.status).toBe("success");
+    expect(mocks.saveMessageTemplate).toHaveBeenCalledWith("confirmation", "أهلًا {{attendee_name}} — {{management_url}}", null);
   });
 
-  it("redirects with a save error when persistence throws", async () => {
-    mocks.saveRegistrationReminderTemplate.mockRejectedValueOnce(new Error("db down"));
-    const formData = new FormData();
-    formData.set("body", validBody);
+  it("scopes the save to one event when an event id is supplied", async () => {
+    await saveMessageTemplateAction(
+      idleActionResult,
+      formData({ kind: "confirmation", body: "نص {{management_url}}", eventId: validEventId }),
+    );
 
-    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/settings?tab=templates&error=save");
+    expect(mocks.saveMessageTemplate).toHaveBeenCalledWith("confirmation", "نص {{management_url}}", validEventId);
   });
 
-  it("saves the global template and redirects with success", async () => {
-    const formData = new FormData();
-    formData.set("body", validBody);
+  it("names the missing variable in Arabic instead of saving", async () => {
+    const result = await saveMessageTemplateAction(idleActionResult, formData({ kind: "confirmation", body: "نص بلا رابط" }));
 
-    await expect(saveGlobalReminderTemplateAction(formData)).rejects.toThrow("REDIRECT:/admin/settings?tab=templates&success=saved");
-    expect(mocks.saveRegistrationReminderTemplate).toHaveBeenCalledWith(validBody);
+    expect(result.status).toBe("error");
+    expect(result.message).toContain("رابط الإدارة");
+    expect(mocks.saveMessageTemplate).not.toHaveBeenCalled();
+  });
+
+  it("accepts a cancellation notice with no link, because it carries none", async () => {
+    const result = await saveMessageTemplateAction(idleActionResult, formData({ kind: "cancellation", body: "نعتذر، أُلغيت الفعالية." }));
+
+    expect(result.status).toBe("success");
+  });
+
+  it("rejects an empty body", async () => {
+    const result = await saveMessageTemplateAction(idleActionResult, formData({ kind: "cancellation", body: "   " }));
+
+    expect(result.status).toBe("error");
+    expect(mocks.saveMessageTemplate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a body longer than the column allows", async () => {
+    const result = await saveMessageTemplateAction(idleActionResult, formData({ kind: "cancellation", body: "ا".repeat(2001) }));
+
+    expect(result.status).toBe("error");
+    expect(mocks.saveMessageTemplate).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unknown message kind", async () => {
+    const result = await saveMessageTemplateAction(idleActionResult, formData({ kind: "not_a_kind", body: "نص" }));
+
+    expect(result.status).toBe("error");
+    expect(mocks.saveMessageTemplate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed event id", async () => {
+    const result = await saveMessageTemplateAction(
+      idleActionResult,
+      formData({ kind: "cancellation", body: "نص", eventId: "not-a-uuid" }),
+    );
+
+    expect(result.status).toBe("error");
+    expect(mocks.saveMessageTemplate).not.toHaveBeenCalled();
+  });
+
+  it("reports a storage failure rather than claiming success", async () => {
+    mocks.saveMessageTemplate.mockRejectedValueOnce(new Error("template_save_failed"));
+
+    const result = await saveMessageTemplateAction(idleActionResult, formData({ kind: "cancellation", body: "نص" }));
+
+    expect(result.status).toBe("error");
   });
 });
 
-describe("saveEventReminderTemplateAction", () => {
-  it("rejects a malformed event id before validating the body, without redirecting", async () => {
-    const formData = new FormData();
-    formData.set("body", validBody);
+describe("resetEventMessageTemplateAction", () => {
+  it("drops the event override so the global text applies again", async () => {
+    const result = await resetEventMessageTemplateAction(idleActionResult, formData({ kind: "confirmation", eventId: validEventId }));
 
-    const result = await saveEventReminderTemplateAction("not-a-uuid", idleActionResult, formData);
-    expect(result.status).toBe("error");
-    expect(mocks.redirect).not.toHaveBeenCalled();
-    expect(mocks.saveRegistrationReminderTemplate).not.toHaveBeenCalled();
+    expect(result.status).toBe("success");
+    expect(mocks.deleteEventMessageTemplate).toHaveBeenCalledWith("confirmation", validEventId);
   });
 
-  it("saves a per-event override and returns a typed success result, keeping the operator on the panel", async () => {
-    const formData = new FormData();
-    formData.set("body", validBody);
+  it("refuses a malformed event id", async () => {
+    const result = await resetEventMessageTemplateAction(idleActionResult, formData({ kind: "confirmation", eventId: "nope" }));
 
-    const result = await saveEventReminderTemplateAction(validEventId, idleActionResult, formData);
-    expect(result).toEqual({ status: "success" });
-    expect(mocks.redirect).not.toHaveBeenCalled();
-    expect(mocks.saveRegistrationReminderTemplate).toHaveBeenCalledWith(validBody, validEventId);
+    expect(result.status).toBe("error");
+    expect(mocks.deleteEventMessageTemplate).not.toHaveBeenCalled();
   });
 });

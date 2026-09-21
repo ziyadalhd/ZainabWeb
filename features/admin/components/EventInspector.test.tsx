@@ -80,8 +80,9 @@ function renderInspector(overrides: Partial<React.ComponentProps<typeof EventIns
         allRegistrations={[]}
         feedback={[]}
         manualMessages={null}
-        eventTemplate={null}
-        globalTemplate={null}
+        globalTemplates={{}}
+        eventTemplates={{}}
+        templates={{}}
         now={now}
         registrationActions={registrationActions}
         statusAction={vi.fn(async () => ({ status: "success" as const }))}

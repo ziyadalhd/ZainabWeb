@@ -50,8 +50,9 @@ export async function EventPanelBody({ eventId, selectedRegistrationId }: { even
       allRegistrations={workspace.allRegistrations}
       feedback={workspace.feedback}
       manualMessages={workspace.manualMessages}
-      eventTemplate={workspace.eventTemplate}
-      globalTemplate={workspace.globalTemplate}
+      globalTemplates={workspace.globalTemplates}
+      eventTemplates={workspace.eventTemplates}
+      templates={workspace.templates}
       now={now}
       selectedRegistrationId={selectedRegistrationId}
       registrationActions={registrationActions}

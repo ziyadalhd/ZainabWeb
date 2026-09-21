@@ -1,9 +1,10 @@
 import type { ManualMessageKind, ManualMessageRecordKind } from "@/lib/domain/types";
 import {
-  buildEventCancellationMessage,
-  buildRegistrationReminderMessage,
-  renderRegistrationReminderTemplate,
-} from "@/lib/messaging/registration-reminder";
+  messageTemplateDefinitions,
+  messageTemplateKindByMessageKind,
+  renderMessageTemplate,
+  type MessageTemplateBodiesInput,
+} from "@/lib/messaging/message-templates";
 
 export const manualMessageKinds = [
   "confirmation",
@@ -38,7 +39,8 @@ interface ManualMessageContentInput {
   eventTitle: string;
   eventDate: string;
   secureUrl: string | null;
-  reminderTemplate?: string | null;
+  /** Stored bodies for this event, already merged over the global defaults. */
+  templates?: MessageTemplateBodiesInput;
 }
 
 export function buildManualMessageContent({
@@ -47,34 +49,22 @@ export function buildManualMessageContent({
   eventTitle,
   eventDate,
   secureUrl,
-  reminderTemplate,
+  templates,
 }: ManualMessageContentInput): string {
-  if (kind === "cancellation") {
-    return buildEventCancellationMessage(attendeeName, eventTitle, eventDate);
-  }
+  if (kind !== "cancellation" && !secureUrl) throw new Error("manual_message_secure_url_required");
 
-  if (!secureUrl) throw new Error("manual_message_secure_url_required");
+  const templateKind = messageTemplateKindByMessageKind[kind];
+  const body = templates?.[templateKind]?.trim() || messageTemplateDefinitions[templateKind].defaultBody;
+  const rendered = renderMessageTemplate(body, {
+    attendeeName,
+    eventTitle,
+    eventDate,
+    managementUrl: secureUrl ?? "",
+  });
 
-  if (kind === "confirmation") {
-    return `يا هلا فيكِ ${attendeeName}، 🤍\nسعدنا جداً بانضمامك معنا في فعالية «${eventTitle}»!\n\nيسعدنا تأكيد حضورك، أو إدارته والاعتذار في حال طرأ عليك ظرف، من خلال الرابط التالي:\n${secureUrl}\n\nولإتمام تسجيلك بكل راحة، يمكنك التحويل مسبقاً على الحساب التالي:\nرقم الآيبان:\nSA75 8000 0201 6080 1626 0868\n\n(ملاحظة: يمكنك إتمام التحويل البنكي، أو الدفع مباشرة عند وصولك للمقر).\n\nنتطلع لتواجدك بفارغ الصبر! ✨`;
-  }
-
-  if (kind === "reminder_24h" || kind === "reminder_3h") {
-    const reminder = reminderTemplate
-      ? renderRegistrationReminderTemplate(reminderTemplate, {
-          attendeeName,
-          eventTitle,
-          managementUrl: secureUrl,
-        })
-      : buildRegistrationReminderMessage({ attendeeName, eventTitle, managementUrl: secureUrl });
-    return `${kind === "reminder_24h" ? "تذكير قبل ٢٤ ساعة" : "تذكير قبل ٣ ساعات"}\n${reminder}`;
-  }
-
-  if (kind === "waitlist_invitation") {
-    return `يا هلا ${attendeeName} 🤍\nعندنا خبر سعيد! توفر مقعد في فعالية «${eventTitle}» وحبينا نبدأ فيك.\n\nالدعوة صالحة لمدة ٦ ساعات فقط، فبادري بقبولها من الرابط قبل ما تنتهي:\n${secureUrl}\n\nنتحمس نشوفك معنا! ✨`;
-  }
-
-  return `يا هلا ${attendeeName} 🤍\nكم سعدنا بحضورك فعالية «${eventTitle}» في نادي بَيْن الثقافي!\n\nرأيك يهمنا كثير، ويساعدنا نطور فعالياتنا القادمة عشانك. شاركينا انطباعك من هنا:\n${secureUrl}\n\nشكراً من القلب لتواجدك معنا 🤍`;
+  if (kind === "reminder_24h") return `تذكير قبل ٢٤ ساعة\n${rendered}`;
+  if (kind === "reminder_3h") return `تذكير قبل ٣ ساعات\n${rendered}`;
+  return rendered;
 }
 
 export function getDefaultManualMessageKind(input: {

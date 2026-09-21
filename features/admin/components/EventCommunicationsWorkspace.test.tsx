@@ -77,7 +77,7 @@ describe("EventCommunicationsWorkspace", () => {
     };
     vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
 
-    render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} reminderTemplate={null} now="2099-08-01T12:00:00.000Z" />);
+    render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} templates={{}} now="2099-08-01T12:00:00.000Z" />);
 
     fireEvent.click(screen.getByRole("button", { name: "فتح في واتساب" }));
 
@@ -108,7 +108,7 @@ describe("EventCommunicationsWorkspace", () => {
     };
     vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
 
-    render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} reminderTemplate={null} now="2099-08-01T12:00:00.000Z" />);
+    render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} templates={{}} now="2099-08-01T12:00:00.000Z" />);
     fireEvent.click(screen.getByRole("button", { name: "فتح في واتساب" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("تعذر تسجيلها كمرسلة");
@@ -117,7 +117,7 @@ describe("EventCommunicationsWorkspace", () => {
   });
 
   it("does not claim delivery or reading anywhere in the workflow", () => {
-    render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} reminderTemplate={null} now="2099-08-01T12:00:00.000Z" />);
+    render(<EventCommunicationsWorkspace event={event} registrations={[registration]} messages={[]} templates={{}} now="2099-08-01T12:00:00.000Z" />);
 
     expect(screen.queryByText(/تم التسليم|تمت القراءة/)).not.toBeInTheDocument();
     expect(screen.getByText(/التسجيل لا يعني أن الرسالة وصلت/)).toBeInTheDocument();
