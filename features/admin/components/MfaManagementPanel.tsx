@@ -6,6 +6,15 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { MfaDeviceList, type ManagedFactor } from "@/features/admin/components/MfaDeviceList";
 import { MfaEnrollmentForm, type Enrollment } from "@/features/admin/components/MfaEnrollmentForm";
 
+/**
+ * Appends the Supabase failure to the Arabic message. Without it every MFA
+ * failure collapses into the same sentence, so the real cause (rate limit,
+ * factor limit, duplicate name, aal2 required) is impossible to diagnose.
+ */
+function withCause(message: string, error: { name?: string; code?: string; message: string }) {
+  return `${message} (${error.code ?? error.name ?? "error"}: ${error.message})`;
+}
+
 async function listVerifiedFactors(): Promise<ManagedFactor[]> {
   const supabase = createSupabaseBrowserClient();
   const result = await supabase.auth.mfa.listFactors();
@@ -87,7 +96,7 @@ export function MfaManagementPanel() {
     });
 
     if (result.error) {
-      setErrorMessage("تعذر إنشاء رمز الجهاز الجديد. حاولي مرة أخرى بعد لحظة.");
+      setErrorMessage(withCause("تعذر إنشاء رمز الجهاز الجديد.", result.error));
       setBusyAction(undefined);
       return;
     }
@@ -129,7 +138,7 @@ export function MfaManagementPanel() {
     });
 
     if (verification.error) {
-      setErrorMessage("الرمز غير صحيح أو انتهت صلاحيته. اكتبي الرمز الحالي من الجهاز الجديد.");
+      setErrorMessage(withCause("تعذر التحقق من الرمز.", verification.error));
       setBusyAction(undefined);
       return;
     }
@@ -183,7 +192,7 @@ export function MfaManagementPanel() {
     const removal = await supabase.auth.mfa.unenroll({ factorId: factor.id });
 
     if (removal.error) {
-      setErrorMessage("تعذر إزالة الجهاز. أعيدي التحقق من الجلسة ثم حاولي مرة أخرى.");
+      setErrorMessage(withCause("تعذر إزالة الجهاز.", removal.error));
       setBusyAction(undefined);
       return;
     }
