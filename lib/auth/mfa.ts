@@ -23,3 +23,10 @@ export function normalizeMfaCode(value: string) {
     .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
     .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
 }
+
+/**
+ * Temporarily disables the mandatory MFA gate on the admin dashboard.
+ * Login and the admin_users allowlist still apply; only the enrollment and
+ * challenge redirects are skipped. Set to true to re-enable.
+ */
+export const ADMIN_MFA_ENABLED = false;
