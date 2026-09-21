@@ -1,8 +1,18 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RequestSchedulePicker } from "@/features/scheduling/components/RequestSchedulePicker";
 
 describe("RequestSchedulePicker", () => {
+  beforeEach(() => {
+    // Pin "today" so the calendar opens on August 2026 regardless of the real date.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-08-01T09:00:00+03:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("uses the same quarter-hour choices and submits the approved field names", () => {
     const { container } = render(<RequestSchedulePicker />);
     fireEvent.click(screen.getByRole("button", { name: /اليوم والتاريخ/ }));
