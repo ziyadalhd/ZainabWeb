@@ -1,10 +1,6 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import {
-  ADMIN_MFA_ENABLED,
-  getAdminMfaDestination,
-  type AuthenticatorAssuranceLevel,
-} from "@/lib/auth/mfa";
+import { getAdminMfaDestination, type AuthenticatorAssuranceLevel } from "@/lib/auth/mfa";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export interface AdminIdentity {
@@ -36,23 +32,20 @@ export const requireAdminFirstFactor = cache(async (): Promise<AdminFirstFactorS
   const { data: assurance, error: assuranceError } =
     await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
-  if (ADMIN_MFA_ENABLED && (assuranceError || !assurance.currentLevel || !assurance.nextLevel)) {
+  if (assuranceError || !assurance.currentLevel || !assurance.nextLevel) {
     redirect("/admin/login?error=session");
   }
 
   return {
     id: subject,
     email: typeof claims?.email === "string" ? claims.email : undefined,
-    currentLevel: assurance?.currentLevel ?? null,
-    nextLevel: assurance?.nextLevel ?? null,
+    currentLevel: assurance.currentLevel,
+    nextLevel: assurance.nextLevel,
   };
 });
 
 export const requireAdmin = cache(async (): Promise<AdminIdentity> => {
   const session = await requireAdminFirstFactor();
-
-  if (!ADMIN_MFA_ENABLED) return { id: session.id, email: session.email };
-
   const destination = getAdminMfaDestination(session.currentLevel, session.nextLevel);
 
   if (destination !== "/admin") redirect(destination);

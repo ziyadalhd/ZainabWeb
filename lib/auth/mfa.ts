@@ -25,13 +25,6 @@ export function normalizeMfaCode(value: string) {
 }
 
 /**
- * Temporarily disables the mandatory MFA gate on the admin dashboard.
- * Login and the admin_users allowlist still apply; only the enrollment and
- * challenge redirects are skipped. Set to true to re-enable.
- */
-export const ADMIN_MFA_ENABLED = false;
-
-/**
  * Shown as the account issuer inside the authenticator app. Without it
  * Supabase falls back to the project's Site URL, which renders enrolled
  * devices as "localhost:3000".
