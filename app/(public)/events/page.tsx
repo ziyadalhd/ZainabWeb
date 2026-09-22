@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EventList } from "@/features/events/components/EventList";
 import { createEventCatalog } from "@/lib/supabase/events";
@@ -16,6 +17,11 @@ export default async function EventsPage() {
     <main className="page-shell section-space">
       <PageHeader eyebrow="نادي بَيْن الثقافي" title="الفعاليات" description="اختاري الفعالية اللي تناسبك، وسجّلي مكانك معنا" />
       <EventList events={events} />
+      <p className="mt-10">
+        <Link href="/events/past" className="button-secondary">
+          فعاليات سابقة
+        </Link>
+      </p>
     </main>
   );
 }

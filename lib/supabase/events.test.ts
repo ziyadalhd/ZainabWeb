@@ -182,3 +182,80 @@ describe("SupabaseEventRepository.delete", () => {
     await expect(repository.delete(row.id)).resolves.toEqual({ deleted: true, posterPath: "events/poster.png" });
   });
 });
+
+describe("SupabaseEventRepository.listPastEvents", () => {
+  /** Records every filter the query applies, so the test can prove what it asks the database for. */
+  function recordingClient(result: { data: unknown; error: unknown }) {
+    const calls: Array<[string, ...unknown[]]> = [];
+    const handler: Record<string, unknown> = {
+      then: (onFulfilled: (value: { data: unknown; error: unknown }) => unknown, onRejected?: (reason: unknown) => unknown) =>
+        Promise.resolve(result).then(onFulfilled, onRejected),
+    };
+    for (const method of ["select", "eq", "lte", "order"]) {
+      handler[method] = (...args: unknown[]) => {
+        calls.push([method, ...args]);
+        return handler;
+      };
+    }
+    const client = {
+      from: () => handler,
+      storage: { from: () => ({ getPublicUrl: (path: string) => ({ data: { publicUrl: `https://cdn.test/${path}` } }) }) },
+    } as unknown as SupabaseClient<Database>;
+    return { client, calls };
+  }
+
+  const pastRow = {
+    id: row.id,
+    title: "مجالسة مع كتاب",
+    event_kind: "club_event",
+    audiences: ["adults"],
+    event_type_label: "قراءة",
+    description: "لقاء حول كتاب",
+    starts_at: "2026-08-29T14:30:00.000Z",
+    ends_at: "2026-08-29T16:00:00.000Z",
+    poster_path: "event/poster.webp",
+  };
+
+  it("asks only for published events that have ended, newest first", async () => {
+    const { client, calls } = recordingClient({ data: [], error: null });
+    await new SupabaseEventRepository(client).listPastEvents();
+
+    // The archive rule lives in this query, not only in RLS: an administrator's session can read
+    // every event, so without these filters an admin would see archived and cancelled ones here.
+    expect(calls).toContainEqual(["eq", "publication_status", "published"]);
+    expect(calls.some(([method, column]) => method === "lte" && column === "ends_at")).toBe(true);
+    expect(calls).toContainEqual(["order", "starts_at", { ascending: false }]);
+  });
+
+  it("maps a row to an archive entry with a public poster url and no registration state", async () => {
+    const { client } = recordingClient({ data: [pastRow], error: null });
+    const events = await new SupabaseEventRepository(client).listPastEvents();
+
+    expect(events).toEqual([
+      {
+        id: row.id,
+        title: "مجالسة مع كتاب",
+        kind: "club_event",
+        audiences: ["adults"],
+        eventTypeLabel: "قراءة",
+        description: "لقاء حول كتاب",
+        startsAt: "2026-08-29T14:30:00.000Z",
+        endsAt: "2026-08-29T16:00:00.000Z",
+        posterUrl: "https://cdn.test/event/poster.webp",
+      },
+    ]);
+  });
+
+  it("skips a row with an unknown audience rather than failing the whole page", async () => {
+    const { client } = recordingClient({ data: [{ ...pastRow, audiences: ["martians"] }, pastRow], error: null });
+    const events = await new SupabaseEventRepository(client).listPastEvents();
+
+    expect(events).toHaveLength(1);
+  });
+
+  it("returns an empty archive when the query fails, so the page still renders", async () => {
+    const { client } = recordingClient({ data: null, error: { message: "boom" } });
+
+    await expect(new SupabaseEventRepository(client).listPastEvents()).resolves.toEqual([]);
+  });
+});

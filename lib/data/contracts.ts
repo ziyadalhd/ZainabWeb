@@ -3,6 +3,7 @@ import type {
   Event,
   EventInput,
   EventPublicationStatus,
+  PastEvent,
   BookingDetails,
   Registration,
   RegistrationInput,
@@ -39,6 +40,8 @@ export interface EventCatalog {
   listUpcomingEvents(): Promise<readonly Event[]>;
   listUpcomingBaynTrips(): Promise<readonly Event[]>;
   getUpcomingEvent(id: string): Promise<Event | null>;
+  /** Published events that have ended, newest first, for the public archive. */
+  listPastEvents(): Promise<readonly PastEvent[]>;
 }
 
 /**

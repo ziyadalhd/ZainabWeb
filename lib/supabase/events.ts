@@ -13,6 +13,7 @@ import type {
   EventAvailability,
   EventInput,
   EventPublicationStatus,
+  PastEvent,
 } from "@/lib/domain/types";
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -161,6 +162,35 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
     const state = states.find((candidate) => candidate.event_id === data.id);
     if (!state) failDataAccess();
     return mapEventRow(data, state, getPosterUrl(this.client, data.poster_path));
+  }
+
+  async listPastEvents(): Promise<readonly PastEvent[]> {
+    const { data, error } = await this.client
+      .from("events")
+      .select("id, title, event_kind, audiences, event_type_label, description, starts_at, ends_at, poster_path")
+      .eq("publication_status", "published")
+      .lte("ends_at", new Date().toISOString())
+      .order("starts_at", { ascending: false });
+
+    if (error) {
+      logRepositoryFailure("events.listPastEvents", error);
+      return [];
+    }
+
+    return data.flatMap((row) => {
+      if (!row.ends_at || !isEventKind(row.event_kind) || !row.audiences.every(isEventAudience)) return [];
+      return [{
+        id: row.id,
+        title: row.title,
+        kind: row.event_kind,
+        audiences: row.audiences,
+        eventTypeLabel: row.event_type_label,
+        description: row.description,
+        startsAt: row.starts_at,
+        endsAt: row.ends_at,
+        posterUrl: getPosterUrl(this.client, row.poster_path),
+      }];
+    });
   }
 
   async list(): Promise<RepositoryResult<readonly Event[]>> {

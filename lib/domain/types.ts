@@ -36,6 +36,23 @@ export interface Event {
   updatedAt: IsoDateTime;
 }
 
+/**
+ * A published event that has already ended, as shown in the public archive.
+ * Carries no seats, price, or registration state: none of it applies once
+ * the event is over.
+ */
+export interface PastEvent {
+  id: EntityId;
+  title: string;
+  kind: EventKind;
+  audiences: readonly EventAudience[];
+  eventTypeLabel: string;
+  description: string | null;
+  startsAt: IsoDateTime;
+  endsAt: IsoDateTime;
+  posterUrl: string | null;
+}
+
 export interface EventInput {
   title: string;
   kind: EventKind;

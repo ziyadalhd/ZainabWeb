@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(31);
+select plan(33);
 
 insert into auth.users (
   instance_id,
@@ -58,7 +58,9 @@ values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'منشورة قادمة', 'adults', 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours', 20, 0, 'open', 'published'),
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2', 'مسودة قادمة', 'youth', 'ورشة', now() + interval '8 days', now() + interval '8 days 2 hours', 15, 7500, 'open', 'draft'),
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'مؤرشفة قادمة', 'children', 'قراءة', now() + interval '9 days', now() + interval '9 days 2 hours', 10, 5000, 'closed', 'archived'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'منشورة سابقة', 'adults', 'لقاء', now() - interval '1 day', now() - interval '22 hours', 20, 0, 'open', 'published');
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'منشورة سابقة', 'adults', 'لقاء', now() - interval '1 day', now() - interval '22 hours', 20, 0, 'open', 'published'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5', 'مؤرشفة سابقة', 'adults', 'لقاء', now() - interval '2 days', now() - interval '46 hours', 20, 0, 'closed', 'archived'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6', 'ملغاة سابقة', 'adults', 'لقاء', now() - interval '3 days', now() - interval '70 hours', 20, 0, 'closed', 'cancelled');
 
 -- Seeded as the migration role so RLS does not gate the fixture. Registrations exist to prove the
 -- delete guard below: an event anyone registered for must stay undeletable.
@@ -83,8 +85,20 @@ set local role anon;
 
 select is(
   (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
-  1,
-  'anon sees only upcoming published events'
+  2,
+  'anon sees published events, upcoming or ended, and nothing else'
+);
+
+select is(
+  (select title from public.events where id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4'),
+  'منشورة سابقة',
+  'anon sees a published event that has ended, for the public archive'
+);
+
+select is(
+  (select count(*)::integer from public.events where id in ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6')),
+  0,
+  'anon never sees an archived or cancelled past event: archiving hides it from the archive'
 );
 
 select throws_ok(
@@ -121,8 +135,8 @@ select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
 
 select is(
   (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
-  1,
-  'non-admin authenticated user only sees the public row'
+  2,
+  'non-admin authenticated user only sees the public rows'
 );
 
 select throws_ok(
@@ -156,8 +170,8 @@ select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
 
 select is(
   (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
-  1,
-  'approved admin at aal1 sees only the public event'
+  2,
+  'approved admin at aal1 sees only the public events'
 );
 
 select lives_ok(
@@ -181,7 +195,7 @@ select is(
 
 select is(
   (select count(*)::integer from public.events where id::text like 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa%'),
-  4,
+  6,
   'approved admin sees all events'
 );
 
