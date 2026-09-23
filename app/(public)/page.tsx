@@ -17,16 +17,15 @@ const destinations = [
 
 export default async function HomePage() {
   const [settings, events] = await Promise.all([
-    getPublicSiteSettings().catch(() => null),
+    getPublicSiteSettings(),
     createEventCatalog()
       .then((catalog) => catalog.listUpcomingEvents())
-      .then(selectHomeEvents)
-      .catch(() => []),
+      .then(selectHomeEvents),
   ]);
   const sections = [
-    { title: "عن النادي", body: settings?.clubIntroduction ?? "نتعرّف أكثر على النادي قريبًا." },
-    { title: "فكرة اسم بَيْن", body: settings?.nameStory ?? "حكاية اسم بَيْن بنشاركها هنا قريبًا." },
-    { title: "أهداف النادي", body: settings?.objectives ?? "أهداف النادي بنشاركها هنا قريبًا." },
+    { title: "عن النادي", body: settings.clubIntroduction ?? "نتعرّف أكثر على النادي قريبًا." },
+    { title: "فكرة اسم بَيْن", body: settings.nameStory ?? "حكاية اسم بَيْن بنشاركها هنا قريبًا." },
+    { title: "أهداف النادي", body: settings.objectives ?? "أهداف النادي بنشاركها هنا قريبًا." },
   ];
   return (
     <main>

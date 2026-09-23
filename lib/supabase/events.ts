@@ -89,60 +89,38 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   async listUpcomingEvents(): Promise<readonly Event[]> {
-    try {
-      const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
-        this.client
-          .from("events")
-          .select("*")
-          .eq("publication_status", "published")
-          .gte("starts_at", new Date().toISOString())
-          .order("starts_at", { ascending: true }),
-        this.client.rpc("get_event_registration_states"),
-      ]);
-
-      if (error || statesError || !states || !data) {
-        console.warn('[Events] listUpcomingEvents failed or returned empty:', error ?? statesError);
-        return [];
-      }
-      const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
-      return data.flatMap((row) => {
-        const state = stateByEvent.get(row.id);
-        if (!state) return [];
-        return [mapEventRow(row, state, getPosterUrl(this.client, row.poster_path))];
-      });
-    } catch (err) {
-      console.warn('[Events] listUpcomingEvents failed gracefully:', err);
-      return [];
-    }
+    return this.listUpcoming("events.listUpcomingEvents");
   }
 
   async listUpcomingBaynTrips(): Promise<readonly Event[]> {
-    try {
-      const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
-        this.client
-          .from("events")
-          .select("*")
-          .eq("event_kind", "bayn_trip")
-          .eq("publication_status", "published")
-          .gte("starts_at", new Date().toISOString())
-          .order("starts_at", { ascending: true }),
-        this.client.rpc("get_event_registration_states"),
-      ]);
+    return this.listUpcoming("events.listUpcomingBaynTrips", "bayn_trip");
+  }
 
-      if (error || statesError || !states || !data) {
-        console.warn('[Events] listUpcomingBaynTrips failed or returned empty:', error ?? statesError);
-        return [];
-      }
-      const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
-      return data.flatMap((row) => {
-        const state = stateByEvent.get(row.id);
-        if (!state) return [];
-        return [mapEventRow(row, state, getPosterUrl(this.client, row.poster_path))];
-      });
-    } catch (err) {
-      console.warn('[Events] listUpcomingBaynTrips failed gracefully:', err);
-      return [];
+  /** Throws on a database error, so a public page shows its error state instead of "no events". */
+  private async listUpcoming(scope: string, kind?: Event["kind"]): Promise<readonly Event[]> {
+    let query = this.client
+      .from("events")
+      .select("*")
+      .eq("publication_status", "published")
+      .gte("starts_at", new Date().toISOString())
+      .order("starts_at", { ascending: true });
+    if (kind) query = query.eq("event_kind", kind);
+
+    const [{ data, error }, { data: states, error: statesError }] = await Promise.all([
+      query,
+      this.client.rpc("get_event_registration_states"),
+    ]);
+
+    if (error || statesError) {
+      logRepositoryFailure(scope, error ?? statesError);
+      failDataAccess();
     }
+    const stateByEvent = new Map(states.map((state) => [state.event_id, state]));
+    return data.flatMap((row) => {
+      const state = stateByEvent.get(row.id);
+      if (!state) return [];
+      return [mapEventRow(row, state, getPosterUrl(this.client, row.poster_path))];
+    });
   }
 
   async getUpcomingEvent(id: string): Promise<Event | null> {
@@ -174,7 +152,7 @@ export class SupabaseEventRepository implements EventCatalog, AdminEventReposito
 
     if (error) {
       logRepositoryFailure("events.listPastEvents", error);
-      return [];
+      failDataAccess();
     }
 
     return data.flatMap((row) => {

@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AdminSiteSettingsRepository, SiteSettingsRepository } from "@/lib/data/contracts";
 import type { SiteSettings, SiteSettingsInput } from "@/lib/domain/types";
+import { logRepositoryFailure } from "@/lib/observability/logger";
 import type { Database } from "@/lib/supabase/database.types";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 
@@ -24,36 +25,17 @@ function mapSiteSettings(row: SiteSettingsRow): SiteSettings {
   };
 }
 
-const defaultSiteSettings: SiteSettings = {
-  clubIntroduction: "نادي بَيْن الثقافي هو مساحة ثقافية ملهمة في مكة المكرمة تجمع بين الفعاليات الأدبية، والورش الإبداعية، واللقاءات الحوارية في بيئة دافئة ومميزة.",
-  nameStory: "استوحي اسم «بَيْن» من المعاني المتصلة باللقاء والوصل والتأمل بين الفكرة وأختها.",
-  objectives: "تعزيز الحراك الثقافي في مكة المكرمة، وتوفير مساحات لقاء وإبداع، وتقديم فعاليات نوعية وورش عمل تفاعلية.",
-  contactPhone: "0537918640",
-  defaultVenueName: "نادي بَيْن الثقافي",
-  defaultVenueAddress: "مكة المكرمة",
-  defaultVenueMapUrl: "https://maps.app.goo.gl/Seti5sBZvmhaHeNe8?g_st=ic",
-  instagramUrl: null,
-  tiktokUrl: null,
-  literaryPartnerTitle: "الشريك الأدبي",
-  literaryPartnerBody: "مبادرة تهدف إلى إثراء المحتوى الأدبي وتعزيز حضور الأدب في المشهد الثقافي اليومي.",
-  updatedAt: "2026-08-17T12:00:00.000Z",
-};
-
 export class SupabaseSiteSettingsRepository implements SiteSettingsRepository, AdminSiteSettingsRepository {
   constructor(private readonly client: SupabaseClient<Database>) {}
 
+  /** Throws when the row cannot be read: the admin form must never be filled with placeholder text. */
   async get(): Promise<SiteSettings> {
-    try {
-      const { data, error } = await this.client.from("site_settings").select("*").eq("id", true).maybeSingle();
-      if (error || !data) {
-        console.warn('[SiteSettings] get returned error or empty, using fallback defaults:', error);
-        return defaultSiteSettings;
-      }
-      return mapSiteSettings(data);
-    } catch (err) {
-      console.warn('[SiteSettings] get failed gracefully:', err);
-      return defaultSiteSettings;
+    const { data, error } = await this.client.from("site_settings").select("*").eq("id", true).maybeSingle();
+    if (error || !data) {
+      logRepositoryFailure("siteSettings.get", error ?? { code: "missing_row" });
+      throw new Error("تعذر الوصول إلى محتوى الموقع حاليًا.");
     }
+    return mapSiteSettings(data);
   }
 
   async update(input: SiteSettingsInput): Promise<void> {
@@ -71,7 +53,7 @@ export class SupabaseSiteSettingsRepository implements SiteSettingsRepository, A
       literary_partner_body: input.literaryPartnerBody,
     }).eq("id", true);
     if (error) {
-      console.error('[SiteSettings] update failed:', error);
+      logRepositoryFailure("siteSettings.update", error);
       throw new Error("تعذر حفظ محتوى الموقع حاليًا.");
     }
   }

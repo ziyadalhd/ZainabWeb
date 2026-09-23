@@ -75,6 +75,26 @@ function fakeEventsClient(eventsResult: { data: unknown; error: unknown }, state
   } as unknown as SupabaseClient<Database>;
 }
 
+describe.each(["listUpcomingEvents", "listUpcomingBaynTrips"] as const)("SupabaseEventRepository.%s", (method) => {
+  it("fails loudly when the events query errors, instead of showing no events", async () => {
+    const repository = new SupabaseEventRepository(fakeEventsClient(
+      { data: null, error: { code: "PGRST000" } },
+      { data: [], error: null },
+    ));
+
+    await expect(repository[method]()).rejects.toThrow();
+  });
+
+  it("fails loudly when the registration-state query errors", async () => {
+    const repository = new SupabaseEventRepository(fakeEventsClient(
+      { data: [row], error: null },
+      { data: null, error: { code: "PGRST000" } },
+    ));
+
+    await expect(repository[method]()).rejects.toThrow();
+  });
+});
+
 describe("SupabaseEventRepository.list", () => {
   it("returns a load-failed result instead of an empty array when the events query errors (admin overhaul plan A2)", async () => {
     const repository = new SupabaseEventRepository(fakeEventsClient(
@@ -253,9 +273,9 @@ describe("SupabaseEventRepository.listPastEvents", () => {
     expect(events).toHaveLength(1);
   });
 
-  it("returns an empty archive when the query fails, so the page still renders", async () => {
+  it("fails loudly when the query fails, instead of showing an empty archive", async () => {
     const { client } = recordingClient({ data: null, error: { message: "boom" } });
 
-    await expect(new SupabaseEventRepository(client).listPastEvents()).resolves.toEqual([]);
+    await expect(new SupabaseEventRepository(client).listPastEvents()).rejects.toThrow();
   });
 });
