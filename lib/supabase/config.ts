@@ -21,9 +21,12 @@ export function getSupabasePublishableKey(): string {
   return required("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
 }
 
-/** Bypasses RLS. Server-only: never import a caller of this into a Client Component. */
+/**
+ * A secret key (`sb_secret_...`), which replaces the legacy `service_role` JWT. Bypasses RLS.
+ * Server-only: never import a caller of this into a Client Component.
+ */
 export function getSupabaseServerKey(): string {
-  return required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return required("SUPABASE_SECRET_KEY", process.env.SUPABASE_SECRET_KEY);
 }
 
 export function getSupabaseConfig() {
