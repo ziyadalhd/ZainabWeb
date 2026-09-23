@@ -1,8 +1,11 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
-select plan(61);
+select plan(62);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -224,7 +227,7 @@ select is(
   'admin-confirm test event receives a waitlisted reservation'
 );
 
-reset role;
+set local role postgres;
 
 select is(
   (
@@ -275,15 +278,15 @@ select throws_ok(
   'non-admin cannot record a check-in outcome'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select is(
-  (select count(*)::integer from public.registrations),
-  7,
+  (select count(*)::integer from public.registrations where event_id::text like 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb%'),
+  9,
   'approved admin sees all registration rows'
 );
 
@@ -374,7 +377,7 @@ select throws_ok(
   'capacity cannot be lowered below active reservations'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 
 select is(
@@ -431,7 +434,7 @@ select is(
   'booking-management token is invalidated after cancellation'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '33333333-3333-4333-8333-333333333333', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
@@ -461,6 +464,11 @@ select is(
 select lives_ok(
   $$select public.invite_waitlisted_registration((select id from public.registrations where phone_e164 = '+966500000011'), repeat('0', 64))$$,
   'admin can issue a new invitation after revocation'
+);
+
+select lives_ok(
+  $$select public.cancel_registration((select id from public.registrations where phone_e164 = '+966500000020'))$$,
+  'admin can release the seat used by the admin-confirm test'
 );
 
 select lives_ok(
@@ -496,7 +504,7 @@ select throws_ok(
   'admin confirmation cannot be repeated once the guest is already registered'
 );
 
-reset role;
+set local role postgres;
 
 update public.registrations
 set

@@ -1,6 +1,9 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
 select plan(7);
 
@@ -48,7 +51,7 @@ select throws_ok(
   'anonymous callers cannot update site settings'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c2222222-2222-4222-8222-222222222222', true);
 select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
@@ -65,7 +68,7 @@ select is(
   'non-admin update affects no public content'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);

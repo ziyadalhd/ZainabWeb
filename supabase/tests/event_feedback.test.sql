@@ -1,6 +1,9 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
 select plan(12);
 
@@ -58,7 +61,7 @@ select throws_ok(
   'anonymous callers cannot read feedback metadata'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'a2222222-2222-4222-8222-222222222222', true);
 select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
@@ -77,7 +80,7 @@ select throws_ok(
   'non-admin users cannot issue feedback links'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'a1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
@@ -89,12 +92,12 @@ select lives_ok(
 );
 
 select is(
-  (select count(*)::integer from public.event_feedback_links),
+  (select count(*)::integer from public.event_feedback_links where feedback_token_hash = repeat('a', 64)),
   1,
   'approved admin can see the issued feedback link'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 
 select is(
@@ -114,7 +117,7 @@ select is(
   'a feedback token cannot be reused after submission'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'a1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
@@ -137,7 +140,7 @@ select lives_ok(
   'approved admin can issue another one-use link after an anonymous response'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 
 select lives_ok(
@@ -145,7 +148,7 @@ select lives_ok(
   'participant may choose to show her identity'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'a1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);

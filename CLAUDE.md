@@ -26,10 +26,10 @@ pnpm typecheck                   # tsc --noEmit
 pnpm test                        # vitest run (single run)
 pnpm test:watch                  # vitest watch mode
 pnpm build                       # production build (type errors fail the build; do not disable this)
-pnpm test:db                     # supabase test db — runs supabase/tests/*.test.sql (pgTAP) against a hosted dev Supabase project, never production
+pnpm test:db                     # supabase test db --linked — runs supabase/tests/*.test.sql (pgTAP) against the dev project; refuses unless the CLI is linked to it
 ```
 
-Run a single test file: `pnpm vitest run path/to/file.test.ts`. Run a single SQL test: `supabase test db supabase/tests/<name>.test.sql`.
+Run a single test file: `pnpm vitest run path/to/file.test.ts`. Run a single SQL test: `supabase test db --linked supabase/tests/<name>.test.sql` (CLI linked to the dev project `epmdvdazppabaqwkuxbv`).
 
 Before committing, run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` (per `AGENTS.md` §12/§20).
 

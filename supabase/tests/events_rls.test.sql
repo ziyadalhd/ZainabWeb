@@ -1,6 +1,9 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
 select plan(33);
 
@@ -70,7 +73,8 @@ insert into public.registrations (
   attendee_name,
   phone_e164,
   status,
-  retention_until
+  retention_until,
+  price_halalas_at_booking
 )
 values (
   'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1',
@@ -78,7 +82,8 @@ values (
   'مسجلة',
   '+966500000001',
   'registered',
-  now() + interval '120 days'
+  now() + interval '120 days',
+  0
 );
 
 set local role anon;
@@ -127,7 +132,7 @@ select throws_ok(
   'anon cannot create events'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
@@ -162,7 +167,7 @@ select is(
   'non-admin delete removed no rows'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '11111111-1111-1111-1111-111111111111', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);

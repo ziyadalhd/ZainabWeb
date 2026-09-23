@@ -1,6 +1,9 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
 select plan(11);
 
@@ -63,7 +66,7 @@ select lives_ok(
   'anonymous visitors can submit the approved consent fields only through the public RPC'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'd2222222-2222-4222-8222-222222222222', true);
 select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
@@ -82,14 +85,14 @@ select throws_ok(
   'non-admin users cannot record event payments'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'd1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 
 select is(
-  (select count(*)::integer from public.interested_contacts),
+  (select count(*)::integer from public.interested_contacts where email = 'interest@example.test'),
   1,
   'approved administrators can list consenting contacts'
 );
@@ -118,7 +121,7 @@ select throws_ok(
   'only the approved manual event-payment states are accepted'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 
 select lives_ok(
@@ -126,7 +129,7 @@ select lives_ok(
   'a secure unsubscribe token can revoke consent without exposing contact data'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'd1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);

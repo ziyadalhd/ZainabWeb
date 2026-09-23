@@ -1,6 +1,9 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
 select plan(14);
 
@@ -50,8 +53,8 @@ select throws_ok(
 );
 
 select public.submit_service_request(
-  'celebration_booking', 'طلب عرض', '+966500000006', '',
-  'حفل خاص', date '2027-01-11', time '17:00', time '19:00', 15,
+  'space_booking', 'طلب عرض', '+966500000006', '',
+  'ورشة خاصة', date '2027-01-11', time '17:00', time '19:00', 15,
   '', '', '', '', null, '', '', '', repeat('c', 64)
 );
 
@@ -60,7 +63,7 @@ select lives_ok(
   'guest can cancel its request with the management token'
 );
 
-reset role;
+set local role postgres;
 
 select is(
   (select status from public.service_requests where management_token_hash = repeat('a', 64)),
@@ -86,7 +89,7 @@ select lives_ok(
   'admin can create an offer only through the protected RPC'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 
 select ok(
@@ -98,7 +101,7 @@ select ok(
   'anon can submit a second booking request for conflict review'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '55555555-5555-4555-8555-555555555555', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
@@ -115,7 +118,7 @@ select is(
   'admin sees an overlapping request as a conflict warning'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 
 select lives_ok(
@@ -123,7 +126,7 @@ select lives_ok(
   'requester can accept an active offer only with its secure token'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '55555555-5555-4555-8555-555555555555', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);

@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "supabase test db"
+    "test:db": "if [ \"$(cat supabase/.temp/project-ref 2>/dev/null)\" = epmdvdazppabaqwkuxbv ]; then supabase test db --linked; else echo \"test:db runs only against the dev project. Link it first: supabase link --project-ref epmdvdazppabaqwkuxbv\" >&2; exit 1; fi"
   },
   "dependencies": {
     "@daypicker/react": "10.0.1",

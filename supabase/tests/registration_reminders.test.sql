@@ -1,6 +1,9 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
 select plan(17);
 
@@ -70,7 +73,7 @@ select throws_ok(
   'anonymous callers cannot issue reminder links'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '94444444-4444-4444-8444-444444444444', true);
 select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
@@ -89,7 +92,7 @@ select throws_ok(
   'non-admin users cannot issue reminder links'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '91111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
@@ -121,28 +124,28 @@ select is(
 );
 
 select is(
-  (select count(*)::integer from public.registration_reminders),
+  (select count(*)::integer from public.registration_reminders where registration_id = '93333333-3333-4333-8333-333333333333'),
   1,
   'approved admin can read the issued reminder metadata'
 );
 
 select is(
-  (select sent_at from public.registration_reminders limit 1),
+  (select sent_at from public.registration_reminders where registration_id = '93333333-3333-4333-8333-333333333333'),
   null::timestamptz,
   'opening a reminder does not claim it was sent'
 );
 
 select lives_ok(
-  $$select public.mark_registration_reminder_sent((select id from public.registration_reminders limit 1))$$,
+  $$select public.mark_registration_reminder_sent((select id from public.registration_reminders where registration_id = '93333333-3333-4333-8333-333333333333'))$$,
   'approved admin can explicitly mark the manual reminder as sent'
 );
 
 select ok(
-  (select sent_at is not null from public.registration_reminders limit 1),
+  (select sent_at is not null from public.registration_reminders where registration_id = '93333333-3333-4333-8333-333333333333'),
   'explicit sent marking records a timestamp'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 select set_config('request.jwt.claim.sub', '', true);
 select set_config('request.jwt.claims', '{}', true);
@@ -159,7 +162,7 @@ select lives_ok(
   'person-specific reminder token confirms attendance'
 );
 
-reset role;
+set local role postgres;
 select is(
   (select attendance_status from public.registrations where id = '93333333-3333-4333-8333-333333333333'),
   'confirmed',
@@ -172,7 +175,7 @@ select lives_ok(
   'person-specific reminder token can cancel the matching booking'
 );
 
-reset role;
+set local role postgres;
 select ok(
   (
     select status = 'cancelled'

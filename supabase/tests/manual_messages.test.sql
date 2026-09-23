@@ -1,6 +1,9 @@
 begin;
 
 set local search_path = public, extensions;
+-- Run fixtures as postgres explicitly: the CLI connects to a hosted project as an unprivileged login
+-- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
+set local role postgres;
 
 select plan(17);
 
@@ -65,7 +68,7 @@ select throws_ok(
   'anonymous callers cannot prepare manual messages'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'b2222222-2222-4222-8222-222222222222', true);
 select set_config('request.jwt.claims', '{"aal":"aal1"}', true);
@@ -84,7 +87,7 @@ select throws_ok(
   'non-admin users cannot prepare manual messages'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'b1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
@@ -118,7 +121,7 @@ select is(
   'only one current draft remains per registration and kind'
 );
 
-reset role;
+set local role postgres;
 set local role anon;
 select set_config('request.jwt.claim.sub', '', true);
 select set_config('request.jwt.claims', '{}', true);
@@ -136,7 +139,7 @@ select is(
   'the current secure link opens only its booking'
 );
 
-reset role;
+set local role postgres;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'b1111111-1111-4111-8111-111111111111', true);
 select set_config('request.jwt.claims', '{"aal":"aal2"}', true);
