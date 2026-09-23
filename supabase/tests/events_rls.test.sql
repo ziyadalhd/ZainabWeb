@@ -5,7 +5,7 @@ set local search_path = public, extensions;
 -- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
 set local role postgres;
 
-select plan(33);
+select plan(35);
 
 insert into auth.users (
   instance_id,
@@ -84,6 +84,20 @@ values (
   'registered',
   now() + interval '120 days',
   0
+);
+
+-- One permissive SELECT policy per role, so each read evaluates a single rule
+-- (performance advisor: multiple_permissive_policies).
+select is(
+  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'events' and cmd = 'SELECT' and 'anon' = any(roles)),
+  1,
+  'anon has exactly one select policy on events'
+);
+
+select is(
+  (select count(*)::integer from pg_policies where schemaname = 'public' and tablename = 'events' and cmd = 'SELECT' and 'authenticated' = any(roles)),
+  1,
+  'authenticated has exactly one select policy on events'
 );
 
 set local role anon;
