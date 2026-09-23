@@ -1,41 +1,29 @@
-export function getSupabaseUrl(): string {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    || process.env.SUPABASE_URL
-    || "";
-  if (!url) {
-    throw new Error("Supabase URL is not configured. Please set NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL.");
+/**
+ * Each value comes from exactly one variable, and a missing one throws. There are no fallbacks:
+ * a fallback chain once let the browser key resolve to the service-role key.
+ *
+ * `NEXT_PUBLIC_` variables are read with literal property names so Next.js inlines them into
+ * the browser bundle.
+ */
+
+function required(name: string, value: string | undefined): string {
+  if (!value) {
+    throw new Error(`${name} is not set.`);
   }
-  return url;
+  return value;
+}
+
+export function getSupabaseUrl(): string {
+  return required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
 export function getSupabasePublishableKey(): string {
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-    || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    || process.env.SUPABASE_ANON_KEY
-    || process.env.SUPABASE_PUBLISHABLE_KEY
-    || process.env.SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_SECRET_KEY
-    || process.env.SUPABASE_KEY
-    || "";
-  if (!key) {
-    throw new Error("Supabase key is not configured. Please set NEXT_PUBLIC_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.");
-  }
-  return key;
+  return required("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
 }
 
+/** Bypasses RLS. Server-only: never import a caller of this into a Client Component. */
 export function getSupabaseServerKey(): string {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_SECRET_KEY
-    || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-    || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    || process.env.SUPABASE_ANON_KEY
-    || process.env.SUPABASE_PUBLISHABLE_KEY
-    || process.env.SUPABASE_KEY
-    || "";
-  if (!key) {
-    throw new Error("Supabase server key is not configured.");
-  }
-  return key;
+  return required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
 export function getSupabaseConfig() {
