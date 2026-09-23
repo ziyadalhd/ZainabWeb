@@ -5,7 +5,7 @@ set local search_path = public, extensions;
 -- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
 set local role postgres;
 
-select plan(14);
+select plan(16);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -28,6 +28,23 @@ set local role anon;
 select ok(
   not has_table_privilege('anon', 'public.service_requests', 'select'),
   'anon has no direct read privilege on service requests'
+);
+
+-- Production once held every table privilege for anon, with only RLS left in the way.
+select ok(
+  not has_table_privilege('anon', 'public.service_requests', 'insert, update, delete, truncate'),
+  'anon has no direct write privilege on service requests'
+);
+
+-- Every other submission here leaves the email empty, which hid a check that rejected every
+-- real address (20260810094942 wrote the pattern with a doubled backslash).
+select ok(
+  public.submit_service_request(
+    'space_booking', 'طلب ببريد', '+966500000009', 'guest@example.test',
+    'لقاء ثقافي', date '2027-01-12', time '17:00', time '19:00', 10,
+    '', '', '', '', null, '', '', '', repeat('e', 64)
+  ) is not null,
+  'a request that includes a valid email is accepted'
 );
 
 select ok(
