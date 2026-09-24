@@ -73,5 +73,6 @@ Database migrations and RLS tests must run against the separate hosted Supabase 
 - `docs/open-questions.md`: unresolved decisions and launch inputs.
 - `docs/implementation-plan.md`: detailed implementation evidence and validation history.
 - `docs/operating-model.md`: the owner's event and database operating guide.
+- `docs/upcoming-event-email-plan.md`: deferred research and restart checklist for consent-based event announcements.
 
 Completed and superseded one-off plans were removed from the working tree; Git history retains them. The remaining interface plans are proposals to review against current code before starting a redesign.

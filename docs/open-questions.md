@@ -1,6 +1,6 @@
 # Open Questions
 
-Last updated: `2026-08-21`
+Last updated: `2026-09-24`
 
 This file contains only unresolved decisions and launch inputs. Approved behavior belongs in `AGENTS.md`, `PLAN.md`, and `docs/architecture-decisions.md`.
 
@@ -48,6 +48,12 @@ The providers are approved, but no paid tier is automatically authorized. Before
 - Which approved templates cover confirmation, reminders, waitlist invitations, changes, and cancellations?
 
 Until these questions are answered, the approved launch behavior is a structured administrator-only manual WhatsApp queue with automatic email when an optional email is provided.
+
+## Upcoming-event email broadcasts — deferred
+
+- Which service and sender address should be used for occasional announcements to opted-in interested contacts? Brevo is a research candidate, not an approved provider. See `docs/upcoming-event-email-plan.md`.
+- Should the administrator send campaigns in the provider's dashboard or from the site's protected dashboard? The existing approval still requires an explicit administrator action and a preview of content and recipient count.
+- Before any sending, how will unsubscribes in the chosen service and in the site be reconciled so neither list can re-add an opted-out contact?
 
 ## Future capabilities — deferred
 
