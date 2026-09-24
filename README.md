@@ -4,10 +4,10 @@ Arabic RTL event-operations platform for نادي بَيْن الثقافي in M
 
 ## Current status
 
-- Phase two event administration is deployed on Vercel and backed by Supabase.
-- Phase three registration work exists on `codex/phase-3-bookings`, but is not yet production-ready or fully verified.
-- The hosted Supabase schema currently includes event-detail and registration migrations that are ahead of the production application.
-- The public Vercel deployment remains protected and is not the final public launch.
+- The public website and protected admin dashboard are deployed on Vercel with Supabase.
+- Local development and Preview use the separate development Supabase project; Production uses the club's production project.
+- Upcoming-event email broadcasts are not implemented. Online payment remains deferred.
+- The remaining launch decisions and work are tracked in [ROADMAP.md](./ROADMAP.md) and [docs/open-questions.md](./docs/open-questions.md).
 
 See [PLAN.md](./PLAN.md) for the approved product definition and [ROADMAP.md](./ROADMAP.md) for execution status.
 
@@ -59,9 +59,10 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm test:db
 ```
 
-Database migrations and RLS tests must run against a separate hosted Supabase development environment. Do not run destructive tests against production. The project intentionally does not require Docker.
+Database migrations and RLS tests must run against the separate hosted Supabase development environment. `pnpm test:db` refuses to run unless the CLI is linked to that project. Do not run destructive tests against production. The project does not require Docker.
 
 ## Documentation ownership
 
@@ -71,3 +72,6 @@ Database migrations and RLS tests must run against a separate hosted Supabase de
 - `docs/architecture-decisions.md`: approved architecture decisions and rationale.
 - `docs/open-questions.md`: unresolved decisions and launch inputs.
 - `docs/implementation-plan.md`: detailed implementation evidence and validation history.
+- `docs/operating-model.md`: the owner's event and database operating guide.
+
+Completed and superseded one-off plans were removed from the working tree; Git history retains them. The remaining interface plans are proposals to review against current code before starting a redesign.

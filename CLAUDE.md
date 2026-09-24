@@ -45,7 +45,7 @@ No Docker and no local Supabase stack are used — database/RLS work targets a s
 - **`lib/messaging/`**, **`lib/export/`**, **`lib/time/`**, **`lib/format/`**: transactional email/manual-WhatsApp-queue support, CSV/report export, `Asia/Riyadh` time formatting from UTC-stored instants, and shared formatting helpers.
 - **`lib/demo/`**: demonstration/fixture data, kept out of production code paths — never import it from `features/` or `app/` production logic.
 - **`features/<domain>/`** (`admin`, `bookings`, `events`, `home`, `requests`, `scheduling`, `security`, `surveys`): UI components and feature-level logic grouped by domain, each with a `components/` subfolder. Admin and public code stay visibly separated; only genuinely shared components/domain types are shared.
-- **`supabase/`**: `migrations/` (forward-only — once applied to a hosted environment, never edit an existing migration; add a corrective one), `migration-drafts/`, `seed.sql`, and `tests/*.test.sql` (pgTAP tests for RLS and SQL behavior, one file per domain area).
+- **`supabase/`**: `migrations/` (forward-only — once applied to a hosted environment, never edit an existing migration; add a corrective one), `seed.sql`, and `tests/*.test.sql` (pgTAP tests for RLS and SQL behavior, one file per domain area).
 - **Testing**: Vitest with `jsdom`, `pool: "forks"`, and `maxWorkers: 1` / `fileParallelism: false` (intentionally serial — see `vitest.config.mts`). Tests are colocated with their subject as `*.test.ts`/`*.test.tsx`.
 
 ## Non-negotiable constraints (see `AGENTS.md` for full detail)

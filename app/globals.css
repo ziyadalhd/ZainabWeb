@@ -2012,7 +2012,7 @@ body {
 .event-inspector__meta-row dt { color: var(--color-text-muted); }
 .event-inspector__meta-row dd { font-weight: 600; text-align: end; }
 
-/* Live roster heartbeat — see ADMIN_WORKFLOW_SIMPLIFICATION_PLAN.md §2. */
+/* Live roster heartbeat */
 .registration-pulse { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); padding: 0.55rem 0.85rem; margin-block-end: 0.9rem; }
 .registration-pulse__dot { inline-size: 0.5rem; block-size: 0.5rem; border-radius: 999px; background: var(--brand-olive); animation: registration-pulse-beat 2s var(--ease-standard) infinite; }
 .registration-pulse__count { font-weight: 700; font-size: 0.9rem; }
@@ -2023,7 +2023,7 @@ body {
 @keyframes registration-pulse-beat { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 @media (prefers-reduced-motion: reduce) { .registration-pulse__dot { animation: none; } }
 
-/* Roster switches and secondary menu — see ADMIN_WORKFLOW_SIMPLIFICATION_PLAN.md §4. */
+/* Roster switches and secondary menu */
 .registration-toggles { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; }
 .registration-toggles__payment { display: flex; gap: 0.5rem; align-items: center; }
 .registration-toggles__chip { border-radius: 999px; background: var(--color-info-bg); color: var(--color-info-text); padding: 0.15rem 0.6rem; font-size: 0.72rem; font-weight: 700; }
@@ -2043,12 +2043,12 @@ body {
 .registration-more > summary:hover { color: var(--brand-forest); background: var(--color-surface-strong); }
 .registration-more__panel { position: absolute; z-index: 20; inset-inline-start: 0; top: calc(100% + 0.35rem); border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); padding: 0.6rem; box-shadow: var(--shadow-raised); }
 
-/* Toast follow-up actions — see ADMIN_WORKFLOW_SIMPLIFICATION_PLAN.md §2. */
+/* Toast follow-up actions */
 .toast__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block-start: 0.5rem; }
 .toast__action { font-size: 0.8rem; font-weight: 700; color: inherit; text-decoration: underline; text-underline-offset: 0.25rem; }
 .toast__action:hover { text-decoration-thickness: 2px; }
 
-/* Poster cropper — see ADMIN_WORKFLOW_SIMPLIFICATION_PLAN.md §6. */
+/* Poster cropper */
 .image-cropper {
   max-inline-size: min(30rem, calc(100vw - 2rem));
   border: 1px solid var(--color-border);
