@@ -3,6 +3,7 @@ import { BrandIntersection } from "@/components/brand/BrandIntersection";
 import { ClubStoryTabs } from "@/features/home/components/ClubStoryTabs";
 import { HomeUpcomingEvents, selectHomeEvents } from "@/features/home/components/HomeUpcomingEvents";
 import { HomeInterestedSection } from "@/features/home/components/HomeInterestedSection";
+import { HomePastEvents, selectHomePastEvents } from "@/features/home/components/HomePastEvents";
 import { createEventCatalog } from "@/lib/supabase/events";
 import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 
@@ -16,11 +17,11 @@ const destinations = [
 ];
 
 export default async function HomePage() {
-  const [settings, events] = await Promise.all([
+  const catalog = await createEventCatalog();
+  const [settings, events, pastEvents] = await Promise.all([
     getPublicSiteSettings(),
-    createEventCatalog()
-      .then((catalog) => catalog.listUpcomingEvents())
-      .then(selectHomeEvents),
+    catalog.listUpcomingEvents().then(selectHomeEvents),
+    catalog.listPastEvents().then(selectHomePastEvents),
   ]);
   const sections = [
     { title: "عن النادي", body: settings.clubIntroduction ?? "نتعرّف أكثر على النادي قريبًا." },
@@ -50,6 +51,8 @@ export default async function HomePage() {
       </section>
 
       <HomeUpcomingEvents events={events} />
+
+      <HomePastEvents events={pastEvents} />
 
       <HomeInterestedSection />
 

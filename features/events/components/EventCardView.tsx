@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatArabicEventDate, formatArabicEventTimeRange, formatEventPrice, formatSeatCapacity } from "@/lib/format/date";
 import { PosterFrame } from "@/components/ui/PosterFrame";
+import { posterColumnClassName } from "@/features/events/event-presentation";
 
 export interface EventCardViewProps {
   title: string;
@@ -46,20 +47,20 @@ export function EventCardView({
   );
 
   return (
-    <article className={`group grid h-full overflow-hidden rounded-[var(--radius-surface)] border border-[var(--color-border)] bg-[var(--color-surface)] ${compact ? "sm:grid-cols-[9rem_1fr]" : "sm:grid-cols-[11rem_1fr]"}`}>
-      <div className="min-h-56 border-b border-[var(--color-border)] bg-[var(--color-surface-muted)] sm:min-h-full sm:border-b-0 sm:border-l">
+    <article className={`group flex h-full flex-col overflow-hidden rounded-[var(--radius-surface)] border border-[var(--color-border)] bg-[var(--color-surface)] sm:flex-row ${compact ? "sm:min-h-52" : "sm:min-h-60"}`}>
+      <div className={posterColumnClassName}>
         {posterUrl ? (
           <PosterFrame
             src={posterUrl}
             alt={`بوستر ${title}`}
             sizes={compact ? "(min-width: 640px) 144px, 100vw" : "(min-width: 640px) 176px, 100vw"}
-            className="h-full min-h-56"
+            className="h-full"
           />
         ) : (
-          <div className="grid h-full min-h-52 place-items-center px-5 text-center text-sm font-bold text-[var(--brand-olive)]">لا يوجد بوستر للفعالية</div>
+          <div className="grid h-full place-items-center px-5 text-center text-sm font-bold text-[var(--brand-olive)]">لا يوجد بوستر للفعالية</div>
         )}
       </div>
-      <div className={`flex min-w-0 flex-col ${compact ? "p-5" : "p-5 sm:p-6"}`}>
+      <div className={`flex min-w-0 flex-1 flex-col ${compact ? "p-5" : "p-5 sm:p-6"}`}>
         <div className="flex flex-wrap items-center gap-3">
           <span className="border-r-4 border-[var(--brand-amber)] pr-2 text-xs font-extrabold text-[var(--brand-forest)]">{audienceLabel}</span>
           <span className="text-xs font-extrabold text-[var(--brand-olive)]">{statusLabel}</span>
