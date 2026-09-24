@@ -31,38 +31,38 @@ insert into public.admin_users (user_id)
 values ('33333333-3333-4333-8333-333333333333');
 
 insert into public.events (
-  id, title, audience, event_type_label, starts_at, ends_at,
+  id, title, audiences, event_type_label, starts_at, ends_at,
   capacity, price_halalas, registration_status, publication_status
 )
 values
   (
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1', 'فعالية التسجيل',
-    'adults', 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours',
+    array['adults'], 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours',
     1, 5000, 'open', 'published'
   ),
   (
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2', 'فعالية الصغار',
-    'children', 'ورشة', now() + interval '8 days', now() + interval '8 days 2 hours',
+    array['children'], 'ورشة', now() + interval '8 days', now() + interval '8 days 2 hours',
     10, 0, 'open', 'published'
   ),
   (
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb3', 'فعالية اليافعات',
-    'youth', 'ورشة', now() + interval '9 days', now() + interval '9 days 2 hours',
+    array['youth'], 'ورشة', now() + interval '9 days', now() + interval '9 days 2 hours',
     10, 2500, 'open', 'published'
   ),
   (
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb4', 'تسجيل مغلق',
-    'adults', 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours',
+    array['adults'], 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours',
     10, 0, 'closed', 'published'
   ),
   (
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb5', 'اختبار سحب الدعوة',
-    'adults', 'لقاء', now() + interval '11 days', now() + interval '11 days 2 hours',
+    array['adults'], 'لقاء', now() + interval '11 days', now() + interval '11 days 2 hours',
     1, 0, 'open', 'published'
   ),
   (
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb6', 'اختبار تأكيد الإدارة',
-    'adults', 'لقاء', now() + interval '12 days', now() + interval '12 days 2 hours',
+    array['adults'], 'لقاء', now() + interval '12 days', now() + interval '12 days 2 hours',
     1, 0, 'open', 'published'
   );
 

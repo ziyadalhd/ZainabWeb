@@ -7,8 +7,8 @@ set local role postgres;
 
 select plan(4);
 
-insert into public.events (id, title, audience, event_type_label, starts_at, capacity)
-values ('dddddddd-dddd-dddd-dddd-ddddddddddd1', 'بلا وصف', 'adults', 'لقاء', now() + interval '7 days', 20);
+insert into public.events (id, title, audiences, event_type_label, starts_at, capacity)
+values ('dddddddd-dddd-dddd-dddd-ddddddddddd1', 'بلا وصف', array['adults'], 'لقاء', now() + interval '7 days', 20);
 
 select is(
   (select description from public.events where id = 'dddddddd-dddd-dddd-dddd-ddddddddddd1'),

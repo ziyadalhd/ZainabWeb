@@ -7,7 +7,6 @@ const row = {
   id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
   title: "لقاء",
   event_kind: "club_event",
-  audience: "adults",
   audiences: ["adults"],
   event_type_label: "قراءة",
   description: null,

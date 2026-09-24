@@ -48,7 +48,7 @@ values ('11111111-1111-1111-1111-111111111111');
 insert into public.events (
   id,
   title,
-  audience,
+  audiences,
   event_type_label,
   starts_at,
   ends_at,
@@ -58,12 +58,12 @@ insert into public.events (
   publication_status
 )
 values
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'منشورة قادمة', 'adults', 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours', 20, 0, 'open', 'published'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2', 'مسودة قادمة', 'youth', 'ورشة', now() + interval '8 days', now() + interval '8 days 2 hours', 15, 7500, 'open', 'draft'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'مؤرشفة قادمة', 'children', 'قراءة', now() + interval '9 days', now() + interval '9 days 2 hours', 10, 5000, 'closed', 'archived'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'منشورة سابقة', 'adults', 'لقاء', now() - interval '1 day', now() - interval '22 hours', 20, 0, 'open', 'published'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5', 'مؤرشفة سابقة', 'adults', 'لقاء', now() - interval '2 days', now() - interval '46 hours', 20, 0, 'closed', 'archived'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6', 'ملغاة سابقة', 'adults', 'لقاء', now() - interval '3 days', now() - interval '70 hours', 20, 0, 'closed', 'cancelled');
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'منشورة قادمة', array['adults'], 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours', 20, 0, 'open', 'published'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2', 'مسودة قادمة', array['youth'], 'ورشة', now() + interval '8 days', now() + interval '8 days 2 hours', 15, 7500, 'open', 'draft'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'مؤرشفة قادمة', array['children'], 'قراءة', now() + interval '9 days', now() + interval '9 days 2 hours', 10, 5000, 'closed', 'archived'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa4', 'منشورة سابقة', array['adults'], 'لقاء', now() - interval '1 day', now() - interval '22 hours', 20, 0, 'open', 'published'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa5', 'مؤرشفة سابقة', array['adults'], 'لقاء', now() - interval '2 days', now() - interval '46 hours', 20, 0, 'closed', 'archived'),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa6', 'ملغاة سابقة', array['adults'], 'لقاء', now() - interval '3 days', now() - interval '70 hours', 20, 0, 'closed', 'cancelled');
 
 -- Seeded as the migration role so RLS does not gate the fixture. Registrations exist to prove the
 -- delete guard below: an event anyone registered for must stay undeletable.
@@ -140,7 +140,7 @@ select is(
 );
 
 select throws_ok(
-  $$insert into public.events (title, audience, event_type_label, starts_at, capacity) values ('ممنوع', 'adults', 'لقاء', now(), 1)$$,
+  $$insert into public.events (title, audiences, event_type_label, starts_at, capacity) values ('ممنوع', array['adults'], 'لقاء', now(), 1)$$,
   '42501',
   null,
   'anon cannot create events'
@@ -159,7 +159,7 @@ select is(
 );
 
 select throws_ok(
-  $$insert into public.events (title, audience, event_type_label, starts_at, capacity) values ('ممنوع', 'adults', 'لقاء', now(), 1)$$,
+  $$insert into public.events (title, audiences, event_type_label, starts_at, capacity) values ('ممنوع', array['adults'], 'لقاء', now(), 1)$$,
   '42501',
   null,
   'non-admin cannot create events'
@@ -225,7 +225,7 @@ select is(
 );
 
 select lives_ok(
-  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('مسودة جديدة', 'adults', 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
+  $$insert into public.events (title, audiences, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('مسودة جديدة', array['adults'], 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
   'approved admin can create a draft'
 );
 
@@ -247,33 +247,33 @@ select is(
 );
 
 select lives_ok(
-  $$insert into public.events (title, audience, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('رحلة اختبار', 'adults', 'bayn_trip', 'رحلة', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
+  $$insert into public.events (title, audiences, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('رحلة اختبار', array['adults'], 'bayn_trip', 'رحلة', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
   'approved admin can classify an event as a Bayn trip'
 );
 
 select throws_ok(
-  $$insert into public.events (title, audience, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('تصنيف خاطئ', 'adults', 'other', 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
+  $$insert into public.events (title, audiences, event_kind, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('تصنيف خاطئ', array['adults'], 'other', 'لقاء', now() + interval '10 days', now() + interval '10 days 2 hours', 25, 10000)$$,
   '23514',
   null,
   'database rejects an unknown event kind'
 );
 
 select throws_ok(
-  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('سعة زائدة', 'adults', 'لقاء', now() + interval '11 days', now() + interval '11 days 2 hours', 51, 0)$$,
+  $$insert into public.events (title, audiences, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('سعة زائدة', array['adults'], 'لقاء', now() + interval '11 days', now() + interval '11 days 2 hours', 51, 0)$$,
   '23514',
   null,
   'database rejects capacity above 50'
 );
 
 select throws_ok(
-  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('نهاية خاطئة', 'adults', 'لقاء', now() + interval '12 days', now() + interval '12 days', 20, 0)$$,
+  $$insert into public.events (title, audiences, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('نهاية خاطئة', array['adults'], 'لقاء', now() + interval '12 days', now() + interval '12 days', 20, 0)$$,
   '23514',
   null,
   'database rejects an end time that is not after the start'
 );
 
 select throws_ok(
-  $$insert into public.events (title, audience, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('سعر خاطئ', 'adults', 'لقاء', now() + interval '13 days', now() + interval '13 days 2 hours', 20, -1)$$,
+  $$insert into public.events (title, audiences, event_type_label, starts_at, ends_at, capacity, price_halalas) values ('سعر خاطئ', array['adults'], 'لقاء', now() + interval '13 days', now() + interval '13 days 2 hours', 20, -1)$$,
   '23514',
   null,
   'database rejects a negative price'

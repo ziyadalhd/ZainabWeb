@@ -31,12 +31,12 @@ insert into public.admin_users (user_id)
 values ('91111111-1111-4111-8111-111111111111');
 
 insert into public.events (
-  id, title, audience, event_type_label, starts_at, ends_at,
+  id, title, audiences, event_type_label, starts_at, ends_at,
   capacity, price_halalas, registration_status, publication_status
 )
 values (
   '92222222-2222-4222-8222-222222222222',
-  'اختبار تذكير آمن', 'adults', 'اختبار',
+  'اختبار تذكير آمن', array['adults'], 'اختبار',
   now() + interval '2 days', now() + interval '2 days 2 hours',
   5, 0, 'open', 'published'
 );

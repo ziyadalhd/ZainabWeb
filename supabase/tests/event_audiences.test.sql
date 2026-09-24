@@ -5,7 +5,7 @@ set local search_path = public, extensions;
 -- role, so neither the session role nor `reset role` can be relied on to reach the setup privileges.
 set local role postgres;
 
-select plan(9);
+select plan(11);
 
 insert into public.events (id, title, audiences, event_type_label, starts_at, ends_at, capacity, price_halalas, registration_status, publication_status)
 values
@@ -13,6 +13,11 @@ values
   ('eeeeeeee-0000-0000-0000-000000000002', 'كبار', array['adults'], 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours', 30, 0, 'open', 'published'),
   ('eeeeeeee-0000-0000-0000-000000000003', 'فتيات', array['youth'], 'ورشة', now() + interval '7 days', now() + interval '7 days 2 hours', 30, 0, 'open', 'published'),
   ('eeeeeeee-0000-0000-0000-000000000004', 'كبار وأطفال', array['adults','children'], 'لقاء', now() + interval '7 days', now() + interval '7 days 2 hours', 30, 0, 'open', 'published');
+
+-- The single-value column and its sync trigger were a deploy bridge, removed once the multi-audience
+-- build was live (20260924090000).
+select hasnt_column('public', 'events', 'audience', 'events.audience is gone; audiences is the only audience column');
+select hasnt_trigger('public', 'events', 'events_sync_audiences', 'the audience sync trigger is gone');
 
 -- Column constraints.
 
