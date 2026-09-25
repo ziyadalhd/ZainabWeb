@@ -30,10 +30,9 @@ export const eventAvailabilityPresentation: Record<EventAvailability, {
 };
 
 /**
- * The poster column of an event card. Posters are cropped to 4:5 on upload, so on wider screens
- * the column takes the card's height and derives its width from the ratio: the poster fills it
- * with no bands above or below, whatever the length of the text beside it. On phones the card
- * stacks and the poster spans the full width.
+ * The poster column of an event card. Posters are cropped to 4:5 on upload and span the card
+ * width on phones. On wider screens the poster takes a fixed share of the card width, leaving
+ * the text to determine the card height without clipping its action.
  */
 export const posterColumnClassName =
-  "aspect-[4/5] shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface-muted)] sm:self-stretch sm:border-b-0 sm:border-l";
+  "aspect-[4/5] shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface-muted)] sm:aspect-auto sm:w-[38%] sm:self-stretch sm:border-b-0 sm:border-l";

@@ -18,6 +18,7 @@ describe("EventList", () => {
   it("renders event cards and all approved audience labels", () => {
     render(<EventList events={events} />);
     expect(screen.getAllByRole("article")).toHaveLength(3);
+    expect(screen.getAllByRole("article")[0].firstElementChild).toHaveClass("sm:aspect-auto", "sm:w-[38%]");
     expect(screen.getByText("للبالغات")).toBeInTheDocument();
     expect(screen.getByText("للفتيات")).toBeInTheDocument();
     expect(screen.getByText("للأطفال")).toBeInTheDocument();
