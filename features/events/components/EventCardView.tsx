@@ -53,7 +53,9 @@ export function EventCardView({
           <PosterFrame
             src={posterUrl}
             alt={`بوستر ${title}`}
-            sizes={compact ? "(min-width: 640px) 144px, 100vw" : "(min-width: 640px) 176px, 100vw"}
+            sizes={compact
+              ? "(min-width: 1280px) 240px, (min-width: 760px) 25vw, (min-width: 640px) 38vw, 100vw"
+              : "(min-width: 1280px) 480px, (min-width: 640px) 38vw, 100vw"}
             className="h-full"
           />
         ) : (
