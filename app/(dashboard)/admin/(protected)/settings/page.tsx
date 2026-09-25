@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LoadErrorNotice } from "@/components/ui/LoadErrorNotice";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SiteSettingsForm } from "@/features/admin/components/SiteSettingsForm";
 import { MfaManagementPanel } from "@/features/admin/components/MfaManagementPanel";
 import { InterestedContactsTable } from "@/features/admin/components/InterestedContactsTable";
-import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEventFeedbackTable";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { messageTemplateKinds } from "@/lib/messaging/message-templates";
 import { MessageTemplateEditor } from "@/features/admin/components/MessageTemplateEditor";
-import { createAdminEventFeedbackRepository } from "@/lib/supabase/event-feedback";
 import { createAdminInterestedContactRepository } from "@/lib/supabase/interested-contacts";
 import { listMessageTemplates } from "@/lib/supabase/message-templates";
 import { createAdminSiteSettingsRepository } from "@/lib/supabase/site-settings";
@@ -18,14 +17,13 @@ import { updateSiteSettingsAction } from "@/app/(dashboard)/admin/(protected)/co
 export const metadata: Metadata = { title: "الإعدادات" };
 export const dynamic = "force-dynamic";
 
-type SettingsTab = "content" | "templates" | "security" | "interested" | "surveys";
+type SettingsTab = "content" | "templates" | "security" | "interested";
 
 const tabs: ReadonlyArray<{ id: SettingsTab; label: string }> = [
   { id: "content", label: "محتوى الموقع" },
   { id: "templates", label: "قوالب الرسائل" },
   { id: "security", label: "الأمان" },
   { id: "interested", label: "المهتمات" },
-  { id: "surveys", label: "الاستبيانات" },
 ];
 
 function getTab(value: string | undefined): SettingsTab {
@@ -61,15 +59,10 @@ async function InterestedTab() {
   return contacts.ok ? <InterestedContactsTable contacts={contacts.data} /> : <LoadErrorNotice />;
 }
 
-async function SurveysTab() {
-  const repository = await createAdminEventFeedbackRepository();
-  const responses = await repository.listSubmitted();
-  return responses.ok ? <AdminEventFeedbackTable responses={responses.data} /> : <LoadErrorNotice />;
-}
-
 export default async function AdminSettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireAdmin();
   const { tab: requestedTab } = await searchParams;
+  if (requestedTab === "surveys") redirect("/admin/events");
   const tab = getTab(requestedTab);
   const activeTab = tabs.find((item) => item.id === tab) ?? tabs[0];
 
@@ -96,7 +89,6 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
         {tab === "templates" ? <TemplatesTab /> : null}
         {tab === "security" ? <MfaManagementPanel /> : null}
         {tab === "interested" ? <InterestedTab /> : null}
-        {tab === "surveys" ? <SurveysTab /> : null}
       </section>
     </main>
   );

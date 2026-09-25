@@ -80,6 +80,8 @@
 
 ## M3 — Admin operations center
 
+- **Completed in code — 2026-09-25:** mobile admin usability and the event-specific feedback workflow. Registration selection reveals details with a return-to-list control; event layouts adapt to available width. Each event owns link sending and its submitted feedback in one «التقييمات» tab; interested contacts stay separate. Lint, typecheck, 539 tests, build, and isolated 320px mobile inspection passed. Authenticated production acceptance remains pending after deployment.
+
 **Dependencies:** M1 وM2.
 
 ### Deliverables

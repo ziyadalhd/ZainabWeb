@@ -8,12 +8,13 @@ interface MessageKindTabsProps {
   isCategoryActionable: (event: Event, kind: ManualMessageKind, now: Date) => boolean;
   now: Date;
   onSelect: (kind: ManualMessageKind) => void;
+  kinds?: readonly ManualMessageKind[];
 }
 
-export function MessageKindTabs({ event, messages, activeKind, isCategoryActionable, now, onSelect }: MessageKindTabsProps) {
+export function MessageKindTabs({ event, messages, activeKind, isCategoryActionable, now, onSelect, kinds = manualMessageKinds }: MessageKindTabsProps) {
   return (
     <nav className="message-kind-tabs" aria-label="أنواع الرسائل">
-      {manualMessageKinds.map((messageKind) => {
+      {kinds.map((messageKind) => {
         const historical = messages.some((message) => message.kind === messageKind);
         const enabled = historical || isCategoryActionable(event, messageKind, now);
         return (

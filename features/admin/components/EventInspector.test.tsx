@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EventInspector } from "@/features/admin/components/EventInspector";
 import { ToastProvider } from "@/components/ui/ToastProvider";
@@ -114,14 +114,26 @@ describe("EventInspector", () => {
     expect(screen.getByText(/سدّدت بالكامل ١ · متبقٍ ١/)).toBeInTheDocument();
   });
 
-  it("collapses the workspace into three tabs and shows the roster first", () => {
+  it("has a dedicated event feedback step and shows the roster first", () => {
     renderInspector();
     const tabs = screen.getAllByRole("tab").map((tab) => tab.textContent);
-    expect(tabs).toHaveLength(3);
+    expect(tabs).toHaveLength(4);
     expect(tabs[0]).toContain("التسجيلات");
     expect(tabs[1]).toContain("التواصل");
-    expect(tabs[2]).toContain("الإعدادات");
+    expect(tabs[2]).toContain("التقييمات");
+    expect(tabs[3]).toContain("الإعدادات");
     expect(screen.getByRole("tab", { name: /التسجيلات/ })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("keeps feedback requests and submitted responses together inside the event", () => {
+    renderInspector({ event: { ...event, endsAt: "2026-08-04T17:00:00.000Z" }, allRegistrations: [registration("r1")], manualMessages: [] });
+    fireEvent.click(screen.getByRole("tab", { name: /التقييمات/ }));
+    expect(screen.getByRole("heading", { name: "١. إرسال رابط التقييم" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "٢. متابعة التقييمات" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "فتح في واتساب" })).toBeInTheDocument();
+    expect(screen.getByText("لا توجد تقييمات مرسلة بعد")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "الإعدادات" }));
+    expect(screen.queryByRole("heading", { name: "١. إرسال رابط التقييم" })).not.toBeInTheDocument();
   });
 
   it("surfaces the remaining-seat count beside the waitlist, inside the roster panel", () => {

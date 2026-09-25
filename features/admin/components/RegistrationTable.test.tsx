@@ -60,6 +60,18 @@ const registration: Registration = {
 describe("RegistrationTable", () => {
   beforeEach(() => {
     refresh.mockClear();
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false })));
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
+  it("moves focus to details on mobile and provides a return to the roster", () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    renderTable({ registrations: [registration], mode: "current", registrationHrefs: hrefsFor([registration]), actions });
+    fireEvent.click(screen.getByRole("link", { name: /مشاركة/ }));
+    expect(document.activeElement).toHaveAttribute("aria-label", "تفاصيل التسجيل المحدد");
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: "start", behavior: "instant" });
+    fireEvent.click(screen.getByRole("button", { name: "العودة إلى قائمة الأسماء" }));
+    expect(document.activeElement).toHaveAttribute("aria-label", "نتائج التسجيلات");
   });
 
   it("cancels a registration in place — refreshes the current page rather than navigating elsewhere (admin ux redesign plan phase B)", async () => {

@@ -9,10 +9,12 @@ interface EventMessageTemplatesProps {
   eventTemplates: MessageTemplateBodiesInput;
   /** Bodies saved globally, offered as the fallback to copy from. */
   globalTemplates: MessageTemplateBodiesInput;
+  kindFilter?: "feedback" | "general";
 }
 
-export function EventMessageTemplates({ eventId, eventTemplates, globalTemplates }: EventMessageTemplatesProps) {
-  const overriddenCount = messageTemplateKinds.filter((kind) => eventTemplates[kind]).length;
+export function EventMessageTemplates({ eventId, eventTemplates, globalTemplates, kindFilter = "general" }: EventMessageTemplatesProps) {
+  const kinds = messageTemplateKinds.filter((kind) => kindFilter === "feedback" ? kind === "feedback_request" : kind !== "feedback_request");
+  const overriddenCount = kinds.filter((kind) => eventTemplates[kind]).length;
 
   return (
     <details className="message-history max-w-3xl">
@@ -22,7 +24,7 @@ export function EventMessageTemplates({ eventId, eventTemplates, globalTemplates
           أي نص تحفظينه هنا يُستخدم لهذه الفعالية وحدها. النصوص التي لا تعدّلينها تبقى على النص العام من الإعدادات.
         </p>
         <div className="mt-5 grid gap-6">
-          {messageTemplateKinds.map((kind) => (
+          {kinds.map((kind) => (
             <MessageTemplateEditor
               key={kind}
               kind={kind}

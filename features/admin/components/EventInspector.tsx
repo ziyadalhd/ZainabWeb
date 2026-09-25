@@ -10,7 +10,7 @@ import { LifecycleBadge } from "@/features/admin/components/LifecycleBadge";
 import { RegistrationPulseBanner } from "@/features/admin/components/RegistrationPulseBanner";
 import { RegistrationTable, type RegistrationTableActions } from "@/features/admin/components/RegistrationTable";
 import type { EventStatusAction } from "@/features/admin/components/EventStatusControl";
-import { AdminEventFeedbackTable } from "@/features/surveys/components/AdminEventFeedbackTable";
+import { FeedbackWorkspace } from "@/features/surveys/components/FeedbackWorkspace";
 import { capacityRatio, capacityTone } from "@/features/admin/capacity";
 import { eventLifecycle } from "@/features/admin/event-lifecycle";
 import { summariseEventRevenue } from "@/features/admin/event-revenue";
@@ -145,10 +145,7 @@ export function EventInspector({
     allRegistrations.map((registration) => [registration.id, `/admin/events?event=${event.id}&id=${registration.id}`]),
   );
 
-  // Three panels, not five. The waitlist rides along with the roster (it is the same list of people
-  // in a different state, and it is empty most of the time) and the feedback table sits with the
-  // rest of the after-the-event settings — so the switcher only ever asks which of three jobs the
-  // admin is doing: managing who is coming, messaging them, or changing the event itself.
+  // The feedback tab owns both the request links and the responses for this event.
   const tabs: InspectorTab[] = [
     {
       id: "roster",
@@ -190,7 +187,7 @@ export function EventInspector({
     {
       id: "communications",
       label: "التواصل",
-      lede: "افتحي رسالة واتساب بضغطة واحدة؛ يُسجَّل الإرسال تلقائيًا.",
+      lede: "رسائل التسجيل والتذكير. روابط التقييم في قسم التقييمات لهذه الفعالية.",
       content: manualMessages ? (
         <>
           <EventCommunicationsWorkspace
@@ -200,27 +197,47 @@ export function EventInspector({
             templates={templates}
             now={now}
           />
-          <EventMessageTemplates eventId={event.id} eventTemplates={eventTemplates} globalTemplates={globalTemplates} />
+          <EventMessageTemplates eventId={event.id} eventTemplates={eventTemplates} globalTemplates={globalTemplates} kindFilter="general" />
         </>
       ) : (
         <LoadErrorNotice description="تعذر تحميل سجلّ الرسائل لهذه الفعالية." />
       ),
     },
     {
-      id: "settings",
-      label: "الإعدادات",
-      lede: "بيانات الفعالية وحالة النشر والتقييمات.",
+      id: "feedback",
+      label: "التقييمات",
+      count: feedback ? formatArabicNumber(feedback.length) : undefined,
+      lede: "بعد انتهاء الفعالية، أرسلي روابط التقييم ثم راجعي الردود هنا.",
       content: (
-        <div className="grid gap-5">
-          <EventSettingsSection event={event} statusAction={statusAction} />
-          <section className="card-surface p-6" aria-label="التقييمات">
-            <h3 className="text-xl font-bold">التقييمات</h3>
-            <div className="mt-4">
-              {feedback ? <AdminEventFeedbackTable responses={feedback} /> : <LoadErrorNotice description="تعذر تحميل التقييمات." />}
+        <div className="grid min-w-0 gap-8">
+          <section aria-labelledby="feedback-send-heading" className="min-w-0">
+            <h3 id="feedback-send-heading" className="mb-3 text-xl font-bold">١. إرسال رابط التقييم</h3>
+            {manualMessages ? (
+              <EventCommunicationsWorkspace
+                event={event}
+                registrations={allRegistrations}
+                messages={manualMessages}
+                templates={templates}
+                now={now}
+                mode="feedback"
+              />
+            ) : <LoadErrorNotice description="تعذر تحميل روابط التقييم لهذه الفعالية." />}
+            <div className="mt-5">
+              <EventMessageTemplates eventId={event.id} eventTemplates={eventTemplates} globalTemplates={globalTemplates} kindFilter="feedback" />
             </div>
+          </section>
+          <section aria-labelledby="feedback-results-heading" className="min-w-0">
+            <h3 id="feedback-results-heading" className="mb-4 text-xl font-bold">٢. متابعة التقييمات</h3>
+            {feedback ? <FeedbackWorkspace responses={feedback} /> : <LoadErrorNotice description="تعذر تحميل التقييمات لهذه الفعالية." />}
           </section>
         </div>
       ),
+    },
+    {
+      id: "settings",
+      label: "الإعدادات",
+      lede: "بيانات الفعالية وحالة النشر.",
+      content: <EventSettingsSection event={event} statusAction={statusAction} />,
     },
   ];
 

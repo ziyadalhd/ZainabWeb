@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useOptimistic, useState } from "react";
+import { useEffect, useOptimistic, useRef, useState } from "react";
 import type { Registration } from "@/lib/domain/types";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -191,10 +191,22 @@ interface RegistrationPatch {
   changes: Partial<Registration>;
 }
 
+function revealPane(element: HTMLElement | null) {
+  element?.focus({ preventScroll: true });
+  element?.scrollIntoView({ block: "start", behavior: "instant" });
+}
+
 export function RegistrationTable({ registrations, mode, selectedId, registrationHrefs, actions }: RegistrationTableProps) {
   const router = useRouter();
   const { pushToast } = useToast();
   const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (localSelectedId && window.matchMedia("(max-width: 1023px)").matches) {
+      revealPane(detailsRef.current);
+    }
+  }, [localSelectedId]);
   const onChanged = () => router.refresh();
   // Applies each mutation to a local, transition-scoped copy of the list the instant an action is
   // submitted, so the row/badge updates before the server round trip (triggered by onChanged below)
@@ -255,7 +267,7 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
   const selected = optimisticRegistrations.find((registration) => registration.id === activeId) ?? optimisticRegistrations[0]!;
   return (
     <div className="registration-master-detail">
-      <aside className="registration-master-list" aria-label="نتائج التسجيلات">
+      <aside ref={listRef} tabIndex={-1} className="registration-master-list" aria-label="نتائج التسجيلات">
         <p className="mb-3 text-sm font-normal muted-copy">اختاري تسجيلًا لعرض بياناته وإجراءاته.</p>
         {optimisticRegistrations.map((registration) => {
           const active = registration.id === selected.id;
@@ -271,6 +283,7 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
                 // instead of paying for a server round trip.
                 clickEvent.preventDefault();
                 setLocalSelectedId(registration.id);
+                if (window.matchMedia("(max-width: 1023px)").matches) revealPane(detailsRef.current);
               }}
             >
               <span className="grid gap-0.5">
@@ -285,7 +298,12 @@ export function RegistrationTable({ registrations, mode, selectedId, registratio
           );
         })}
       </aside>
-      <RegistrationDetails registration={selected} mode={mode} actions={optimisticActions} onChanged={onChanged} />
+      <div ref={detailsRef} tabIndex={-1} className="registration-detail-pane" aria-label="تفاصيل التسجيل المحدد">
+        <button type="button" className="button-secondary mb-3 lg:hidden" onClick={() => revealPane(listRef.current)}>
+          العودة إلى قائمة الأسماء
+        </button>
+        <RegistrationDetails registration={selected} mode={mode} actions={optimisticActions} onChanged={onChanged} />
+      </div>
     </div>
   );
 }

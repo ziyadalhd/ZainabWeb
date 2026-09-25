@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import type { Event, ManualMessageKind, ManualMessageRecord, Registration } from "@/lib/domain/types";
 import { formatArabicDateTime, formatArabicEventDate, formatArabicNumber } from "@/lib/format/date";
-import { buildManualMessageContent, manualMessageLabels } from "@/lib/messaging/manual-messages";
+import { buildManualMessageContent, manualMessageKinds, manualMessageLabels } from "@/lib/messaging/manual-messages";
 import type { MessageTemplateBodiesInput } from "@/lib/messaging/message-templates";
 import { buildWhatsAppMessageUrl } from "@/lib/messaging/registration-reminder";
 import { sendManualWhatsAppMessageAction } from "@/app/(dashboard)/admin/(protected)/events/[id]/message-actions";
@@ -17,6 +17,7 @@ interface EventCommunicationsWorkspaceProps {
   messages: readonly ManualMessageRecord[];
   templates: MessageTemplateBodiesInput;
   now: string;
+  mode?: "general" | "feedback";
 }
 
 function recipientKey(registrationId: string, kind: ManualMessageKind): string {
@@ -50,10 +51,9 @@ function unavailableMessage(kind: ManualMessageKind): string {
   return "هذه الرسالة غير متاحة في حالة الفعالية الحالية.";
 }
 
-export function EventCommunicationsWorkspace({ event, registrations, messages, templates, now: nowIso }: EventCommunicationsWorkspaceProps) {
+export function EventCommunicationsWorkspace({ event, registrations, messages, templates, now: nowIso, mode = "general" }: EventCommunicationsWorkspaceProps) {
   const now = useMemo(() => new Date(nowIso), [nowIso]);
-  const defaultKind =
-    event.publicationStatus === "cancelled" ? "cancellation" : new Date(event.endsAt ?? event.startsAt) <= now ? "feedback_request" : "confirmation";
+  const defaultKind = mode === "feedback" ? "feedback_request" : event.publicationStatus === "cancelled" ? "cancellation" : "confirmation";
   const [kind, setKind] = useState<ManualMessageKind>(defaultKind);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [securePaths, setSecurePaths] = useState<Record<string, string | null>>({});
@@ -197,8 +197,8 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, t
     <div className="event-communications">
       <header className="event-communications__header">
         <div>
-          <p className="eyebrow">التواصل اليدوي</p>
-          <h3 className="mt-2 text-2xl font-bold">ما الرسالة التالية لهذه الفعالية؟</h3>
+          <p className="eyebrow">{mode === "feedback" ? "روابط التقييم" : "التواصل اليدوي"}</p>
+          <h3 className="mt-2 text-2xl font-bold">{mode === "feedback" ? "أرسلي رابط التقييم للمشاركات" : "ما الرسالة التالية لهذه الفعالية؟"}</h3>
           <p className="mt-2 muted-copy">ضغطة واحدة تفتح واتساب وتسجّل الرسالة كمرسلة، ثم تنتقل تلقائيًا للمستلمة التالية.</p>
         </div>
         <div className="event-communications__summary" aria-live="polite">
@@ -207,7 +207,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, t
         </div>
       </header>
 
-      <MessageKindTabs event={event} messages={messages} activeKind={kind} isCategoryActionable={isCategoryActionable} now={now} onSelect={selectKind} />
+      {mode === "general" ? <MessageKindTabs event={event} messages={messages} activeKind={kind} isCategoryActionable={isCategoryActionable} now={now} onSelect={selectKind} kinds={manualMessageKinds.filter((messageKind) => messageKind !== "feedback_request")} /> : null}
 
       {!actionable && !messages.some((message) => message.kind === kind) ? <p className="notice-info mt-5">{unavailableMessage(kind)}</p> : null}
 
@@ -290,7 +290,7 @@ export function EventCommunicationsWorkspace({ event, registrations, messages, t
         </div>
       )}
 
-      <MessageHistoryLog messages={messages} registrations={registrations} />
+      <MessageHistoryLog messages={messages.filter((message) => mode === "feedback" ? message.kind === "feedback_request" : message.kind !== "feedback_request")} registrations={registrations} />
     </div>
   );
 }

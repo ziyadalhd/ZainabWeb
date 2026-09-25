@@ -164,7 +164,7 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
   return (
     <main className="admin-page">
       <div className="flex flex-wrap items-end justify-between gap-5">
-        <PageHeader eyebrow="الفعاليات" title="الفعاليات والتقويم" description="أضيفي فعالية، راجعي تفاصيلها، ثم انشريها عندما تصبح جاهزة." />
+        <PageHeader eyebrow="الفعاليات" title="الفعاليات والتقويم" description="أضيفي فعالية، ثم افتحيها لإدارة التسجيلات والتواصل والتقييمات في مكان واحد." />
         <div className="flex flex-wrap gap-2">
           <Link href="/admin/events/new" className="button-primary">
             فعالية جديدة

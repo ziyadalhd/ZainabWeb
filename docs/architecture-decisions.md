@@ -1,5 +1,13 @@
 # Architecture Decisions
 
+## 2026-09-25 — Mobile admin and event feedback workflow
+
+- Keep the existing Arabic brand tokens and typography; improve layout rather than rebrand.
+- Event feedback belongs to its event workspace. A dedicated «التقييمات» tab puts link sending, message history, response totals, ratings, and suggestions in one sequence. The general communications tab excludes feedback requests; event settings excludes responses. The previous settings query redirects to the event list. Interested contacts remain in their own settings tab.
+- Summary metrics derive from submitted ratings only; no new survey fields, storage, consent rules, or identity disclosure. Existing repository masking remains authoritative for anonymous responses.
+- Registration list/detail columns depend on available width. On mobile, selecting a name scrolls and focuses its details; an explicit return control restores access to the list.
+- Context7: `/vercel/next.js/v16.2.9`, App Router asynchronous `searchParams` and redirects, same installed Next.js 16.2 minor. No dependency or schema changes.
+
 ## Decision status
 
 Supabase and Vercel are approved for the event-management scope recorded below. No ORM is used. Phase-three event-detail and registration work is in progress. Registration retention, minor consent, the initial reminder schedule, Resend, Sentry, and the temporary manual WhatsApp boundary are approved. Automated WhatsApp remains deferred pending a business number and official provider decision.

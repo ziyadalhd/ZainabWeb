@@ -122,4 +122,12 @@ describe("EventCommunicationsWorkspace", () => {
     expect(screen.queryByText(/تم التسليم|تمت القراءة/)).not.toBeInTheDocument();
     expect(screen.getByText(/التسجيل لا يعني أن الرسالة وصلت/)).toBeInTheDocument();
   });
+
+  it("keeps feedback requests in the event feedback flow", async () => {
+    const ended = { ...event, startsAt: "2026-08-20T15:00:00.000Z", endsAt: "2026-08-20T17:00:00.000Z" };
+    render(<EventCommunicationsWorkspace event={ended} registrations={[registration]} messages={[]} templates={{}} now="2026-08-21T12:00:00.000Z" mode="feedback" />);
+    expect(screen.getByRole("heading", { name: "أرسلي رابط التقييم للمشاركات" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "أنواع الرسائل" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "فتح في واتساب" })).toBeInTheDocument();
+  });
 });
