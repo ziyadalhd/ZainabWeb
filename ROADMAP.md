@@ -139,6 +139,7 @@
 
 ### Deliverables
 
+- **Completed in code — 2026-09-25; revised after owner review:** redesigned the visitor landing page around a focused brand hero, events, compact past-event cards, expandable club story, clear section links, and a quiet interest invitation. The original oversized green interest block and long default-open story were removed. `/surveys/interested-contact` remains a dedicated form page and the surveys index links to it. The existing fields, explicit consent, server validation, and unsubscribe workflow remain unchanged. Local mobile and desktop review passed; production promotion is pending.
 - **Completed** — إدارة النصوص والمقر والتواصل والشريك الأدبي من لوحة التحكم؛ الروابط الاجتماعية لا تظهر للعامة قبل حفظ رابط حقيقي.
 - **Completed** — اعتماد الهوية الهادئة وخط ثمانية وشعار SVG ودمجها من `codex/design-refresh` إلى `codex/phase-3-bookings` بعد مراجعة معاينة منفصلة؛ لا يعني ذلك نشرًا للإنتاج.
 - **Completed للنطاق المنفذ** — مراجعة `web-design-guidelines` للعربية وRTL والوصولية؛ نجحت الفحوص الآلية ومعاينة صفحات عامة ونموذج الموعد على Preview. روجعت جلسة مسؤول فعلية في `2026-08-13` للنظرة العامة والتقويم والفعاليات والطلبات والمسجلين والرسائل على الجوال وسطح المكتب. تحقق أن موعد الفعالية يستخدم تاريخًا واحدًا وأربع اختيارات للدقائق فقط: تمام وربع ونصف وخمس وأربعين، دون تمدد أفقي أو أخطاء متصفح. حُسنت صياغة مواعيد طلبات الحجز ورسائل تأكيد الحضور وعرض السعر، ثم أُنشئت Preview جديدة وفُحصت قبل نشر الدفعة نفسها إلى Production.

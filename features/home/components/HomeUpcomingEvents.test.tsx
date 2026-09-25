@@ -19,5 +19,9 @@ describe("HomeUpcomingEvents", () => {
   it("shows a friendly empty state", () => {
     render(<HomeUpcomingEvents events={[]} />);
     expect(screen.getByRole("heading", { name: "ما فيه فعاليات معلنة الآن" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "سجّلي اهتمامكِ بالفعاليات القادمة" })).toHaveAttribute(
+      "href",
+      "/surveys/interested-contact",
+    );
   });
 });
