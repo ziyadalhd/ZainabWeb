@@ -4,8 +4,8 @@ import { EventCard } from "@/features/events/components/EventCard";
 
 export function EventList({
   events,
-  emptyTitle = "ما فيه فعاليات قادمة الآن",
-  emptyDescription = "عودي قريب، وبنشاركك كل جديد هنا.",
+  emptyTitle = "لا توجد فعاليات قادمة حاليًا",
+  emptyDescription = "عودي قريبًا للاطلاع على الفعاليات الجديدة.",
 }: {
   events: readonly Event[];
   emptyTitle?: string;

@@ -26,8 +26,8 @@ export function HomeUpcomingEvents({ events }: { events: readonly Event[] }) {
         </div>
       ) : (
         <div className="home-events__empty">
-          <h3>ما فيه فعاليات معلنة الآن</h3>
-          <p>ارجعي لنا قريب، وبنشاركك كل جديد هنا.</p>
+          <h3>لا توجد فعاليات معلنة حاليًا</h3>
+          <p>تابعي فعاليات بَيْن القادمة قريبًا.</p>
           <Link href="/surveys/interested-contact" className="home-text-link mt-2">
             سجّلي اهتمامكِ بالفعاليات القادمة <span aria-hidden="true">←</span>
           </Link>

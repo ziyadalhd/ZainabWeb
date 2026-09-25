@@ -10,7 +10,7 @@ import { getPublicSiteSettings } from "@/lib/supabase/site-settings";
 const destinations = [
   { href: "/space-booking", label: "حجز المساحة", description: "مساحة هادئة ومجهزة للقاءاتكِ الثقافية وفعالياتكِ الخاصة." },
   { href: "/bayn-trips", label: "رحلات بَيْن", description: "تجارب ورحلات ثقافية نوعية تثري معرفتكِ وتجمعكِ بالمهتمات." },
-  { href: "/surveys/workshop-application", label: "طلب تقديم ورشة", description: "شاركينا خبرتكِ وشغفكِ وقدمي مقترح ورشة عمل ثقافية أو مهارية." },
+  { href: "/surveys/workshop-application", label: "طلب تقديم ورشة", description: "شاركي خبرتكِ، وقدّمي مقترحًا لورشة ثقافية أو مهارية." },
   { href: "/literary-partner", label: "الشريك الأدبي", description: "مبادرة لتعزيز الحراك الأدبي وإثراء المشهد الثقافي في مكة." },
   { href: "/contact", label: "التواصل والمقر", description: "طرق التواصل وموقع النادي في مكة المكرمة." },
 ];
@@ -24,8 +24,8 @@ export default async function HomePage() {
   ]);
   const story = [
     { title: "عن النادي", body: settings.clubIntroduction ?? "نتعرّف أكثر على النادي قريبًا." },
-    { title: "فكرة اسم بَيْن", body: settings.nameStory ?? "حكاية اسم بَيْن بنشاركها هنا قريبًا." },
-    { title: "أهداف النادي", body: settings.objectives ?? "أهداف النادي بنشاركها هنا قريبًا." },
+    { title: "فكرة اسم بَيْن", body: settings.nameStory ?? "سنشارك قصة اسم بَيْن قريبًا." },
+    { title: "أهداف النادي", body: settings.objectives ?? "سنشارك أهداف النادي قريبًا." },
   ];
 
   return (

@@ -63,7 +63,7 @@ export function EventSchedulePicker({ defaultStartDate = "", defaultStartTime = 
     <section className="date-time-choice grid gap-6" aria-labelledby="event-schedule-title">
       <div>
         <h3 id="event-schedule-title" className="text-xl font-black text-[var(--brand-forest)]">اختاري اليوم والوقت</h3>
-        <p className="mt-2 max-w-2xl text-sm leading-7 muted-copy">بعد اختيار البداية نقترح نهاية بعد ساعتين، وتقدرين تعدلينها مباشرة.</p>
+        <p className="mt-2 max-w-2xl text-sm leading-7 muted-copy">بعد اختيار وقت البداية، نقترح وقت نهاية بعد ساعتين. يمكنكِ تعديله مباشرة.</p>
       </div>
 
       <ArabicDatePicker id="event-start-date" label="اليوم والتاريخ" name="startDate" value={startDate} onChange={changeStartDate} minDate={minStartDate} required />

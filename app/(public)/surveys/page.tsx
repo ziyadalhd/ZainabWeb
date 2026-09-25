@@ -8,15 +8,15 @@ export const metadata: Metadata = {
 };
 
 const surveys = [
-  { href: "/surveys/interested-contact", title: "تسجيل الاهتمام", status: "خليكِ على اطلاع بالفعاليات القادمة" },
-  { href: "/surveys/workshop-application", title: "طلب تقديم ورشة", status: "عندك فكرة ورشة؟ شاركينا التفاصيل" },
+  { href: "/surveys/interested-contact", title: "تسجيل الاهتمام", status: "تابعي الفعاليات القادمة" },
+  { href: "/surveys/workshop-application", title: "طلب تقديم ورشة", status: "لديكِ فكرة ورشة؟ شاركينا التفاصيل." },
   { href: "/surveys/event-feedback", title: "تقييم الفعالية", status: "شاركينا رأيك بعد حضور الفعالية" },
 ];
 
 export default function SurveysPage() {
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="شاركي بَيْن" title="الطلبات والاستبيانات" description="قدّمي ورشتك، خليكِ على اطلاع، أو شاركينا رأيك في تجربة حضرتيها." />
+      <PageHeader eyebrow="شاركي بَيْن" title="الطلبات والاستبيانات" description="قدّمي مقترح ورشتكِ، وسجّلي اهتمامكِ، أو شاركينا رأيكِ بعد حضور الفعالية." />
       <div className="mt-10 border-t border-[var(--brand-olive)]">
         {surveys.map((survey) => (
           <Link

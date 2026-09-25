@@ -67,7 +67,7 @@ export function EventRegistrationForm({ action, audiences, availability }: Event
     return (
       <div role="status" className={registered ? "notice-success p-5" : "notice-warning p-5"}>
         <h2 className="text-xl font-extrabold">
-          {registered ? "سجّلناك في الفعالية" : "أضفناك إلى قائمة الانتظار"}
+          {registered ? "سجّلنا مقعدكِ في الفعالية" : "أضفناكِ إلى قائمة الانتظار"}
         </h2>
         {registered ? (
           <p className="mt-3 text-sm leading-7">

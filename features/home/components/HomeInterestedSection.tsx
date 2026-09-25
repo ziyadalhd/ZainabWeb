@@ -6,7 +6,7 @@ export function HomeInterestedSection() {
       <div className="page-shell home-interest__inner">
         <div>
           <p className="eyebrow">تسجيل الاهتمام</p>
-          <h2>خليكِ على اطلاع</h2>
+          <h2>تابعي فعاليات بَيْن</h2>
           <p>سجّلي اهتمامكِ بالفعاليات القادمة. يمكنكِ إلغاء الاشتراك لاحقًا.</p>
         </div>
         <Link href="/surveys/interested-contact" className="button-primary">

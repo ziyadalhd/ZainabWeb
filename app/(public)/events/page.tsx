@@ -15,7 +15,7 @@ export default async function EventsPage() {
   const [events, pastEvents] = await Promise.all([catalog.listUpcomingEvents(), catalog.listPastEvents()]);
   return (
     <main className="page-shell section-space">
-      <PageHeader eyebrow="نادي بَيْن الثقافي" title="الفعاليات" description="اختاري الفعالية اللي تناسبك، وسجّلي مكانك معنا" />
+      <PageHeader eyebrow="نادي بَيْن الثقافي" title="الفعاليات" description="اختاري الفعالية المناسبة لكِ، وسجّلي مقعدكِ." />
       <EventList events={events} />
       <PastEventList events={pastEvents} />
     </main>

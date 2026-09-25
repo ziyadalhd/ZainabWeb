@@ -19,7 +19,7 @@ export default function InterestedContactPage() {
       </div>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] lg:items-start lg:gap-16">
         <header className="max-w-xl lg:sticky lg:top-28">
-          <p className="eyebrow">خليكِ قريبة</p>
+          <p className="eyebrow">فعاليات بَيْن القادمة</p>
           <h1 className="page-title mt-4">لا يفوتكِ جديد بَيْن</h1>
           <p className="mt-5 text-base leading-8 muted-copy sm:text-lg">سجّلي اهتمامكِ بالفعاليات القادمة من نادي بَيْن الثقافي.</p>
           <p className="mt-8 border-s-4 border-[var(--brand-amber)] ps-4 text-sm leading-7 muted-copy">

@@ -12,7 +12,7 @@ const events: readonly Event[] = [
 describe("EventList", () => {
   it("renders the Arabic empty state", () => {
     render(<EventList events={[]} />);
-    expect(screen.getByRole("heading", { name: "ما فيه فعاليات قادمة الآن" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "لا توجد فعاليات قادمة حاليًا" })).toBeInTheDocument();
   });
 
   it("renders event cards and all approved audience labels", () => {
@@ -25,9 +25,9 @@ describe("EventList", () => {
     expect(screen.getByRole("link", { name: /احجزي مكانك: لقاء للكبار/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /انضمي لقائمة الانتظار: ورشة لليافعين/ })).toBeInTheDocument();
     expect(screen.getByText("التسجيل متاح")).toBeInTheDocument();
-    expect(screen.getByText("للأسف اكتملت المقاعد — تقدرين تنضمين لقائمة الانتظار")).toBeInTheDocument();
-    expect(screen.getByText("التسجيل مقفل حاليًا، وتقدرين تشوفين التفاصيل")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /شوفي التفاصيل: قراءة للصغار/ })).toBeInTheDocument();
+    expect(screen.getByText("اكتملت المقاعد. يمكنكِ الانضمام إلى قائمة الانتظار.")).toBeInTheDocument();
+    expect(screen.getByText("التسجيل مغلق حاليًا. يمكنكِ الاطلاع على التفاصيل.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /اطّلعي على التفاصيل: قراءة للصغار/ })).toBeInTheDocument();
     expect(screen.getByText("مجانية")).toBeInTheDocument();
     expect(screen.getByText("السعر غير محدد")).toBeInTheDocument();
   });
