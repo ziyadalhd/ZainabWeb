@@ -1,137 +1,26 @@
-"use client";
-
-import { useActionState, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  submitInterestedContactAction,
-  type InterestedContactActionError,
-} from "@/app/(public)/surveys/interested-contact/actions";
-
-const errorMessages: Record<InterestedContactActionError, string> = {
-  contactName: "اكتبي الاسم من حرفين إلى ١٢٠ حرفًا.",
-  phone: "اكتبي رقم جوال سعودي صحيحًا.",
-  email: "اكتبي بريدًا إلكترونيًا صحيحًا.",
-  consent: "يلزم تحديد موافقتك لتسجيل اهتمامك بالفعاليات القادمة.",
-  invalid: "تحققي من البيانات ثم حاولي مرة أخرى.",
-  save: "تعذر الحفظ الآن. حاولي مرة أخرى بعد قليل.",
-};
-
-const errorField: Partial<Record<InterestedContactActionError, string>> = {
-  contactName: "contactName",
-  phone: "phone",
-  email: "email",
-  consent: "upcomingEventsConsent",
-};
 
 export function HomeInterestedSection() {
-  const [state, formAction, pending] = useActionState(submitInterestedContactAction, {});
-  const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    const field = state.error ? errorField[state.error] : undefined;
-    if (field) formRef.current?.querySelector<HTMLElement>(`[name="${field}"]`)?.focus();
-  }, [state.error]);
-
   return (
-    <section id="interest" className="border-t border-[var(--color-border)] bg-[var(--brand-cream)]/50">
-      <div className="page-shell section-space">
-        <div className="mx-auto grid max-w-5xl gap-7 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgb(40_75_47_/_0.08)] sm:p-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(22rem,1fr)] lg:gap-12 lg:p-10">
-          <div className="self-center">
-            <p className="eyebrow">خليكِ قريبة</p>
-            <h2 className="mt-3 text-3xl font-black leading-tight text-[var(--brand-forest)] sm:text-4xl">نبقيكِ على اطلاع</h2>
-            <p className="mt-4 max-w-md text-base leading-8 text-[var(--brand-forest)]/80">سجّلي اهتمامكِ لتصلكِ معلومات الفعاليات والأنشطة القادمة من نادي بَيْن الثقافي.</p>
-            <p className="mt-5 border-s-4 border-[var(--brand-amber)] ps-4 text-sm leading-7 muted-copy">يُستخدم بريدكِ لإرسال أخبار الفعاليات فقط، ويمكنكِ إلغاء الاشتراك متى شئتِ.</p>
-          </div>
-
-          <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-muted)]/55 p-4 sm:p-6">
-            {state.saved ? (
-              <div role="status" className="notice-success">
-                <h3 className="text-lg font-black">سجّلنا اهتمامكِ</h3>
-                <p className="mt-2 text-sm leading-7">سنشارككِ أخبار الفعاليات القادمة عبر البريد الإلكتروني.</p>
-                {state.unsubscribePath ? <Link href={state.unsubscribePath} className="mt-4 inline-block text-sm font-bold underline underline-offset-4">إلغاء الاشتراك</Link> : null}
-              </div>
-            ) : (
-              <form ref={formRef} action={formAction} className="grid gap-4" noValidate>
-                {state.error && !errorField[state.error] ? <p role="alert" className="notice-error text-sm">{errorMessages[state.error]}</p> : null}
-                <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <label htmlFor="home-contact-name" className="font-bold text-[var(--brand-green-deep)]">
-                    الاسم
-                  </label>
-                  <input
-                    id="home-contact-name"
-                    name="contactName"
-                    required
-                    maxLength={120}
-                    autoComplete="name"
-                    className="field-control"
-                    placeholder="اسمكِ الكريم"
-                    aria-invalid={state.error === "contactName"}
-                  />
-                  {state.error === "contactName" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.contactName}</span> : null}
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="home-contact-phone" className="font-bold text-[var(--brand-green-deep)]">
-                    رقم الجوال السعودي
-                  </label>
-                  <input
-                    id="home-contact-phone"
-                    name="phone"
-                    required
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    placeholder="05xxxxxxxx"
-                    dir="ltr"
-                    className="field-control text-right"
-                    aria-invalid={state.error === "phone"}
-                  />
-                  {state.error === "phone" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.phone}</span> : null}
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <label htmlFor="home-contact-email" className="font-bold text-[var(--brand-green-deep)]">
-                  البريد الإلكتروني
-                </label>
-                <input
-                  id="home-contact-email"
-                  name="email"
-                  required
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  spellCheck={false}
-                  dir="ltr"
-                  className="field-control text-right"
-                  placeholder="name@example.com"
-                  maxLength={254}
-                  aria-invalid={state.error === "email"}
-                />
-                {state.error === "email" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.email}</span> : null}
-              </div>
-
-              <label className="flex items-start gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-white/65 p-3 text-xs leading-6 sm:text-sm">
-                <input
-                  name="upcomingEventsConsent"
-                  type="checkbox"
-                  required
-                  className="mt-1 size-5 accent-[var(--brand-green)]"
-                  aria-invalid={state.error === "consent"}
-                />
-                <span>
-                  أوافق على أن يستخدم النادي بريدي الإلكتروني لإرسال معلومات الفعاليات القادمة، ويمكنني إلغاء الاشتراك لاحقًا.
-                </span>
-              </label>
-              {state.error === "consent" ? <span className="text-sm text-[var(--color-error-text)]">{errorMessages.consent}</span> : null}
-
-              <button type="submit" disabled={pending} className="button-primary min-h-12 w-full px-5 py-3 sm:w-fit">
-                {pending ? "جارٍ الحفظ…" : "سجّلي اهتمامكِ"}
-              </button>
-              </form>
-            )}
-          </div>
+    <section id="interest" className="relative isolate scroll-mt-24 overflow-hidden bg-[var(--brand-forest)] text-[var(--color-on-primary)]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 end-0 w-1/2 border-s border-white/10 bg-[radial-gradient(circle_at_70%_30%,rgb(255_182_35_/_0.17),transparent_65%)]"
+      />
+      <div className="page-shell section-space relative grid gap-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <div className="max-w-2xl">
+          <p className="text-sm font-bold text-[var(--brand-amber)]">خليكِ قريبة</p>
+          <h2 className="mt-3 text-3xl font-black leading-tight text-balance sm:text-5xl">لا يفوتكِ جديد بَيْن</h2>
+          <p className="mt-4 max-w-xl text-base leading-8 text-white/85">
+            سجّلي اهتمامكِ بالفعاليات القادمة. نستخدم بريدكِ لهذا الغرض فقط، ويمكنكِ إلغاء الاشتراك متى شئتِ.
+          </p>
         </div>
+        <Link
+          href="/surveys/interested-contact"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-4 rounded-[var(--radius-control)] bg-[var(--brand-amber)] px-6 py-3 font-bold text-[var(--brand-forest)] transition-colors hover:bg-[var(--brand-cream)] sm:w-fit"
+        >
+          سجّلي اهتمامكِ <span aria-hidden="true">←</span>
+        </Link>
       </div>
     </section>
   );

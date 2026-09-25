@@ -35,18 +35,16 @@ export default async function HomePage() {
           <p className="eyebrow">مساحة ثقافية في مكة</p>
           <h1 className="page-title mt-5">نادي بَيْن الثقافي</h1>
           <div className="mt-7 flex flex-col gap-3 min-[380px]:flex-row min-[380px]:flex-wrap">
-            <Link href="/events" className="button-primary px-6 py-3">استكشفي الفعاليات</Link>
-            <Link href="/contact" className="button-secondary px-6 py-3">التواصل</Link>
+            <Link href="/events" className="button-primary px-6 py-3">
+              استكشفي الفعاليات
+            </Link>
+            <Link href="/contact" className="button-secondary px-6 py-3">
+              التواصل
+            </Link>
           </div>
         </div>
         <div className="mx-auto w-full max-w-[20rem] sm:max-w-[25rem] lg:ml-0 lg:max-w-[31rem]">
           <BrandIntersection />
-        </div>
-      </section>
-
-      <section className="border-y border-[var(--color-border)] bg-[var(--color-surface)]">
-        <div className="page-shell section-space">
-          <ClubStoryTabs sections={sections} />
         </div>
       </section>
 
@@ -56,31 +54,30 @@ export default async function HomePage() {
 
       <HomeInterestedSection />
 
+      <section className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div className="page-shell section-space">
+          <ClubStoryTabs sections={sections} />
+        </div>
+      </section>
+
       <section className="border-t border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className="page-shell section-space">
           <p className="eyebrow">أقسام النادي</p>
           <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">ابدئي هنا</h2>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid border-t border-[var(--color-border)] md:grid-cols-2 md:gap-x-10">
             {destinations.map((destination) => (
               <Link
                 key={destination.href}
                 href={destination.href}
-                className="group card-surface flex flex-col justify-between p-6 transition-[border-color,transform] hover:border-[var(--brand-olive)] hover:-translate-y-0.5"
+                className="group flex min-h-28 items-center justify-between gap-5 border-b border-[var(--color-border)] py-5 transition-colors hover:text-[var(--brand-olive)]"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-xl font-black text-[var(--brand-forest)] group-hover:text-[var(--brand-green-deep)]">
-                      {destination.label}
-                    </h3>
-                    <span aria-hidden="true" className="text-xl text-[var(--brand-amber)] transition-transform group-hover:-translate-x-1">
-                      ←
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 muted-copy">{destination.description}</p>
+                  <h3 className="text-lg font-black text-[var(--brand-forest)]">{destination.label}</h3>
+                  <p className="mt-1 text-sm leading-6 muted-copy">{destination.description}</p>
                 </div>
-                <div className="mt-4 flex items-center gap-2 text-xs font-bold text-[var(--brand-forest)]">
-                  <span>استكشفي القسم ←</span>
-                </div>
+                <span aria-hidden="true" className="shrink-0 text-xl text-[var(--brand-olive)] transition-transform group-hover:-translate-x-1">
+                  ←
+                </span>
               </Link>
             ))}
           </div>
