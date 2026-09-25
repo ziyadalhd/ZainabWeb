@@ -11,16 +11,22 @@ export function HomePastEvents({ events }: { events: readonly PastEvent[] }) {
   if (events.length === 0) return null;
 
   return (
-    <section className="page-shell section-space pt-0">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="eyebrow">لقاءات جمعتنا</p>
-          <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">فعاليات سابقة</h2>
+    <section className="home-past">
+      <div className="page-shell section-space">
+        <div className="home-section-heading">
+          <div>
+            <p className="eyebrow">لقاءات جمعتنا</p>
+            <h2>فعاليات سابقة</h2>
+          </div>
+          <Link href="/events#past" className="home-text-link">
+            عرض الفعاليات السابقة <span aria-hidden="true">←</span>
+          </Link>
         </div>
-        <Link href="/events#past" className="button-secondary w-full sm:w-fit">عرض الفعاليات السابقة</Link>
-      </div>
-      <div className="mt-8 grid gap-5 lg:grid-cols-2">
-        {events.map((event) => <PastEventCard key={event.id} event={event} />)}
+        <div className="home-events__grid">
+          {events.map((event) => (
+            <PastEventCard key={event.id} event={event} compact />
+          ))}
+        </div>
       </div>
     </section>
   );

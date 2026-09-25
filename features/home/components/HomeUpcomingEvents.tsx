@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { EventCard } from "@/features/events/components/EventCard";
 import type { Event } from "@/lib/domain/types";
 
@@ -9,21 +8,29 @@ export function selectHomeEvents(events: readonly Event[]): readonly Event[] {
 
 export function HomeUpcomingEvents({ events }: { events: readonly Event[] }) {
   return (
-    <section className="page-shell section-space">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <section id="upcoming" className="home-events page-shell section-space">
+      <div className="home-section-heading">
         <div>
           <p className="eyebrow">قريبًا في بَيْن</p>
-          <h2 className="mt-4 text-3xl font-black text-[var(--brand-forest)] sm:text-4xl">الفعاليات القادمة</h2>
+          <h2>الفعاليات القادمة</h2>
         </div>
-        <Link href="/events" className="button-secondary w-full sm:w-fit">عرض كل الفعاليات</Link>
+        <Link href="/events" className="home-text-link">
+          كل الفعاليات <span aria-hidden="true">←</span>
+        </Link>
       </div>
       {events.length > 0 ? (
-        <div className="mt-8 grid gap-5 lg:grid-cols-2">
-          {events.map((event) => <EventCard key={event.id} event={event} compact />)}
+        <div className="home-events__grid">
+          {events.map((event) => (
+            <EventCard key={event.id} event={event} compact />
+          ))}
         </div>
       ) : (
-        <div className="mt-8">
-          <EmptyState title="ما فيه فعاليات معلنة الآن" description="ارجعي لنا قريب، وبنشاركك كل جديد هنا." />
+        <div className="home-events__empty">
+          <h3>ما فيه فعاليات معلنة الآن</h3>
+          <p>ارجعي لنا قريب، وبنشاركك كل جديد هنا.</p>
+          <Link href="/surveys/interested-contact" className="home-text-link mt-2">
+            سجّلي اهتمامكِ بالفعاليات القادمة <span aria-hidden="true">←</span>
+          </Link>
         </div>
       )}
     </section>
