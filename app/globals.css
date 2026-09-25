@@ -1407,7 +1407,7 @@ body {
   color: var(--brand-forest);
   font-size: clamp(3.5rem, 6.6vw, 6.5rem);
   font-weight: 900;
-  line-height: 1.12;
+  line-height: 1.42;
   text-wrap: balance;
 }
 .home-hero__title span { color: var(--brand-olive); }
@@ -1428,10 +1428,8 @@ body {
   gap: 0.75rem;
   color: var(--brand-forest);
   font-weight: 800;
-  text-decoration: underline;
-  text-decoration-color: var(--brand-amber);
-  text-decoration-thickness: 0.16rem;
-  text-underline-offset: 0.4rem;
+  border-block-end: 0.16rem solid var(--brand-amber);
+  padding-block-end: 0.15rem;
 }
 .home-text-link:hover { color: var(--brand-olive); }
 .home-hero__art { position: relative; inline-size: min(100%, 29rem); justify-self: end; }
