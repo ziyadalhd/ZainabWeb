@@ -147,12 +147,25 @@ describe("RegistrationTable", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it("shows previous-registration payment status without offering cancellation or payment actions", () => {
+  it("lets an administrator record payment and attendance for a past active registration", async () => {
+    vi.mocked(actions.setPaymentStatus).mockClear();
     renderTable({ registrations: [registration], mode: "previous", registrationHrefs: hrefsFor([registration]), actions });
 
     expect(screen.queryByRole("button", { name: "إلغاء التسجيل" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "حفظ الدفع" })).not.toBeInTheDocument();
-    expect(screen.getByText("غير مدفوع")).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "الحضور" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("switch", { name: "الدفع" }));
+    await waitFor(() => expect(actions.setPaymentStatus).toHaveBeenCalledWith(registration.id, expect.anything(), expect.any(FormData)));
+    const submitted = vi.mocked(actions.setPaymentStatus).mock.calls[0]![2] as FormData;
+    expect(submitted.get("paymentStatus")).toBe("paid_in_full");
+  });
+
+  it("keeps cancelled registrations read-only in the previous list", () => {
+    const cancelled: Registration = { ...registration, status: "cancelled" };
+    renderTable({ registrations: [cancelled], mode: "previous", registrationHrefs: hrefsFor([cancelled]), actions });
+
+    expect(screen.queryByRole("switch", { name: "الدفع" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("switch", { name: "الحضور" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "إلغاء التسجيل" })).not.toBeInTheDocument();
   });
 
   it("makes every row selectable via registrationHref — regression test for admin overhaul plan A1", () => {

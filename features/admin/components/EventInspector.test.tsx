@@ -97,6 +97,12 @@ describe("EventInspector", () => {
     renderInspector();
     expect(screen.getByRole("heading", { name: "لقاء القراءة", level: 2 })).toBeInTheDocument();
     expect(screen.getByText("قادمة")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "كل التسجيلات" })).toHaveAttribute("href", `/admin/registrations?view=upcoming&event=${event.id}`);
+  });
+
+  it("opens past registrations from an ended event", () => {
+    renderInspector({ now: "2026-08-11T12:00:00.000Z" });
+    expect(screen.getByRole("link", { name: "كل التسجيلات" })).toHaveAttribute("href", `/admin/registrations?view=previous&event=${event.id}`);
   });
 
   it("summarises capacity in the rail with a warn-toned meter near the cap", () => {

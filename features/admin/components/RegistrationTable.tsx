@@ -177,7 +177,7 @@ function RegistrationDetails({
         </div>
       </dl>
       <div className="mt-6 grid gap-4">
-        {mode !== "previous" && registration.status === "registered" ? (
+        {registration.status === "registered" ? (
           <RegistrationQuickToggles registration={registration} actions={actions} />
         ) : null}
         <RegistrationActions registration={registration} mode={mode} actions={actions} onChanged={onChanged} />

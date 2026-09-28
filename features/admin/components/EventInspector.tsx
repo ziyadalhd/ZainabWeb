@@ -140,6 +140,7 @@ export function EventInspector({
   const nowDate = new Date(now);
   const lifecycle = eventLifecycle(event, nowDate);
   const isEventDay = isSameRiyadhDate(event.startsAt, nowDate) && event.publicationStatus !== "cancelled";
+  const registrationsView = new Date(event.startsAt).getTime() < nowDate.getTime() ? "previous" : "upcoming";
   const remaining = seatsRemaining(event);
   const registrationHrefs = Object.fromEntries(
     allRegistrations.map((registration) => [registration.id, `/admin/events?event=${event.id}&id=${registration.id}`]),
@@ -263,7 +264,7 @@ export function EventInspector({
             <Link href={`/admin/events/${event.id}/edit`} className="button-secondary">
               تحرير الفعالية
             </Link>
-            <Link href={`/admin/registrations?event=${event.id}`} className="button-quiet">
+            <Link href={`/admin/registrations?view=${registrationsView}&event=${event.id}`} className="button-quiet">
               كل التسجيلات
             </Link>
           </div>
