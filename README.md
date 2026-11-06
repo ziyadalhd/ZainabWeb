@@ -2,6 +2,17 @@
 
 Arabic RTL event-operations platform for نادي بَيْن الثقافي in Makkah. The product combines a public event and request experience with a protected operations dashboard for events, registrations, attendance, waitlists, venue requests, communications, and reporting.
 
+## Project highlights
+
+- Arabic RTL public event discovery and guest registration.
+- Protected calendar-centered dashboard for event operations.
+- Capacity, attendance, cancellations, manual waitlist replacement, and feedback workflows.
+- Supabase-backed persistence and authorization boundaries.
+
+**Stack:** Next.js App Router, React, TypeScript, Tailwind CSS, Supabase/PostgreSQL, and Vitest. Versions and scripts are defined in [package.json](./package.json).
+
+[Project overview](https://ziyad-portfolio-six.vercel.app/en/projects/bayn)
+
 ## Current status
 
 - The public website and protected admin dashboard are deployed on Vercel with Supabase.
